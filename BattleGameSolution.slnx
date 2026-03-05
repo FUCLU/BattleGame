@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path=".gitignore" />
+  </Folder>
+  <Project Path="BattleGame.Client/BattleGame.Client.csproj" Id="084144e1-58d3-444c-a4d4-14326784c246" />
+  <Project Path="BattleGame.Server/BattleGame.Server.csproj" />
+  <Project Path="BattleGame.Shared/BattleGame.Shared.csproj" />
+</Solution>
