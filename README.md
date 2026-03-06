@@ -1,8 +1,3 @@
----
-title: README
-
----
-
 ## NT106.Q23.ANTT - LẬP TRÌNH MẠNG CĂN BẢN
 
 
