@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BattleGame.Client.Game
+namespace BattleGame.Shared.Models
 {
-    internal class MatchmakingClient
+    internal class Skill
     {
     }
 }
