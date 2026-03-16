@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BattleGame.Client.Game
+namespace BattleGame.Client.Managers
 {
-    internal class MatchmakingClient
+    internal class InputManager
     {
     }
 }
