@@ -2,9 +2,59 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BattleGame.Server.Game
+using BattleGame.Shared.Models;
+
+namespace BattleGame.Server.Game;
+
+/// <summary>
+/// Quản lý 1 trận đấu hoàn chỉnh giữa 2 nhân vật
+/// </summary>
+public class GameRoom
 {
-    internal class GameRoom
+    private readonly BattleEngine _engine = new();
+
+    public Character Player1 { get; }
+    public Character Player2 { get; }
+    public int RoundCount { get; private set; } = 0;
+    public List<TurnResult> BattleLog { get; } = new();
+
+    public GameRoom(Character p1, Character p2)
     {
+        Player1 = p1;
+        Player2 = p2;
     }
+
+    /// <summary>
+    /// Chạy 1 round: cả 2 bên đánh nhau theo thứ tự Speed
+    /// </summary>
+    public List<TurnResult> RunRound()
+    {
+        RoundCount++;
+        var results = new List<TurnResult>();
+
+        // Ai Speed cao hơn đánh trước
+        var (first, second) = Player1.Speed >= Player2.Speed
+            ? (Player1, Player2)
+            : (Player2, Player1);
+
+        var t1 = _engine.ProcessTurn(first, second);
+        results.Add(t1);
+        BattleLog.Add(t1);
+
+        // Chỉ đánh lại nếu còn sống
+        if (second.IsAlive)
+        {
+            var t2 = _engine.ProcessTurn(second, first);
+            results.Add(t2);
+            BattleLog.Add(t2);
+        }
+
+        return results;
+    }
+
+    public bool IsBattleOver() => !Player1.IsAlive || !Player2.IsAlive;
+
+    public Character? GetWinner() =>
+        Player1.IsAlive ? Player1 :
+        Player2.IsAlive ? Player2 : null;
 }
