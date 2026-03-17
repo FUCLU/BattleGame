@@ -151,7 +151,7 @@ BattleGameSolution/
 ### Clone dự án
 
 ```bash
-git clone https://github.com/<your-repo>/BattleGameSolution.git
+git clone https://github.com/FUCLU/BattleGameSolution.git
 cd BattleGameSolution
 ```
 
