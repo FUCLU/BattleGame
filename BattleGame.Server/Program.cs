@@ -1,7 +1,7 @@
 ﻿using BattleGame.Server.Network;
 
 Console.WriteLine("[INFO] === BattleGame Server Starting ===");
-Console.WriteLine("[INFO] Server listening on port 9000");
+Console.WriteLine("[INFO] Server listening on port 9002");
 
 var server = new GameServer();
 
