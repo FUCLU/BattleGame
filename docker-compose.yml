@@ -4,16 +4,16 @@
     container_name: battlegame_db
     restart: unless-stopped
     environment:
-      POSTGRES_DB: battlegame
-      POSTGRES_USER: bguser
-      POSTGRES_PASSWORD: bgpassword123
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
       - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U bguser -d battlegame"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -25,10 +25,10 @@
     container_name: battlegame_server
     restart: unless-stopped
     ports:
-      - "9000:9000"
+      - "${SERVER_PORT}:9000"
     environment:
-      - DB_CONNECTION=Host=db;Port=5432;Database=battlegame;Username=bguser;Password=bgpassword123
-      - SERVER_PORT=9000
+      - DB_CONNECTION=Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - SERVER_PORT=${SERVER_PORT}
     depends_on:
       db:
         condition: service_healthy
