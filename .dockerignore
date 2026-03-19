@@ -1,0 +1,36 @@
+# Không copy những thứ này vào Docker build context
+
+# Build outputs (sẽ được build lại trong container)
+**/bin/
+**/obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.Backup.tmp
+
+# Git
+.git/
+.gitignore
+
+# Logs
+logs/
+*.log
+
+# Test project (không cần trong production image)
+BattleGame.Test/
+BattleGame.Client/
+
+# IDE
+.idea/
+.vscode/
+
+# Docker files (tránh copy lẫn nhau)
+**/Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Docs
+README.md
+*.md
