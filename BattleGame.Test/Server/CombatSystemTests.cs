@@ -1,4 +1,4 @@
-﻿using BattleGame.Shared.Models;
+using BattleGame.Shared.Models;
 using BattleGame.Server.Game;
 
 // ─── Setup nhân vật ───────────────────────────────────

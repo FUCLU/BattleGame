@@ -4,7 +4,7 @@ using System.Text;
 
 namespace BattleGame.Shared.Network
 {
-    internal class ClientSocket
+    internal class BaseSocket
     {
     }
 }
