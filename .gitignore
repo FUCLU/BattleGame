@@ -1,18 +1,49 @@
-# Visual Studio
-.vs/
-
-# Build folders
+# ── Build outputs ────────────────────────────────────────────
 bin/
 obj/
+out/
+publish/
 
-# User files
+# ── Visual Studio ─────────────────────────────────────────────
+.vs/
 *.user
 *.suo
+*.userosscache
+*.sln.docstates
+*.tmp
+*.Backup.tmp
 
-# Rider / VSCode
+# ── IDE khác ──────────────────────────────────────────────────
 .idea/
 .vscode/
+*.swp
 
-# Debug files
-*.pdb
-*.cache
+# ── Logs (sinh ra lúc chạy, không cần track) ─────────────────
+logs/
+*.log
+
+# ── Docker volumes ────────────────────────────────────────────
+pgdata/
+
+# ── Thông tin nhạy cảm ───────────────────────────────────────
+appsettings.Production.json
+appsettings.Local.json
+.env
+*.pfx
+*.p12
+
+# ── Assets lớn (dùng Git LFS nếu cần) ────────────────────────
+# *.png
+# *.mp3
+# *.wav
+# *.ogg
+
+# ── NuGet ────────────────────────────────────────────────────
+*.nupkg
+.nuget/
+
+# ── Test results ──────────────────────────────────────────────
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
