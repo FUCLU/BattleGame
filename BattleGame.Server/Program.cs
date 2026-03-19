@@ -1,16 +1,15 @@
 ﻿using BattleGame.Server.Network;
-using BattleGame.Server.Config;
 
-Console.WriteLine("=== BATTLEGAME SERVER STARTING ===");
+Console.WriteLine("[INFO] === BattleGame Server Starting ===");
+Console.WriteLine("[INFO] Server listening on port 9000");
 
-var config = ServerConfig.Load();
-var server = new GameServer(config.Port);
+var server = new GameServer();
 
 Console.CancelKeyPress += (_, e) => {
     e.Cancel = true;
-    Console.WriteLine("[INFO] Shutting down...");
-    server.Stop();
+    Console.WriteLine("[INFO] Server shutting down...");
 };
 
-Console.WriteLine($"[INFO] Server listening on port {config.Port}");
 server.Start();
+
+await Task.Delay(Timeout.Infinite);
