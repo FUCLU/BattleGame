@@ -66,7 +66,7 @@ BattleGame là game đối kháng 2D theo thời gian thực qua mạng cục b�
 ### 1. Clone dự án
 
 ```bash
-git clone https://github.com/FUCLU/BattleGameSolution.git
+git clone https://github.com/FUCLU/BattleGame.git
 cd BattleGameSolution
 ```
 
