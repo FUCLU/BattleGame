@@ -17,8 +17,7 @@ namespace BattleGame.Client.Forms
             InitializeComponent();
         }
 
-       
-
+   
 
         private void MenuForm_Load(object sender, EventArgs e)
         {
@@ -62,12 +61,17 @@ namespace BattleGame.Client.Forms
 
         private void btnExit_Click(object sender, EventArgs e)
         {
-            this.Close();
+            DialogResult result = MessageBox.Show("Bạn có muốn thoát không?", "Xác nhận", MessageBoxButtons.YesNo);
+
+            if (result == DialogResult.Yes)
+            {
+                this.Close();
+            }
         }
 
         private void btnPlay_Click(object sender, EventArgs e)
         {
-            this.Hide();
+            this.Hide(); // nhớ cập nhật close luôn menu form khi mở character selection(play)
             CharacterSelection characterSelection = new CharacterSelection();
             characterSelection.Show();
 

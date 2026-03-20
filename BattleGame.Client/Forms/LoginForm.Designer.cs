@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            pictureBox1 = new PictureBox();
             pnlLogin = new Panel();
             btnRegister = new Button();
             btnLogin = new Button();
@@ -40,22 +39,12 @@
             pictureBox5 = new PictureBox();
             panel4 = new Panel();
             label2 = new Label();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            pictureBox1 = new PictureBox();
             pnlLogin.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox4).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox5).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
-            // 
-            // pictureBox1
-            // 
-            pictureBox1.Image = Properties.Resources.backround_login;
-            pictureBox1.Location = new Point(-49, -26);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(1081, 630);
-            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBox1.TabIndex = 0;
-            pictureBox1.TabStop = false;
-            pictureBox1.Click += pictureBox1_Click;
             // 
             // pnlLogin
             // 
@@ -195,6 +184,17 @@
             label2.Text = "LAPTRINHMANG";
             label2.TextAlign = ContentAlignment.TopCenter;
             // 
+            // pictureBox1
+            // 
+            pictureBox1.Image = Properties.Resources.backround_login;
+            pictureBox1.Location = new Point(-49, -26);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(1081, 630);
+            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox1.TabIndex = 0;
+            pictureBox1.TabStop = false;
+            pictureBox1.Click += pictureBox1_Click;
+            // 
             // LoginForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -205,17 +205,15 @@
             Name = "LoginForm";
             Text = "LoginForm";
             Load += LoginForm_Load;
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             pnlLogin.ResumeLayout(false);
             pnlLogin.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox4).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox5).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
         }
 
         #endregion
-
-        private PictureBox pictureBox1;
         private Panel pnlLogin;
         private PictureBox pictureBox4;
         private PictureBox pictureBox5;
@@ -227,5 +225,6 @@
         private Label label2;
         private Button btnLogin;
         private Button btnRegister;
+        private PictureBox pictureBox1;
     }
 }
