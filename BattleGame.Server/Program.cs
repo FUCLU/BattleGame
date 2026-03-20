@@ -1,14 +1,11 @@
 ﻿using BattleGame.Server.Network;
+using BattleGame.Server.Logging;
 
-Console.WriteLine("[INFO] === BattleGame Server Starting ===");
-Console.WriteLine("[INFO] Server listening on port 9002");
+ServerLogger.Info("BattleGame Server Starting...");
 
 var server = new GameServer();
 
-Console.CancelKeyPress += (_, e) => {
-    e.Cancel = true;
-    Console.WriteLine("[INFO] Server shutting down...");
-};
+ServerLogger.Info($"Server listening on port {server.Port}");
 
 server.Start();
 

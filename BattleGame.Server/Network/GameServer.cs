@@ -1,14 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using BattleGame.Server.Logging;
 
-namespace BattleGame.Server.Network
+public class GameServer
 {
-    internal class GameServer
+    public int Port => 9000;
+
+    public void Start()
     {
-        public void Start()
-        {
-            Console.WriteLine("Server Started");
-        }
+        ServerLogger.Info($"Server started on port {Port}");
     }
 }
