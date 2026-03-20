@@ -10,8 +10,8 @@ namespace BattleGame.Client.Forms
 {
     public partial class CharacterSelection : Form
     {
-            Size originalSize;
-            Point originalLocation;
+        Size originalSize;
+        Point originalLocation;
         public CharacterSelection()
         {
             InitializeComponent();
@@ -102,6 +102,11 @@ namespace BattleGame.Client.Forms
         {
             selectRyu.Size = new Size(selectRyu.Width - 12, selectRyu.Height - 12);
             selectRyu.Location = new Point(selectRyu.Location.X + 6, selectRyu.Location.Y + 6);
+        }
+
+        private void txtInfCharac_TextChanged(object sender, EventArgs e)
+        {
+
         }
     }
 }
