@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            pictureBox1 = new PictureBox();
             pnlLogin = new Panel();
             btnRegister = new Button();
             btnLogin = new Button();
@@ -39,16 +40,26 @@
             pictureBox5 = new PictureBox();
             panel4 = new Panel();
             label2 = new Label();
-            pictureBox1 = new PictureBox();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             pnlLogin.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox4).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox5).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
+            // 
+            // pictureBox1
+            // 
+            pictureBox1.Image = Properties.Resources.backround_login;
+            pictureBox1.Location = new Point(-49, -26);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(1081, 630);
+            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
+            pictureBox1.TabIndex = 0;
+            pictureBox1.TabStop = false;
+            pictureBox1.Click += pictureBox1_Click;
             // 
             // pnlLogin
             // 
-            pnlLogin.BackColor = Color.Gray;
+            pnlLogin.BackColor = Color.Black;
             pnlLogin.Controls.Add(btnRegister);
             pnlLogin.Controls.Add(btnLogin);
             pnlLogin.Controls.Add(checkShowpassword);
@@ -59,7 +70,7 @@
             pnlLogin.Controls.Add(pictureBox5);
             pnlLogin.Controls.Add(panel4);
             pnlLogin.Controls.Add(label2);
-            pnlLogin.Location = new Point(261, 149);
+            pnlLogin.Location = new Point(281, 149);
             pnlLogin.Name = "pnlLogin";
             pnlLogin.Size = new Size(395, 290);
             pnlLogin.TabIndex = 18;
@@ -70,7 +81,7 @@
             btnRegister.BackColor = Color.Gray;
             btnRegister.FlatStyle = FlatStyle.Flat;
             btnRegister.Font = new Font("Segoe UI Black", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnRegister.ForeColor = Color.Aqua;
+            btnRegister.ForeColor = Color.LavenderBlush;
             btnRegister.Location = new Point(206, 219);
             btnRegister.Name = "btnRegister";
             btnRegister.Size = new Size(148, 41);
@@ -78,13 +89,14 @@
             btnRegister.TabStop = false;
             btnRegister.Text = "Register";
             btnRegister.UseVisualStyleBackColor = false;
+            btnRegister.Click += btnRegister_Click;
             // 
             // btnLogin
             // 
             btnLogin.BackColor = Color.Gray;
             btnLogin.FlatStyle = FlatStyle.Flat;
             btnLogin.Font = new Font("Segoe UI Black", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            btnLogin.ForeColor = Color.Aqua;
+            btnLogin.ForeColor = Color.Azure;
             btnLogin.Location = new Point(40, 219);
             btnLogin.Name = "btnLogin";
             btnLogin.Size = new Size(148, 41);
@@ -174,26 +186,16 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.BackColor = Color.Teal;
-            label2.Font = new Font("Castellar", 16.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label2.ForeColor = Color.DarkRed;
-            label2.Location = new Point(52, 11);
+            label2.BackColor = Color.Black;
+            label2.Font = new Font("Elephant", 16.1999989F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label2.ForeColor = Color.Red;
+            label2.Location = new Point(59, 13);
             label2.Name = "label2";
-            label2.Size = new Size(289, 34);
+            label2.Size = new Size(263, 35);
             label2.TabIndex = 0;
-            label2.Text = "LAPTRINHMANG";
+            label2.Text = "BATTLE GAME";
             label2.TextAlign = ContentAlignment.TopCenter;
-            // 
-            // pictureBox1
-            // 
-            pictureBox1.Image = Properties.Resources.backround_login;
-            pictureBox1.Location = new Point(-49, -26);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(1081, 630);
-            pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
-            pictureBox1.TabIndex = 0;
-            pictureBox1.TabStop = false;
-            pictureBox1.Click += pictureBox1_Click;
+            label2.Click += label2_Click;
             // 
             // LoginForm
             // 
@@ -205,15 +207,17 @@
             Name = "LoginForm";
             Text = "LoginForm";
             Load += LoginForm_Load;
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             pnlLogin.ResumeLayout(false);
             pnlLogin.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox4).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox5).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
         }
 
         #endregion
+
+        private PictureBox pictureBox1;
         private Panel pnlLogin;
         private PictureBox pictureBox4;
         private PictureBox pictureBox5;
@@ -225,6 +229,5 @@
         private Label label2;
         private Button btnLogin;
         private Button btnRegister;
-        private PictureBox pictureBox1;
     }
 }
