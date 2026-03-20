@@ -39,9 +39,9 @@
             // pictureBox1
             // 
             pictureBox1.Image = Properties.Resources.Gemini_Generated_Image_141glb141glb141g;
-            pictureBox1.Location = new Point(-110, -31);
+            pictureBox1.Location = new Point(-59, -73);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(1125, 625);
+            pictureBox1.Size = new Size(1072, 638);
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBox1.TabIndex = 0;
             pictureBox1.TabStop = false;
@@ -98,16 +98,16 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.BackColor = Color.SteelBlue;
+            label1.BackColor = SystemColors.ActiveCaptionText;
             label1.FlatStyle = FlatStyle.Popup;
             label1.Font = new Font("Castellar", 36F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
-            label1.ForeColor = Color.LightGreen;
-            label1.Image = Properties.Resources.Screenshot_2026_03_19_084759;
-            label1.Location = new Point(256, 29);
+            label1.ForeColor = Color.DeepPink;
+            label1.Location = new Point(170, 25);
             label1.Name = "label1";
-            label1.Size = new Size(334, 73);
+            label1.Size = new Size(507, 73);
             label1.TabIndex = 4;
-            label1.Text = "LTMang";
+            label1.Text = "BATTLE GAME";
+            label1.TextAlign = ContentAlignment.TopRight;
             // 
             // MenuForm
             // 

@@ -11,7 +11,7 @@ namespace BattleGame.Client.Forms
 {
     public partial class LoginForm : Form
     {
-        
+
         public LoginForm()
         {
             InitializeComponent();
@@ -135,40 +135,50 @@ namespace BattleGame.Client.Forms
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-           
-            
+
+
             if (isvalid())
             {
-                if (txtUsername.Text == userTest && txtPassword.Text == pwTest|| txtUsername.Text == u && txtPassword.Text==p)
+                if (txtUsername.Text == userTest && txtPassword.Text == pwTest || txtUsername.Text == u && txtPassword.Text == p)
                 {
                     MessageBox.Show("Đăng nhập thành công!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            
+
                     MenuForm menu = new MenuForm();
-            
+
                     // Khi đóng MenuForm thì tắt hẳn chương trình 
-                    menu.FormClosed += (s, args) => Application.Exit(); 
-            
+                    menu.FormClosed += (s, args) => Application.Exit();
+
                     menu.Show();
-                    this.Hide(); 
+                    this.Hide();
                 }
                 else
                 {
                     MessageBox.Show("Sai mật khẩu hoặc username!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
-            
+
         }
 
         private void btnLogin_MouseEnter(object sender, EventArgs e)
         {
-            
-             
+
+
             btnLogin.BackColor = Color.DeepPink;
         }
 
         private void btnLogin_MouseLeave(object sender, EventArgs e)
         {
             btnLogin.BackColor = Color.Gray;
+        }
+
+        private void btnRegister_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
