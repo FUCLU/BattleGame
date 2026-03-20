@@ -59,7 +59,7 @@
             // 
             // txtInfCharac
             // 
-            txtInfCharac.Font = new Font("Yu Gothic", 10.8F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
+            txtInfCharac.Font = new Font("Tahoma", 10.8F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
             txtInfCharac.Location = new Point(27, 373);
             txtInfCharac.Name = "txtInfCharac";
             txtInfCharac.ReadOnly = true;
@@ -67,6 +67,7 @@
             txtInfCharac.TabIndex = 1;
             txtInfCharac.TabStop = false;
             txtInfCharac.Text = "Tên: ...\nSức mạnh: ...\nTốc độ: ...\nKỹ năng: ...";
+            txtInfCharac.TextChanged += txtInfCharac_TextChanged;
             // 
             // characterReviewPic
             // 
@@ -149,11 +150,11 @@
             // 
             label1.AutoSize = true;
             label1.BackColor = Color.Transparent;
-            label1.Font = new Font("Showcard Gothic", 19.8000011F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
-            label1.ForeColor = Color.Crimson;
+            label1.Font = new Font("Tahoma", 19.8000011F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.ForeColor = SystemColors.ActiveCaptionText;
             label1.Location = new Point(379, 9);
             label1.Name = "label1";
-            label1.Size = new Size(291, 43);
+            label1.Size = new Size(266, 41);
             label1.TabIndex = 4;
             label1.Text = "Chọn nhân vật";
             // 
