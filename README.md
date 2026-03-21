@@ -363,19 +363,6 @@ Client A                    Server                      Client B
 | `ForgotPasswordPacket` | Client → Server | 15 | Yêu cầu reset mật khẩu qua email |
 
 ---
-
-## Cấu Hình
-
-| File | Mục đích | Commit? |
-|---|---|---|
-| `.env` | Password DB, port, SMTP credentials | ❌ KHÔNG |
-| `.env.example` | Template cho thành viên mới clone về | ✅ Có |
-| `appsettings.json` | Port server, connection string (dev local + Mailpit) | ✅ Có |
-| `appsettings.Production.json` | SMTP Gmail thật khi demo | ❌ KHÔNG |
-| `ClientConfig.cs` | Địa chỉ server, cài đặt client | ✅ Có |
-| `GameConstants.cs` | Hằng số dùng chung (port, tickrate) | ✅ Có |
-| `docker-compose.yml` | Docker: server + PostgreSQL + Mailpit | ✅ Có |
-
 ### Cấu hình Email OTP
 
 **Dev local (mặc định):** Dùng **Mailpit** — không cần Gmail, không gửi email thật.
