@@ -18,6 +18,18 @@
       timeout: 5s
       retries: 10
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: battlegame_mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"   # Web UI xem email: http://localhost:8025
+      - "1025:1025"   # SMTP port cho server gửi vào
+    environment:
+      MP_MAX_MESSAGES: 100
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
   server:
     build:
       context: .
@@ -29,9 +41,16 @@
     environment:
       - DB_CONNECTION=Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       - SERVER_PORT=${SERVER_PORT}
+      - SMTP_HOST=mailpit
+      - SMTP_PORT=1025
+      - SMTP_USERNAME=test@battlegame.local
+      - SMTP_PASSWORD=
+      - SMTP_ENABLE_SSL=false
     depends_on:
       db:
         condition: service_healthy
+      mailpit:
+        condition: service_started
     volumes:
       - ./logs:/app/logs
 
