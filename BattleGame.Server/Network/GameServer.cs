@@ -1,11 +1,20 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using BattleGame.Server.Logging;
+﻿using BattleGame.Server.Logging;
+using BattleGame.Server.Services;
 
 public class GameServer
 {
-    public int Port => 9000;
+    private readonly int _port;
+    private readonly string _connectionString;
+    private readonly OtpService _otpService;
+
+    public int Port => _port;
+
+    public GameServer(int port, string connectionString, OtpService otpService)
+    {
+        _port = port;
+        _connectionString = connectionString;
+        _otpService = otpService;
+    }
 
     public void Start()
     {
