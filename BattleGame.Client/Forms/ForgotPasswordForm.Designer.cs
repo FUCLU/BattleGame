@@ -1,6 +1,6 @@
 ﻿namespace BattleGame.Client.Forms
 {
-    partial class GameOverForm
+    partial class ForgotPasswordForm
     {
         /// <summary>
         /// Required designer variable.
@@ -30,14 +30,14 @@
         {
             SuspendLayout();
             // 
-            // GameOverForm
+            // ForgotPasswordForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Name = "GameOverForm";
-            Text = "GameOverForm";
-            Load += GameOverForm_Load;
+            Name = "ForgotPasswordForm";
+            Text = "ForgotPasswordForm";
+            Load += ForgotPasswordForm_Load;
             ResumeLayout(false);
         }
 
