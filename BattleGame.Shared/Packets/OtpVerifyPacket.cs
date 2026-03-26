@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace BattleGame.Shared.Packets
 {
-    internal class OtpVerifyPacket
+    public class OtpVerifyPacket : Packet
     {
+        public string Email { get; set; }
+        public string OtpCode { get; set; }
+        public OtpVerifyPacket() : base(PacketType.OtpVerify)
+        {
+        }
     }
 }

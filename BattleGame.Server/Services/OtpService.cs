@@ -1,57 +1,67 @@
 ﻿using BattleGame.Server.Database;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using BattleGame.Server.Logging;
 
 namespace BattleGame.Server.Services
 {
     public class OtpService
     {
-        private readonly OtpRepository _repo;
-        private readonly EmailService _email;
+        private const int OTP_EXPIRE_MINUTES = 1;
         private const int MAX_ATTEMPTS = 3;
+        private readonly OtpRepository _otpRepo;
+        private readonly EmailService _emailService;
 
-        public OtpService(OtpRepository repo, EmailService email)
+        public OtpService(OtpRepository otpRepo, EmailService emailService)
         {
-            _repo = repo;
-            _email = email;
+            _otpRepo = otpRepo;
+            _emailService = emailService;
         }
 
-        // Sinh mã, lưu DB, gửi email — gọi khi đăng ký hoặc quên mật khẩu
-        public void SendOtp(string email, string purpose)
+        public bool SendOtp(string email)
         {
-            var code = GenerateCode();
-            var codeHash = BCrypt.Net.BCrypt.HashPassword(code);
-            _repo.Save(email, codeHash, purpose);
-            _email.SendOtp(email, code, purpose);
-        }
-
-        // Xác minh mã — trả về true/false kèm lý do
-        public (bool ok, string error) Verify(string email, string purpose, string inputCode)
-        {
-            var record = _repo.FindValid(email, purpose);
-            if (record == null)
-                return (false, "OTP không tồn tại hoặc đã hết hạn");
-
-            var (id, codeHash, attempts) = record.Value;
-
-            if (attempts >= MAX_ATTEMPTS)
-                return (false, "Nhập sai quá 3 lần, vui lòng yêu cầu gửi lại mã");
-
-            if (!BCrypt.Net.BCrypt.Verify(inputCode, codeHash))
+            try
             {
-                _repo.IncrementAttempts(id);
-                var left = MAX_ATTEMPTS - attempts - 1;
-                return (false, $"Mã không đúng, còn {left} lần thử");
+                string otp = Random.Shared.Next(100000, 999999).ToString();
+                string otpHash = BCrypt.Net.BCrypt.HashPassword(otp);
+                _otpRepo.Save(email, otpHash);
+                _emailService.SendOtpEmail(email, otp);
+                return true;
             }
-
-            _repo.MarkUsed(id);
-            return (true, "");
+            catch (Exception ex)
+            {
+                return false;
+            }
         }
 
-        private static string GenerateCode() =>
-            Random.Shared.Next(100_000, 999_999).ToString();
+        public enum VerifyResult
+        {
+            Success,          // Đúng mã
+            InvalidCode,      // Sai mã, còn lần thử
+            MaxAttemptsReached, // Đã sai đủ 3 lần — OTP bị block
+            NotFound,         // Không có OTP active (hết hạn hoặc chưa gửi)
+        }
+
+        public VerifyResult VerifyOtp(string email, string otpCode)
+        {
+            var record = _otpRepo.FindValid(email);
+            if (record == null)
+            {
+                return VerifyResult.NotFound;
+            }
+            var (id, otpHash, attempts) = record.Value;
+            if (attempts >= MAX_ATTEMPTS)
+            {
+                return VerifyResult.MaxAttemptsReached;
+            }
+            bool isCorrect = BCrypt.Net.BCrypt.Verify(otpCode, otpHash);
+            if (!isCorrect)
+            {
+                _otpRepo.IncrementAttempts(id);
+                if (attempts + 1 >= MAX_ATTEMPTS)
+                    return VerifyResult.MaxAttemptsReached;
+                return VerifyResult.InvalidCode;
+            }
+            _otpRepo.MarkUsed(id);
+            return VerifyResult.Success;
+        }
     }
 }

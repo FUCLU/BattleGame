@@ -28,18 +28,18 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MenuForm));
             pictureBox1 = new PictureBox();
             btnPlay = new Button();
             btnLogout = new Button();
             btnExit = new Button();
-            label1 = new Label();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
             // pictureBox1
             // 
-            pictureBox1.Image = Properties.Resources.Gemini_Generated_Image_141glb141glb141g;
-            pictureBox1.Location = new Point(-59, -73);
+            pictureBox1.Image = Properties.Resources.background;
+            pictureBox1.Location = new Point(-131, -83);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(1072, 638);
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
@@ -50,71 +50,69 @@
             // btnPlay
             // 
             btnPlay.BackColor = Color.Transparent;
-            btnPlay.Font = new Font("Stencil", 24F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnPlay.BackgroundImage = (Image)resources.GetObject("btnPlay.BackgroundImage");
+            btnPlay.Cursor = Cursors.Hand;
+            btnPlay.FlatAppearance.BorderColor = Color.White;
+            btnPlay.FlatAppearance.BorderSize = 0;
+            btnPlay.FlatAppearance.MouseDownBackColor = Color.Transparent;
+            btnPlay.FlatAppearance.MouseOverBackColor = Color.Transparent;
+            btnPlay.FlatStyle = FlatStyle.Flat;
+            btnPlay.Font = new Font("Microsoft Sans Serif", 24F, FontStyle.Regular, GraphicsUnit.Point, 0);
             btnPlay.ForeColor = Color.Fuchsia;
-            btnPlay.Image = Properties.Resources.fr;
-            btnPlay.Location = new Point(312, 185);
+            btnPlay.Image = Properties.Resources.playb;
+            btnPlay.Location = new Point(276, 149);
             btnPlay.Name = "btnPlay";
-            btnPlay.Size = new Size(198, 52);
+            btnPlay.Size = new Size(274, 114);
             btnPlay.TabIndex = 1;
-            btnPlay.Text = "Play";
             btnPlay.UseVisualStyleBackColor = false;
             btnPlay.Click += btnPlay_Click;
             btnPlay.MouseEnter += btnPlay_MouseEnter;
-            btnPlay.MouseLeave += btnPlay_MouseLeave;
             // 
             // btnLogout
             // 
             btnLogout.BackColor = Color.Transparent;
-            btnLogout.Font = new Font("Stencil", 24F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnLogout.BackgroundImage = (Image)resources.GetObject("btnLogout.BackgroundImage");
+            btnLogout.Cursor = Cursors.Hand;
+            btnLogout.FlatAppearance.BorderSize = 0;
+            btnLogout.FlatAppearance.MouseDownBackColor = Color.Transparent;
+            btnLogout.FlatAppearance.MouseOverBackColor = Color.Transparent;
+            btnLogout.FlatStyle = FlatStyle.Flat;
+            btnLogout.Font = new Font("Microsoft Sans Serif", 24F, FontStyle.Regular, GraphicsUnit.Point, 0);
             btnLogout.ForeColor = Color.Fuchsia;
-            btnLogout.Image = Properties.Resources.fr;
-            btnLogout.Location = new Point(312, 288);
+            btnLogout.Image = Properties.Resources.logout;
+            btnLogout.Location = new Point(276, 278);
             btnLogout.Name = "btnLogout";
-            btnLogout.Size = new Size(198, 51);
+            btnLogout.Size = new Size(274, 97);
             btnLogout.TabIndex = 2;
-            btnLogout.Text = "Log out";
             btnLogout.UseVisualStyleBackColor = false;
             btnLogout.Click += btnLogout_Click;
             btnLogout.MouseEnter += btnLogout_MouseEnter;
-            btnLogout.MouseLeave += btnLogout_MouseLeave;
             // 
             // btnExit
             // 
             btnExit.BackColor = Color.Transparent;
-            btnExit.Font = new Font("Stencil", 24F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnExit.BackgroundImage = (Image)resources.GetObject("btnExit.BackgroundImage");
+            btnExit.Cursor = Cursors.Hand;
+            btnExit.FlatAppearance.BorderSize = 0;
+            btnExit.FlatAppearance.MouseDownBackColor = Color.Transparent;
+            btnExit.FlatAppearance.MouseOverBackColor = Color.Transparent;
+            btnExit.FlatStyle = FlatStyle.Flat;
+            btnExit.Font = new Font("Microsoft Sans Serif", 24F, FontStyle.Regular, GraphicsUnit.Point, 0);
             btnExit.ForeColor = Color.Fuchsia;
-            btnExit.Image = Properties.Resources.fr;
-            btnExit.Location = new Point(312, 388);
+            btnExit.Image = Properties.Resources.exit;
+            btnExit.Location = new Point(276, 391);
             btnExit.Name = "btnExit";
-            btnExit.Size = new Size(198, 51);
+            btnExit.Size = new Size(274, 98);
             btnExit.TabIndex = 3;
-            btnExit.Text = "Exit";
             btnExit.UseVisualStyleBackColor = false;
             btnExit.Click += btnExit_Click;
             btnExit.MouseEnter += btnExit_MouseEnter;
-            btnExit.MouseLeave += btnExit_MouseLeave;
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.BackColor = SystemColors.ActiveCaptionText;
-            label1.FlatStyle = FlatStyle.Popup;
-            label1.Font = new Font("Castellar", 36F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
-            label1.ForeColor = Color.DeepPink;
-            label1.Location = new Point(170, 25);
-            label1.Name = "label1";
-            label1.Size = new Size(507, 73);
-            label1.TabIndex = 4;
-            label1.Text = "BATTLE GAME";
-            label1.TextAlign = ContentAlignment.TopRight;
             // 
             // MenuForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(853, 530);
-            Controls.Add(label1);
             Controls.Add(btnExit);
             Controls.Add(btnLogout);
             Controls.Add(btnPlay);
@@ -124,7 +122,6 @@
             Load += MenuForm_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
-            PerformLayout();
         }
 
         #endregion
@@ -133,6 +130,5 @@
         private Button btnPlay;
         private Button btnLogout;
         private Button btnExit;
-        private Label label1;
     }
 }

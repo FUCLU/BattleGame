@@ -21,7 +21,6 @@ CREATE TABLE IF NOT EXISTS otp_tokens (
     id         SERIAL PRIMARY KEY,
     email      VARCHAR(255) NOT NULL,
     code_hash  VARCHAR(255) NOT NULL,
-    purpose    VARCHAR(20)  NOT NULL, -- 'REGISTER' hoặc 'RESET_PASSWORD'
     expires_at TIMESTAMP    NOT NULL,
     used       BOOLEAN      NOT NULL DEFAULT false,
     attempts   INTEGER      NOT NULL DEFAULT 0,

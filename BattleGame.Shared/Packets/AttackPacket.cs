@@ -7,7 +7,7 @@ namespace BattleGame.Shared.Packets
     public class AttackPacket : Packet
     {
         public int PlayerId { get; set; }
-        public AttackPacket() : base(PacketTypes.Attack)
+        public AttackPacket() : base(PacketType.Attack)
         {
         }
     }

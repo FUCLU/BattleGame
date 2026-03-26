@@ -6,7 +6,12 @@ using System.Threading.Tasks;
 
 namespace BattleGame.Shared.Packets
 {
-    internal class ForgotPasswordPacket
+    public class ForgotPasswordPacket : Packet
     {
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public ForgotPasswordPacket() : base(PacketType.ForgotPassword)
+        {
+        }
     }
 }

@@ -30,7 +30,6 @@ namespace BattleGame.Server.Database
                     id         SERIAL PRIMARY KEY,
                     email      VARCHAR(255) NOT NULL,
                     code_hash  VARCHAR(255) NOT NULL,
-                    purpose    VARCHAR(20)  NOT NULL,
                     expires_at TIMESTAMP    NOT NULL,
                     used       BOOLEAN      NOT NULL DEFAULT false,
                     attempts   INTEGER      NOT NULL DEFAULT 0,
