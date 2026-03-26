@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace BattleGame.Shared.Packets
 {
-    internal class OtpPacket
+    public class OtpPacket : Packet
     {
+        public string Email { get; set; }
+        public OtpPacket() : base(PacketType.OtpSend)
+        {
+        }
     }
 }

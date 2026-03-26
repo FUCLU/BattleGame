@@ -6,6 +6,6 @@ namespace BattleGame.Shared.Packets
 {
     public class MatchRequestPacket : Packet
     {
-        public MatchRequestPacket() : base(PacketTypes.MatchRequest) { }
+        public MatchRequestPacket() : base(PacketType.MatchRequest) { }
     }
 }

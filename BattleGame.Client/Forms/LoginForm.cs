@@ -1,22 +1,45 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using BattleGame.Client.Managers;
+using BattleGame.Shared.Packets;
 
 namespace BattleGame.Client.Forms
 {
     public partial class LoginForm : Form
     {
+        public string email = "";
+        public int countdown = 60;
 
         public LoginForm()
         {
             InitializeComponent();
+            label2.Hide();
+            label1.Hide();
+            label3.Hide();
+            panel1.Hide();
+            label5.Hide();
+            label6.Hide();
+            label7.Hide();
+            label8.Hide();
+            panel2.Hide();
+            label9.Hide();
+            label10.Hide();
+            label14.Hide();
+            label13.Hide();
+            panel3.Hide();
+            label16.Hide();
+            label17.Hide();
         }
-        private string userTest = "test", pwTest = "test", u = "a", p = "a";
+
         private void SetRoundedPanel(Panel panel, int radius)
         {
             GraphicsPath path = new GraphicsPath();
@@ -48,58 +71,9 @@ namespace BattleGame.Client.Forms
             return path;
         }
 
-
-
         private void pnlLogin_Paint_1(object sender, PaintEventArgs e)
         {
             e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-            e.Graphics.InterpolationMode = InterpolationMode.HighQualityBicubic;
-            var rect = new Rectangle(0, 0, pnlLogin.Width - 1, pnlLogin.Height - 1);
-            using (var backgroundBrush = new LinearGradientBrush(
-                pnlLogin.ClientRectangle,
-                Color.FromArgb(45, 45, 55),
-                Color.FromArgb(20, 20, 35),
-                90f))
-            {
-
-                e.Graphics.FillRectangle(backgroundBrush, pnlLogin.ClientRectangle);
-            }
-            int glowWidth = 8;
-            Color glowColor = Color.Cyan;
-
-            for (int i = glowWidth; i >= 1; i--)
-            {
-                int alpha = (int)(180 * (i / (float)glowWidth));
-                using (Pen glowPen = new Pen(Color.FromArgb(alpha, glowColor), i * 2f))
-                {
-                    glowPen.StartCap = LineCap.Round;
-                    glowPen.EndCap = LineCap.Round;
-                    e.Graphics.DrawPath(glowPen, GetRoundPath(rect, 20));
-                }
-            }
-            using (Pen borderPen = new Pen(Color.FromArgb(220, 0, 255, 255), 3f))
-            {
-                borderPen.StartCap = LineCap.Round;
-                borderPen.EndCap = LineCap.Round;
-                e.Graphics.DrawPath(borderPen, GetRoundPath(rect, 20));
-            }
-            using (var fillBrush = new LinearGradientBrush(
-                pnlLogin.ClientRectangle,
-                Color.FromArgb(80, 35, 45, 55),
-                Color.FromArgb(140, 15, 25, 40),
-                90f))
-            {
-                e.Graphics.FillPath(fillBrush, GetRoundPath(rect, 20));
-            }
-
-            using (var innerGlow = new LinearGradientBrush(
-                pnlLogin.ClientRectangle,
-                Color.FromArgb(60, 0, 180, 255),
-                Color.FromArgb(0, 0, 80, 120),
-                LinearGradientMode.ForwardDiagonal))
-            {
-                e.Graphics.FillPath(innerGlow, GetRoundPath(rect, 20));
-            }
         }
 
         private void checkShowpw_CheckedChanged(object sender, EventArgs e)
@@ -113,19 +87,22 @@ namespace BattleGame.Client.Forms
                 txtPassword.UseSystemPasswordChar = true;
             }
         }
+
+
         public Boolean isvalid()
         {
+            bool check1 = true;
             if (string.IsNullOrEmpty(txtUsername.Text))
             {
-                MessageBox.Show("Vui lòng nhập username!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
+                label2.Show();
+                check1 = false;
             }
-            else if (string.IsNullOrEmpty(txtPassword.Text))
+            if (string.IsNullOrEmpty(txtPassword.Text))
             {
-                MessageBox.Show("Vui lòng nhập password!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return false;
+                label1.Show();
+                check1 = false;
             }
-            return true;
+            return check1;
         }
 
         private void pictureBox1_Click(object sender, EventArgs e)
@@ -135,50 +112,278 @@ namespace BattleGame.Client.Forms
 
         private void btnLogin_Click(object sender, EventArgs e)
         {
-
-
+            label2.Hide();
+            label1.Hide();
             if (isvalid())
             {
-                if (txtUsername.Text == userTest && txtPassword.Text == pwTest || txtUsername.Text == u && txtPassword.Text == p)
+                try
                 {
-                    MessageBox.Show("Đăng nhập thành công!", "Information", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                    MenuForm menu = new MenuForm();
-
-                    // Khi đóng MenuForm thì tắt hẳn chương trình 
-                    menu.FormClosed += (s, args) => Application.Exit();
-
-                    menu.Show();
-                    this.Hide();
+                    var result = NetworkManager.Instance.Login(new LoginPacket
+                    {
+                        Username = txtUsername.Text,
+                        Password = txtPassword.Text
+                    });
+                    if (result.Success) {
+                        MenuForm menu = new MenuForm();
+                        menu.FormClosed += (s, args) => Application.Exit();
+                        menu.Show();
+                        this.Hide();
+                    }
+                    else
+                    {
+                        label1.Hide();
+                        label2.Hide();
+                        label3.Show();
+                    }
                 }
-                else
+                catch (IOException ioEx)
                 {
-                    MessageBox.Show("Sai mật khẩu hoặc username!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    
+                }
+                catch (Exception ex)
+                {
+                    
                 }
             }
-
-        }
-
-        private void btnLogin_MouseEnter(object sender, EventArgs e)
-        {
-
-
-            btnLogin.BackColor = Color.DeepPink;
-        }
-
-        private void btnLogin_MouseLeave(object sender, EventArgs e)
-        {
-            btnLogin.BackColor = Color.Gray;
         }
 
         private void btnRegister_Click(object sender, EventArgs e)
         {
-
+            pnlLogin.Hide();
+            label5.Hide();
+            label6.Hide();
+            label7.Hide();
+            label8.Hide();
+            textBox1.Clear();
+            textBox2.Clear();
+            textBox3.Clear();
+            textBox4.Clear();
+            panel1.Show();
         }
 
         private void label2_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void pictureBox4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            textBox5.Clear();
+            textBox6.Clear();
+            label9.Hide();
+            label10.Hide();
+            panel2.Show();
+            pnlLogin.Hide();
+            email = "";
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        public Boolean isvalid2()
+        {
+            bool check1 = true;
+            if (string.IsNullOrEmpty(textBox1.Text))
+            {
+                label5.Show();
+                check1 = false;
+            }
+            if (string.IsNullOrEmpty(textBox2.Text))
+            {
+                label6.Show();
+                check1 = false;
+            }
+            if (textBox3.Text != textBox2.Text)
+            {
+                label7.Show();
+                check1 = false;
+            }
+            if (string.IsNullOrEmpty(textBox4.Text) || !Regex.IsMatch(textBox4.Text, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            {
+                label8.Show();
+                check1 = false;
+            }
+            return check1;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            label16.Hide(); 
+            label17.Hide();
+            label5.Hide();
+            label6.Hide();
+            label7.Hide();
+            label8.Hide();
+            if (isvalid2())
+            {
+                var result = NetworkManager.Instance.Register(new RegisterPacket
+                {
+                    Username = textBox1.Text,
+                    Password = textBox2.Text,
+                    Email = textBox4.Text
+                });
+                if (result.Success)
+                {
+                    panel1.Hide();
+                    label1.Hide();
+                    label2.Hide();
+                    label3.Hide();
+                    txtUsername.Clear();
+                    txtPassword.Clear();
+                    pnlLogin.Show();
+                }
+                else if (result.Message == "Tên đăng nhập đã tồn tại!")
+                {
+                    label16.Show();
+                }
+                else if (result.Message == "Email đã được sử dụng!")
+                {
+                    label17.Show();
+                }
+            }
+        }
+
+        private void textBox5_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            label9.Hide();
+            label10.Hide();
+            if (string.IsNullOrEmpty(textBox5.Text) || !Regex.IsMatch(textBox5.Text, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            {
+                label9.Show();
+            }
+            else
+            {
+                email = textBox5.Text;
+                NetworkManager.Instance.Otpsend(new OtpPacket
+                {
+                    Email = email
+                });
+                button2.Enabled = false;
+                countdown = 60;
+                button2.Text = $"({countdown})";
+                timer1.Start();
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            panel2.Hide();
+            label1.Hide();
+            label2.Hide();
+            label3.Hide();
+            txtUsername.Clear();
+            txtPassword.Clear();
+            pnlLogin.Show();
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            label9.Hide();
+            label10.Hide();
+            if (string.IsNullOrEmpty(textBox6.Text))
+            {
+                label10.Show();
+            }
+            else
+            {
+                var result = NetworkManager.Instance.VerifyOtp(new OtpVerifyPacket
+                {
+                    Email = email,
+                    OtpCode = textBox6.Text
+                });
+                if (!result.Success)
+                {
+                    label10.Show();
+                    return;
+                }
+                label13.Hide();
+                label14.Hide();
+                textBox7.Clear();
+                textBox8.Clear();
+                panel3.Show();
+                panel2.Hide();
+            }
+        }
+
+        private void label12_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button6_Click(object sender, EventArgs e)
+        {
+            panel3.Hide();
+            label1.Hide();
+            label2.Hide();
+            label3.Hide();
+            txtUsername.Clear();
+            txtPassword.Clear();
+            pnlLogin.Show();
+        }
+
+        private void button5_Click(object sender, EventArgs e)
+        {
+            label14.Hide();
+            label13.Hide();
+            if (string.IsNullOrEmpty(textBox8.Text))
+            {
+                label14.Show();
+            }
+            else if (textBox7.Text != textBox8.Text)
+            {
+                label13.Show();
+            }
+            else
+            {
+                var result = NetworkManager.Instance.Forgotpass(new ForgotPasswordPacket
+                {
+                    Email = email,
+                    Password = textBox8.Text
+                });
+                if (!result.Success)
+                {
+                    return;
+                }
+                panel3.Hide();
+                label1.Hide();
+                label2.Hide();
+                label3.Hide();
+                txtUsername.Clear();
+                txtPassword.Clear();
+                pnlLogin.Show();
+            }
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            countdown--;
+            if (countdown > 0)
+            {
+                button2.Text = $"({countdown})";
+            }
+            else
+            {
+                timer1.Stop();
+                button2.Enabled = true;
+                button2.Text = "Gửi";
+            }
         }
     }
 }
