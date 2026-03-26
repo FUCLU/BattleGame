@@ -3,8 +3,8 @@ using BattleGame.Server.Config;
 using BattleGame.Server.Database;
 using BattleGame.Server.Services;
 using BattleGame.Server.Logging;
+using BattleGame.Server.Network;
 
-// ── Đọc config từ appsettings.json ──
 var config = new ConfigurationBuilder()
     .SetBasePath(AppContext.BaseDirectory)
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
@@ -13,37 +13,30 @@ var config = new ConfigurationBuilder()
     .Build();
 
 var serverConfig = config.GetSection("Server").Get<ServerConfig>() ?? new ServerConfig();
-var connStr = config.GetConnectionString("DefaultConnection")
-                   ?? throw new Exception("Thiếu DefaultConnection trong appsettings.json");
-var smtpConfig = config.GetSection("Smtp").Get<SmtpConfig>() ?? new SmtpConfig();
+serverConfig.Load();  
 
-// Override bằng env var khi chạy trong Docker
-if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DB_CONNECTION")))
-    connStr = Environment.GetEnvironmentVariable("DB_CONNECTION")!;
-
-if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("SMTP_HOST")))
+try
 {
-    smtpConfig.Host = Environment.GetEnvironmentVariable("SMTP_HOST")!;
-    smtpConfig.Port = int.Parse(Environment.GetEnvironmentVariable("SMTP_PORT") ?? "1025");
-    smtpConfig.Username = Environment.GetEnvironmentVariable("SMTP_USERNAME") ?? "";
-    smtpConfig.Password = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? "";
-    smtpConfig.EnableSsl = bool.Parse(Environment.GetEnvironmentVariable("SMTP_ENABLE_SSL") ?? "false");
+    DbInitializer.Initialize(serverConfig.ConnectionString);
+}
+catch (Exception dbEx)
+{
+    ServerLogger.Error($"[FATAL] Database init failed: {dbEx.Message}");
+    if (dbEx.StackTrace != null)
+        ServerLogger.Error(dbEx.StackTrace);
+    throw;
 }
 
-// ── Khởi tạo DB ──
-ServerLogger.Info("Initializing database...");
-DbInitializer.Initialize(connStr);
-ServerLogger.Info("Database ready.");
-
-// ── Khởi tạo OTP stack ──
-var emailService = new EmailService(smtpConfig);
-var otpRepository = new OtpRepository(connStr);
-var otpService = new OtpService(otpRepository, emailService);
-
-// ── Start server ──
-ServerLogger.Info("BattleGame Server Starting...");
-var server = new GameServer(serverConfig.Port, connStr, otpService);
-ServerLogger.Info($"Server listening on port {serverConfig.Port}");
-server.Start();
-
+try
+{
+    var server = new GameServer(serverConfig);
+    server.Start();
+}
+catch (Exception srvEx)
+{
+    ServerLogger.Error($"[FATAL] Server start failed: {srvEx.Message}");
+    if (srvEx.StackTrace != null)
+        ServerLogger.Error(srvEx.StackTrace);
+    throw;
+}
 await Task.Delay(Timeout.Infinite);

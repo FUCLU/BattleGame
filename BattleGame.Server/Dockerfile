@@ -2,7 +2,6 @@
 # Dùng .NET SDK để biên dịch source code
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-
 # Bước 1: Copy file .csproj trước
 # → Docker cache layer này, chỉ restore lại khi .csproj thay đổi
 # → Giúp build nhanh hơn ở những lần sau
@@ -26,6 +25,7 @@ RUN dotnet publish BattleGame.Server/BattleGame.Server.csproj \
 # ── STAGE 2: RUNTIME ─────────────────────────────────────────
 # Chỉ dùng .NET Runtime (nhỏ hơn SDK ~3 lần), không có compiler
 FROM mcr.microsoft.com/dotnet/runtime:8.0 AS runtime
+RUN apt-get update && apt-get install -y libgssapi-krb5-2 && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 
 # Tạo thư mục chứa log server

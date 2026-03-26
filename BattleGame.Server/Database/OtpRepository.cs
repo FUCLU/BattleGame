@@ -8,36 +8,34 @@ namespace BattleGame.Server.Database
 
         public OtpRepository(string connectionString) => _conn = connectionString;
 
-        public virtual void Save(string email, string codeHash, string purpose)
+        public virtual void Save(string email, string codeHash)
         {
             using var conn = new NpgsqlConnection(_conn);
             conn.Open();
             var sql = @"
-                DELETE FROM otp_tokens WHERE email=@e AND purpose=@p;
-                INSERT INTO otp_tokens (email, code_hash, purpose, expires_at)
-                VALUES (@e, @h, @p, @exp);";
+                DELETE FROM otp_tokens WHERE email=@e;
+                INSERT INTO otp_tokens (email, code_hash, expires_at)
+                VALUES (@e, @h, @exp);";
             using var cmd = new NpgsqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("e", email);
             cmd.Parameters.AddWithValue("h", codeHash);
-            cmd.Parameters.AddWithValue("p", purpose);
-            cmd.Parameters.AddWithValue("exp", DateTime.UtcNow.AddMinutes(5));
+            cmd.Parameters.AddWithValue("exp", DateTime.UtcNow.AddMinutes(1));
             cmd.ExecuteNonQuery();
         }
 
         public virtual (int id, string codeHash, int attempts)?
-            FindValid(string email, string purpose)
+            FindValid(string email)
         {
             using var conn = new NpgsqlConnection(_conn);
             conn.Open();
             var sql = @"
                 SELECT id, code_hash, attempts
                 FROM otp_tokens
-                WHERE email=@e AND purpose=@p
+                WHERE email=@e
                   AND used=false AND expires_at > NOW()
                 ORDER BY created_at DESC LIMIT 1";
             using var cmd = new NpgsqlCommand(sql, conn);
             cmd.Parameters.AddWithValue("e", email);
-            cmd.Parameters.AddWithValue("p", purpose);
             using var r = cmd.ExecuteReader();
             if (!r.Read()) return null;
             return (r.GetInt32(0), r.GetString(1), r.GetInt32(2));

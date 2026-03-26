@@ -8,7 +8,7 @@ namespace BattleGame.Shared.Packets
     {
         public string Username { get; set; }
         public string Password { get; set; }
-        public LoginPacket() : base(PacketTypes.Login)
+        public LoginPacket() : base(PacketType.Login)
         {
         }
     }
