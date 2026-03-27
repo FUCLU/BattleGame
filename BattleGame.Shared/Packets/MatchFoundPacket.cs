@@ -8,7 +8,7 @@ namespace BattleGame.Shared.Packets
     {
         public int Player1Id { get; set; }
         public int Player2Id { get; set; }
-        public MatchFoundPacket() : base(PacketTypes.MatchFound)
+        public MatchFoundPacket() : base(PacketType.MatchFound)
         {
         }
     }

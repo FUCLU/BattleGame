@@ -8,7 +8,7 @@ namespace BattleGame.Shared.Packets
     {
         public int Player1HP { get; set; }
         public int Player2HP { get; set; }
-        public GameStatePacket() : base(PacketTypes.GameState)
+        public GameStatePacket() : base(PacketType.GameState)
         {
         }
     }

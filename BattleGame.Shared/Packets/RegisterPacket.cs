@@ -6,7 +6,13 @@ using System.Threading.Tasks;
 
 namespace BattleGame.Shared.Packets
 {
-    internal class RegisterPacket
+    public class RegisterPacket : Packet
     {
+        public string Username { get; set; }
+        public string Password { get; set; }
+        public string Email { get; set; }
+        public RegisterPacket() : base(PacketType.Register)
+        {
+        }
     }
 }

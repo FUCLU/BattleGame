@@ -9,7 +9,7 @@ namespace BattleGame.Shared.Packets
         public int PlayerId { get; set; }
         public float X { get; set; }
         public float Y { get; set; }
-        public MovePacket() : base(PacketTypes.Move)
+        public MovePacket() : base(PacketType.Move)
         {
         }
     }

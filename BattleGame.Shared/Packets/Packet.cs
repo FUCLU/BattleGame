@@ -6,8 +6,8 @@ namespace BattleGame.Shared.Packets
 {
     public abstract class Packet    
     {
-        public PacketTypes Type { get; set; }
-        protected Packet(PacketTypes type)
+        public PacketType Type { get; set; }
+        protected Packet(PacketType type)
         {
             Type = type;
         }

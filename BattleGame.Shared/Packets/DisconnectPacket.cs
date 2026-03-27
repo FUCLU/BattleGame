@@ -6,7 +6,7 @@ namespace BattleGame.Shared.Packets
 {
     public class DisconnectPacket : Packet
     {
-        public DisconnectPacket() : base(PacketTypes.Disconnect)
+        public DisconnectPacket() : base(PacketType.Disconnect)
         {
         }
     }

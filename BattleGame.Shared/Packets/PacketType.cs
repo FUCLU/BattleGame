@@ -1,6 +1,6 @@
 ﻿namespace BattleGame.Shared.Packets
 {
-    public enum PacketTypes
+    public enum PacketType
     {
         Login = 1,
         LoginResult = 2,
