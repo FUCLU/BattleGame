@@ -9,7 +9,8 @@ namespace BattleGame.Shared.Packets
     public class OtpVerifyPacket : Packet
     {
         public string Email { get; set; }
-        public string OtpCode { get; set; }
+        public string Code { get; set; }
+        public bool isReset { get; set; } 
         public OtpVerifyPacket() : base(PacketType.OtpVerify)
         {
         }

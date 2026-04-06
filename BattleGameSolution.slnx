@@ -1,5 +1,6 @@
 <Solution>
   <Project Path="BattleGame.Client/BattleGame.Client.csproj" />
+  <Project Path="BattleGame.LoadBalancer/BattleGame.LoadBalancer.csproj" Id="61375318-6d29-400f-b2bc-47d8d0c44c5a" />
   <Project Path="BattleGame.Server/BattleGame.Server.csproj" />
   <Project Path="BattleGame.Shared/BattleGame.Shared.csproj" />
   <Project Path="BattleGame.Test/BattleGame.Test.csproj" />

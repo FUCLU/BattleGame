@@ -5,15 +5,20 @@ using BattleGame.Server.Services;
 using BattleGame.Server.Logging;
 using BattleGame.Server.Network;
 
+var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+
 var config = new ConfigurationBuilder()
     .SetBasePath(AppContext.BaseDirectory)
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: false)
-    .AddJsonFile("appsettings.Production.json", optional: true, reloadOnChange: false)
+    .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: false)
     .AddEnvironmentVariables()
     .Build();
 
 var serverConfig = config.GetSection("Server").Get<ServerConfig>() ?? new ServerConfig();
-serverConfig.Load();  
+serverConfig.Load(config);
+
+Console.WriteLine($"[INFO] Environment: {environment}");
+Console.WriteLine($"[INFO] ConnectionString: {serverConfig.ConnectionString}");
 
 try
 {
@@ -30,7 +35,7 @@ catch (Exception dbEx)
 try
 {
     var server = new GameServer(serverConfig);
-    server.Start();
+    await server.StartAsync();
 }
 catch (Exception srvEx)
 {

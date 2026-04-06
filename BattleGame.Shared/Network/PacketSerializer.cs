@@ -1,8 +1,7 @@
-﻿using System.Net.Sockets;
-using System.Text.Json;
+﻿using System.Text.Json;
 using BattleGame.Shared.Packets;
 
-namespace BattleGame.Shared.Packets
+namespace BattleGame.Shared.Network
 {
     public static class PacketSerializer
     {
@@ -14,17 +13,26 @@ namespace BattleGame.Shared.Packets
 
         public static string Serialize(Packet packet)
         {
-            string json = packet.Type switch
+            return packet.Type switch
             {
                 PacketType.Login => JsonSerializer.Serialize((LoginPacket)packet, options),
                 PacketType.LoginResult => JsonSerializer.Serialize((LoginResultPacket)packet, options),
                 PacketType.Register => JsonSerializer.Serialize((RegisterPacket)packet, options),
-                PacketType.OtpSend => JsonSerializer.Serialize((OtpPacket)packet, options),
+                PacketType.OtpSent => JsonSerializer.Serialize((OtpPacket)packet, options),
                 PacketType.OtpVerify => JsonSerializer.Serialize((OtpVerifyPacket)packet, options),
                 PacketType.ForgotPassword => JsonSerializer.Serialize((ForgotPasswordPacket)packet, options),
+                PacketType.ResetPassword => JsonSerializer.Serialize((ResetPasswordPacket)packet, options),
+                PacketType.MatchRequest => JsonSerializer.Serialize((MatchRequestPacket)packet, options),
+                PacketType.MatchFound => JsonSerializer.Serialize((MatchFoundPacket)packet, options),
+                PacketType.SelectCharacter => JsonSerializer.Serialize((SelectionCharacterPacket)packet, options),
+                PacketType.Move => JsonSerializer.Serialize((MovePacket)packet, options),
+                PacketType.Attack => JsonSerializer.Serialize((AttackPacket)packet, options),
+                PacketType.GameState => JsonSerializer.Serialize((GameStatePacket)packet, options),
+                PacketType.HealthUpdate => JsonSerializer.Serialize((HealthUpdatePacket)packet, options),
+                PacketType.GameOver => JsonSerializer.Serialize((GameOverPacket)packet, options),
+                PacketType.Disconnect => JsonSerializer.Serialize((DisconnectPacket)packet, options),
                 _ => JsonSerializer.Serialize(packet, options)
             };
-            return json;
         }
 
         public static Packet Deserialize(string json)
@@ -32,15 +40,26 @@ namespace BattleGame.Shared.Packets
             using var doc = JsonDocument.Parse(json);
             var typeValue = doc.RootElement.GetProperty("type").GetInt32();
             var type = (PacketType)typeValue;
+
             return type switch
             {
                 PacketType.Login => JsonSerializer.Deserialize<LoginPacket>(json, options)!,
                 PacketType.LoginResult => JsonSerializer.Deserialize<LoginResultPacket>(json, options)!,
                 PacketType.Register => JsonSerializer.Deserialize<RegisterPacket>(json, options)!,
-                PacketType.OtpSend => JsonSerializer.Deserialize<OtpPacket>(json, options)!,
+                PacketType.OtpSent => JsonSerializer.Deserialize<OtpPacket>(json, options)!,
                 PacketType.OtpVerify => JsonSerializer.Deserialize<OtpVerifyPacket>(json, options)!,
                 PacketType.ForgotPassword => JsonSerializer.Deserialize<ForgotPasswordPacket>(json, options)!,
-                _ => throw new NotSupportedException($"Chua ho tro")
+                PacketType.ResetPassword => JsonSerializer.Deserialize<ResetPasswordPacket>(json, options)!,
+                PacketType.MatchRequest => JsonSerializer.Deserialize<MatchRequestPacket>(json, options)!,
+                PacketType.MatchFound => JsonSerializer.Deserialize<MatchFoundPacket>(json, options)!,
+                PacketType.SelectCharacter => JsonSerializer.Deserialize<SelectionCharacterPacket>(json, options)!,
+                PacketType.Move => JsonSerializer.Deserialize<MovePacket>(json, options)!,
+                PacketType.Attack => JsonSerializer.Deserialize<AttackPacket>(json, options)!,
+                PacketType.GameState => JsonSerializer.Deserialize<GameStatePacket>(json, options)!,
+                PacketType.HealthUpdate => JsonSerializer.Deserialize<HealthUpdatePacket>(json, options)!,
+                PacketType.GameOver => JsonSerializer.Deserialize<GameOverPacket>(json, options)!,
+                PacketType.Disconnect => JsonSerializer.Deserialize<DisconnectPacket>(json, options)!,
+                _ => throw new NotSupportedException($"Chưa hỗ trợ packet type: {type}")
             };
         }
     }

@@ -35,7 +35,7 @@ RUN mkdir -p /app/logs
 COPY --from=build /app/publish .
 
 # Khai báo port server lắng nghe (Client kết nối vào đây)
-EXPOSE 9000
+EXPOSE 9001
 
 # Lệnh chạy khi container khởi động
 ENTRYPOINT ["dotnet", "BattleGame.Server.dll"]

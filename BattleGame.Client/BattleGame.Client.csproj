@@ -9,15 +9,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Assets\Background\login.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Assets\Background\login.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\BattleGame.Shared\BattleGame.Shared.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Assets\Background\" />
     <Folder Include="Assets\Characters\" />
     <Folder Include="Assets\Sounds\BGM\" />
     <Folder Include="Assets\Sounds\SFX\" />
-    <Folder Include="Assets\UI\" />
   </ItemGroup>
 
   <ItemGroup>

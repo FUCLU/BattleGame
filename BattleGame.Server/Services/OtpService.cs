@@ -28,6 +28,7 @@ namespace BattleGame.Server.Services
             }
             catch (Exception ex)
             {
+                ServerLogger.Error($"SendOtp failed: {ex.Message}");
                 return false;
             }
         }

@@ -1,6 +1,5 @@
 ﻿using BattleGame.Server.Config;
 using BattleGame.Server.Database;
-using BattleGame.Server.Logging;
 using BattleGame.Server.Services;
 using System.Net;
 using System.Net.Sockets;
@@ -10,30 +9,38 @@ namespace BattleGame.Server.Network
     public class GameServer
     {
         private readonly ServerConfig _config;
+
         public GameServer(ServerConfig config)
         {
             _config = config;
         }
-        public void Start()
+
+        public async Task StartAsync()
         {
             var listener = new TcpListener(IPAddress.Any, _config.Port);
             listener.Start();
+            Console.WriteLine($"[INFO] Server started on port {_config.Port}");
+
             var userRepo = new UserRepository(_config.ConnectionString);
             var otpRepo = new OtpRepository(_config.ConnectionString);
             var emailSvc = new EmailService(_config.Smtp);
             var otpSvc = new OtpService(otpRepo, emailSvc);
             var authSvc = new AuthService(userRepo);
+
+            Console.WriteLine("[INFO] Services initialized, waiting for connections...");
+
             while (true)
             {
                 try
                 {
-                    TcpClient client = listener.AcceptTcpClient();
+                    TcpClient client = await listener.AcceptTcpClientAsync();
                     var handler = new ClientHandler(client, authSvc, otpSvc, userRepo);
-                    Task.Run(() => handler.Handle());
+                    Console.WriteLine($"[INFO] Client connected: {client.Client.RemoteEndPoint}");
+                    _ = Task.Run(() => handler.HandleAsync()); 
                 }
                 catch (Exception ex)
                 {
-                    ServerLogger.Error($"Accept Error: {ex.Message}");
+                    Console.WriteLine($"[ERROR] Accept Error: {ex.Message}");
                 }
             }
         }

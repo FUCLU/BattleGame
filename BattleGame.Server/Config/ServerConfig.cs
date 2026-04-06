@@ -7,13 +7,9 @@ namespace BattleGame.Server.Config
         public int Port { get; private set; }
         public string ConnectionString { get; private set; } = string.Empty;
         public SmtpConfig Smtp { get; private set; } = new();
-        public void Load()
+
+        public void Load(IConfiguration config)  
         {
-            var config = new ConfigurationBuilder()
-                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
-                .AddEnvironmentVariables()
-                .Build();
             Port = config.GetValue<int?>("SERVER_PORT")
                 ?? config.GetValue<int?>("Server:Port")
                 ?? 9000;
