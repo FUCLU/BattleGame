@@ -7,8 +7,8 @@ namespace BattleGame.Server.Network
     {
         public ServerSocket(TcpClient acceptedClient)
         {
-            client = acceptedClient;
-            stream = acceptedClient.GetStream();
+            _client = acceptedClient;
+            _stream = acceptedClient.GetStream();
         }
     }
 }

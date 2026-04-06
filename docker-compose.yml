@@ -37,7 +37,7 @@
     container_name: battlegame_server
     restart: unless-stopped
     ports:
-      - "${SERVER_PORT}:9000"
+      - "${SERVER_PORT}:9001"
     environment:
       - DB_CONNECTION=Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       - SERVER_PORT=${SERVER_PORT}

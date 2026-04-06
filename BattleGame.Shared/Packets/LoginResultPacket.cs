@@ -8,6 +8,7 @@ namespace BattleGame.Shared.Packets
     {
         public bool Success { get; set; }
         public string Message { get; set; }
+        public int UserId { get; set; }
         public LoginResultPacket() : base(PacketType.LoginResult)
         {
         }

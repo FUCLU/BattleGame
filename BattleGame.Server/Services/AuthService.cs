@@ -48,6 +48,7 @@ namespace BattleGame.Server.Services
             }
             catch (Exception ex)
             {
+                ServerLogger.Error($"Register failed: {ex.Message}");
                 return RegisterResult.Failed;
             }
         }

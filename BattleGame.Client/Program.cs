@@ -1,17 +1,29 @@
 using BattleGame.Client.Forms;
+using BattleGame.Client.Managers;
+
 namespace BattleGame.Client
 {
     internal static class Program
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
         [STAThread]
-        static void Main()
+        static async Task Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
+
+            try
+            {
+                await NetworkManager.Instance.ConnectAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    $"Không thể kết nối Server!\n{ex.Message}",
+                    "Lỗi kết nối",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                return; // Thoát app nếu không kết nối được
+            }
+
             Application.Run(new LoginForm());
         }
     }

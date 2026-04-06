@@ -1,22 +1,32 @@
 ﻿using System.Net.Sockets;
 using BattleGame.Client.Config;
 using BattleGame.Shared.Network;
+using BattleGame.Shared.Packets;
 
 namespace BattleGame.Client.Network
 {
     public class ClientSocket : BaseSocket
     {
-        private readonly ClientConfig config;
-
-        public ClientSocket(ClientConfig _config)
+        private readonly ClientConfig _config;
+        public ClientSocket(ClientConfig config)
         {
-            config = _config;
+            _config = config;
         }
-        public void Connect()
+        public async Task ConnectAsync()
         {
-            client = new TcpClient();
-            client.Connect(config.ServerIp, config.ServerPort);
-            stream = client.GetStream();
+            _client = new TcpClient();
+            await _client.ConnectAsync(_config.ServerIP, _config.ServerPort);
+            _stream = _client.GetStream();
+        }
+        public async Task SendPacketAsync(Packet packet)
+        {
+            string json = PacketSerializer.Serialize(packet);
+            await SendAsync(json);
+        }
+        public async Task<Packet> ReceivePacketAsync()
+        {
+            string json = await ReceiveAsync();
+            return PacketSerializer.Deserialize(json);
         }
     }
 }

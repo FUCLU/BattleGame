@@ -9,7 +9,6 @@ namespace BattleGame.Shared.Packets
     public class ForgotPasswordPacket : Packet
     {
         public string Email { get; set; }
-        public string Password { get; set; }
         public ForgotPasswordPacket() : base(PacketType.ForgotPassword)
         {
         }

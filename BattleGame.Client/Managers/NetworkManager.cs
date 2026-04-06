@@ -9,84 +9,65 @@ namespace BattleGame.Client.Managers
     {
         private static NetworkManager? _instance;
         public static NetworkManager Instance => _instance ??= new NetworkManager();
+
         private readonly ClientSocket _socket;
-        private bool _connected = false;
+
         private NetworkManager()
         {
             var cfg = new ClientConfig();
             _socket = new ClientSocket(cfg);
-            Connect();
         }
 
-        public void Connect()
+        // Kết nối tới Server
+        public async Task ConnectAsync()
         {
-            if (_connected) return;
-            _socket.Connect();
-            _connected = true;
+            if (_socket.IsConnected()) return;
+            await _socket.ConnectAsync();
         }
 
         public bool IsConnected => _socket.IsConnected();
 
-        public LoginResultPacket Login(LoginPacket lg)
+        // Gửi packet bất kỳ
+        public async Task SendAsync(Packet packet)
         {
-            SendLG(lg);
-            return (LoginResultPacket)Receive();
+            await _socket.SendPacketAsync(packet);
         }
 
-        public LoginResultPacket Register(RegisterPacket lg)
+        // Nhận packet bất kỳ
+        public async Task<Packet> ReceiveAsync()
         {
-            SendRG(lg);
-            return (LoginResultPacket)Receive();
+            return await _socket.ReceivePacketAsync();
         }
 
-        public void Otpsend(OtpPacket lg)
+        // Auth
+        public async Task<LoginResultPacket> LoginAsync(LoginPacket packet)
         {
-            SendOTP(lg);
-            return;
+            await SendAsync(packet);
+            return (LoginResultPacket)await ReceiveAsync();
         }
 
-        public LoginResultPacket Forgotpass(ForgotPasswordPacket lg)
+        public async Task<OtpPacket> RegisterAsync(RegisterPacket packet)
         {
-            SendFG(lg);
-            return (LoginResultPacket)Receive();
+            await SendAsync(packet);
+            return (OtpPacket)await ReceiveAsync();
         }
 
-        public LoginResultPacket VerifyOtp(OtpVerifyPacket lg)
+        public async Task<OtpPacket> ForgotPasswordAsync(ForgotPasswordPacket packet)
         {
-            SendVRF(lg);
-            return (LoginResultPacket)Receive();
+            await SendAsync(packet);
+            return (OtpPacket)await ReceiveAsync();
         }
 
-        private void SendLG(LoginPacket packet)
+        public async Task<OtpPacket> VerifyOtpAsync(OtpVerifyPacket packet)
         {
-            string json = PacketSerializer.Serialize(packet);
-            _socket.SendMessage(json);
-        }
-        private void SendRG(RegisterPacket packet)
-        {
-            string json = PacketSerializer.Serialize(packet);
-            _socket.SendMessage(json);
-        }
-        private void SendOTP(OtpPacket packet)
-        {
-            string json = PacketSerializer.Serialize(packet);
-            _socket.SendMessage(json);
-        }
-        private void SendFG(ForgotPasswordPacket packet)
-        {
-            string json = PacketSerializer.Serialize(packet);
-            _socket.SendMessage(json);
-        }
-        private void SendVRF(OtpVerifyPacket packet)
-        {
-            string json = PacketSerializer.Serialize(packet);
-            _socket.SendMessage(json);
+            await SendAsync(packet);
+            return (OtpPacket)await ReceiveAsync();
         }
 
-        private Packet Receive()
+        public async Task<OtpPacket> ResetPasswordAsync(ResetPasswordPacket packet)
         {
-            string json = _socket.ReceiveMessage();
-            return PacketSerializer.Deserialize(json);
+            await SendAsync(packet);
+            return (OtpPacket)await ReceiveAsync();
         }
     }
 }

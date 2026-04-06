@@ -4,7 +4,7 @@ namespace BattleGame.Client.Config
 {
     public class ClientConfig
     {
-        public string ServerIp { get; private set; } = GameConstants.SERVER_HOST;
-        public int ServerPort { get; private set; } = GameConstants.SERVER_PORT;
+        public string ServerIP { get; private set; } = GameConstants.ServerHost;
+        public int ServerPort { get; private set; } = GameConstants.ServerPort;
     }
 }

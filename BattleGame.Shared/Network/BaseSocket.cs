@@ -1,52 +1,62 @@
-﻿using BattleGame.Shared.Config;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Text;
 
 namespace BattleGame.Shared.Network
 {
     public abstract class BaseSocket
     {
-        protected TcpClient? client;
-        protected NetworkStream? stream;
-        public bool IsConnected()
+        protected TcpClient? _client;
+        protected NetworkStream? _stream;
+
+        public bool IsConnected() => _client != null && _client.Connected;
+
+        // Gửi packet có length-prefix (bất đồng bộ)
+        public async Task SendAsync(string json)
         {
-            if (client != null && client.Connected) return true;
-            return false;
-        }
-        public void SendMessage(string message)
-        {
-            if (stream == null)
+            if (_stream == null)
                 throw new InvalidOperationException("Stream=null");
-            byte[] data = Encoding.UTF8.GetBytes(message + "\n");
-            stream.Write(data, 0, data.Length);
-            stream.Flush();
+            byte[] data = Encoding.UTF8.GetBytes(json);
+            byte[] length = BitConverter.GetBytes(data.Length);
+            await _stream.WriteAsync(length, 0, 4);
+            await _stream.WriteAsync(data, 0, data.Length);
         }
-        public string ReceiveMessage()
+
+        // Nhận packet có length-prefix (bất đồng bộ)
+        public async Task<string> ReceiveAsync()
         {
-            if (stream == null)
+            if (_stream == null)
                 throw new InvalidOperationException("Stream=null");
-            var buffer = new byte[GameConstants.BUFFER_SIZE];
-            var sb = new StringBuilder();
-            while (true)
+            byte[] lenBuf = new byte[4];
+            await ReadExactAsync(lenBuf, 4);
+            int size = BitConverter.ToInt32(lenBuf, 0);
+
+            byte[] dataBuf = new byte[size];
+            await ReadExactAsync(dataBuf, size);
+            return Encoding.UTF8.GetString(dataBuf);
+        }
+
+        // Đọc đúng số byte yêu cầu
+        private async Task ReadExactAsync(byte[] buffer, int count)
+        {
+            if (_stream == null)
+                throw new InvalidOperationException("Stream=null");
+            int received = 0;
+            while (received < count)
             {
-                int bytesRead = stream.Read(buffer, 0, buffer.Length);
-                if (bytesRead == 0)
-                    throw new IOException("Ket noi dong");
-                string chunk = Encoding.UTF8.GetString(buffer, 0, bytesRead);
-                sb.Append(chunk);
-                if (sb.ToString().Contains('\n'))
-                    break;
+                int n = await _stream.ReadAsync(buffer, received, count - received);
+                if (n == 0) throw new IOException("Mất kết nối");
+                received += n;
             }
-            return sb.ToString().TrimEnd('\n', '\r');
         }
+
         public void Close()
         {
             try
             {
-                stream?.Close();
-                client?.Close();
+                _stream?.Close();
+                _client?.Close();
             }
-            catch {}
+            catch { }
         }
     }
 }
