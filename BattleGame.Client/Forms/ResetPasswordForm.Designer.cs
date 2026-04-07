@@ -36,6 +36,7 @@
             label4 = new Label();
             label3 = new Label();
             label1 = new Label();
+            button2 = new Button();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -71,9 +72,8 @@
             // 
             textBox2.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             textBox2.Location = new Point(26, 160);
-            textBox2.Multiline = true;
             textBox2.Name = "textBox2";
-            textBox2.Size = new Size(266, 37);
+            textBox2.Size = new Size(266, 34);
             textBox2.TabIndex = 6;
             textBox2.UseSystemPasswordChar = true;
             textBox2.TextChanged += textBox2_TextChanged;
@@ -82,9 +82,8 @@
             // 
             textBox1.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             textBox1.Location = new Point(27, 89);
-            textBox1.Multiline = true;
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(266, 37);
+            textBox1.Size = new Size(266, 34);
             textBox1.TabIndex = 5;
             textBox1.UseSystemPasswordChar = true;
             textBox1.TextChanged += textBox1_TextChanged;
@@ -134,6 +133,17 @@
             label1.Text = "RESET PASSWORD";
             label1.Click += label1_Click;
             // 
+            // button2
+            // 
+            button2.BackgroundImage = Properties.Resources.loa;
+            button2.BackgroundImageLayout = ImageLayout.Zoom;
+            button2.Location = new Point(998, 519);
+            button2.Name = "button2";
+            button2.Size = new Size(35, 33);
+            button2.TabIndex = 3;
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += button2_Click;
+            // 
             // ResetPasswordForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -141,6 +151,7 @@
             BackgroundImage = Properties.Resources.login;
             BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1057, 581);
+            Controls.Add(button2);
             Controls.Add(panel1);
             DoubleBuffered = true;
             Name = "ResetPasswordForm";
@@ -160,5 +171,6 @@
         private Label label3;
         private TextBox textBox2;
         private LinkLabel linkLabel1;
+        private Button button2;
     }
 }

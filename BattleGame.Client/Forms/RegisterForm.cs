@@ -10,6 +10,8 @@ namespace BattleGame.Client.Forms
 {
     public partial class RegisterForm : Form
     {
+        private bool _isMuted = false;
+
         public RegisterForm()
         {
             InitializeComponent();
@@ -39,14 +41,14 @@ namespace BattleGame.Client.Forms
             string password = textBox3.Text;
             string confirm = textBox4.Text;
 
-            if(string.IsNullOrEmpty(email) || string.IsNullOrEmpty(user) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(confirm))
+            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(user) || string.IsNullOrEmpty(password) || string.IsNullOrEmpty(confirm))
             {
                 MessageBox.Show("Vui lòng nhập đầy đủ thông tin!",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
 
-            if(!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
             {
                 MessageBox.Show("Email không hợp lệ!",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -62,7 +64,7 @@ namespace BattleGame.Client.Forms
                 return;
             }
 
-            if(password.Length < 6)
+            if (password.Length < 6)
             {
                 MessageBox.Show("Mật khẩu phải có ít nhất 6 ký tự!",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -85,7 +87,8 @@ namespace BattleGame.Client.Forms
                     }
                 );
 
-                if(result.Status == "pending") {
+                if (result.Status == "pending")
+                {
                     OtpForm otp = new OtpForm(email, isReset: false);
                     otp.Show();
                     this.Close();
@@ -104,6 +107,20 @@ namespace BattleGame.Client.Forms
             finally
             {
                 button1.Enabled = true;
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (_isMuted)
+            {
+                SoundManager.SetVolume(1.0f);
+                _isMuted = false;
+            }
+            else
+            {
+                SoundManager.SetVolume(0.0f);
+                _isMuted = true;
             }
         }
     }

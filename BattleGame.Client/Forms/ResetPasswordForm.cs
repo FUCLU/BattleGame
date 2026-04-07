@@ -16,6 +16,7 @@ namespace BattleGame.Client.Forms
     public partial class ResetPasswordForm : Form
     {
         private readonly string _email;
+        private bool _isMuted = false;
         public ResetPasswordForm(string email)
         {
             InitializeComponent();
@@ -30,7 +31,7 @@ namespace BattleGame.Client.Forms
         private void label1_Click(object sender, EventArgs e) { }
         private void label3_Click(object sender, EventArgs e) { }
         private void label4_Click(object sender, EventArgs e) { }
-        private async void button1_Click(object sender, EventArgs e) 
+        private async void button1_Click(object sender, EventArgs e)
         {
             string newPassword = textBox1.Text;
             string confirm = textBox2.Text;
@@ -101,6 +102,20 @@ namespace BattleGame.Client.Forms
             LoginForm loginForm = new LoginForm();
             loginForm.Show();
             this.Close();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (_isMuted)
+            {
+                SoundManager.SetVolume(1.0f);
+                _isMuted = false;
+            }
+            else
+            {
+                SoundManager.SetVolume(0.0f);
+                _isMuted = true;
+            }
         }
     }
 }

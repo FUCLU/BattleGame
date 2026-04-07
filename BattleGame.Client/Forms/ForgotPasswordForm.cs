@@ -16,6 +16,8 @@ namespace BattleGame.Client.Forms
 {
     public partial class ForgotPasswordForm : Form
     {
+        private bool _isMuted = false;
+
         public ForgotPasswordForm()
         {
             InitializeComponent();
@@ -83,6 +85,20 @@ namespace BattleGame.Client.Forms
             finally
             {
                 button1.Enabled = true;
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (_isMuted)
+            {
+                SoundManager.SetVolume(1.0f);
+                _isMuted = false;
+            }
+            else
+            {
+                SoundManager.SetVolume(0.0f);
+                _isMuted = true;
             }
         }
     }

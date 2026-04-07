@@ -7,6 +7,7 @@ namespace BattleGame.Client.Forms
 {
     public partial class LoginForm : Form
     {
+        private bool _isMuted = false;
         public LoginForm()
         {
             InitializeComponent();
@@ -33,7 +34,7 @@ namespace BattleGame.Client.Forms
 
         private void LoginForm_Load(object sender, EventArgs e)
         {
-
+            SoundManager.PlayBGM("montagem_hiraki.mp3");
         }
 
         private async void button1_Click(object sender, EventArgs e)
@@ -41,7 +42,7 @@ namespace BattleGame.Client.Forms
             string username = textBox1.Text.Trim();
             string password = textBox2.Text;
 
-            if(string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
             {
                 MessageBox.Show("Vui lòng nhập đầy đủ thông tin!",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -68,7 +69,7 @@ namespace BattleGame.Client.Forms
                     textBox2.Focus();
                 }
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 MessageBox.Show("Đã có lỗi xảy ra: " + ex.Message,
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -76,6 +77,20 @@ namespace BattleGame.Client.Forms
             finally
             {
                 button1.Enabled = true;
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (_isMuted)
+            {
+                SoundManager.SetVolume(1.0f); 
+                _isMuted = false;
+            }
+            else
+            {
+                SoundManager.SetVolume(0.0f);
+                _isMuted = true;
             }
         }
     }

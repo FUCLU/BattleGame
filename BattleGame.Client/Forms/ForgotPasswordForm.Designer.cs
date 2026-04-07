@@ -35,6 +35,7 @@
             button1 = new Button();
             label2 = new Label();
             label1 = new Label();
+            button2 = new Button();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -117,6 +118,17 @@
             label1.TabIndex = 1;
             label1.Text = "FORGOT PASSWORD?";
             // 
+            // button2
+            // 
+            button2.BackgroundImage = Properties.Resources.loa;
+            button2.BackgroundImageLayout = ImageLayout.Zoom;
+            button2.Location = new Point(999, 521);
+            button2.Name = "button2";
+            button2.Size = new Size(35, 33);
+            button2.TabIndex = 2;
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += button2_Click;
+            // 
             // ForgotPasswordForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -124,6 +136,7 @@
             BackgroundImage = Properties.Resources.login;
             BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1057, 581);
+            Controls.Add(button2);
             Controls.Add(panel1);
             DoubleBuffered = true;
             Name = "ForgotPasswordForm";
@@ -143,5 +156,6 @@
         private TextBox textBox1;
         private Label label3;
         private LinkLabel linkLabel1;
+        private Button button2;
     }
 }

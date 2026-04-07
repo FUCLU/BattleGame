@@ -14,6 +14,8 @@ namespace BattleGame.Client.Forms
 {
     public partial class OtpForm : Form
     {
+        private bool _isMuted = false;
+
         private readonly string _email;
         private readonly bool _isReset;
         public OtpForm(string email, bool isReset)
@@ -82,7 +84,7 @@ namespace BattleGame.Client.Forms
         {
             string code = textBox1.Text + textBox2.Text + textBox3.Text + textBox4.Text + textBox5.Text + textBox6.Text;
 
-            if(code.Length != 6)
+            if (code.Length != 6)
             {
                 MessageBox.Show("Vui lòng nhập đủ 6 chữ số mã OTP!",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -125,9 +127,9 @@ namespace BattleGame.Client.Forms
                 }
 
             }
-            catch (Exception ex) 
-            { 
-                MessageBox.Show("Đã có lỗi xảy ra: " + ex.Message, 
+            catch (Exception ex)
+            {
+                MessageBox.Show("Đã có lỗi xảy ra: " + ex.Message,
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
@@ -150,6 +152,20 @@ namespace BattleGame.Client.Forms
             {
                 MessageBox.Show("Lỗi: " + ex.Message, "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            if (_isMuted)
+            {
+                SoundManager.SetVolume(1.0f);
+                _isMuted = false;
+            }
+            else
+            {
+                SoundManager.SetVolume(0.0f);
+                _isMuted = true;
             }
         }
     }
