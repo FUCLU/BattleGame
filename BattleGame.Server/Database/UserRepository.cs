@@ -10,9 +10,9 @@ namespace BattleGame.Server.Database
         {
             _connectionString = connectionString;
         }
-        public (string Username, string PasswordHash, string Email)? FindByUsername(string username)
+        public (int UserId, string Username, string PasswordHash, string Email)? FindByUsername(string username)
         {
-            const string sql = "SELECT username, password_hash, email FROM users WHERE username = @username LIMIT 1";
+            const string sql = "SELECT id, username, password_hash, email FROM users WHERE username = @username LIMIT 1";
             using var conn = new NpgsqlConnection(_connectionString);
             conn.Open();
             using var cmd = new NpgsqlCommand(sql, conn);
@@ -20,9 +20,10 @@ namespace BattleGame.Server.Database
             using var reader = cmd.ExecuteReader();
             if (!reader.Read()) return null;
             return (
-                reader.GetString(0),
+                reader.GetInt32(0),
                 reader.GetString(1),
-                reader.GetString(2)
+                reader.GetString(2),
+                reader.GetString(3)
             );
         }
 

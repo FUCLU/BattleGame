@@ -49,7 +49,7 @@
             panel1.Controls.Add(label4);
             panel1.Controls.Add(label3);
             panel1.Controls.Add(label1);
-            panel1.Location = new Point(372, 140);
+            panel1.Location = new Point(370, 139);
             panel1.Name = "panel1";
             panel1.Size = new Size(321, 301);
             panel1.TabIndex = 0;

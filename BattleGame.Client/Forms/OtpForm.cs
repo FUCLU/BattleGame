@@ -18,6 +18,10 @@ namespace BattleGame.Client.Forms
 
         private readonly string _email;
         private readonly bool _isReset;
+
+        private System.Windows.Forms.Timer countdown;
+        private int secondsLeft = 60;
+
         public OtpForm(string email, bool isReset)
         {
             InitializeComponent();
@@ -78,6 +82,42 @@ namespace BattleGame.Client.Forms
                     }
                 };
             }
+
+            StartCountdown();
+        }
+
+        private void StartCountdown()
+        {
+            secondsLeft = 60;
+            button1.Enabled = true;
+            linkLabel1.Enabled = false;
+            UpdateCountdownLabel();
+
+            countdown = new System.Windows.Forms.Timer();
+            countdown.Interval = 1000; // 1 giây
+            countdown.Tick += CountdownTimer_Tick;
+            countdown.Start();
+
+        }
+
+        private void CountdownTimer_Tick(object sender, EventArgs e)
+        {
+            secondsLeft--;
+            UpdateCountdownLabel();
+
+            if (secondsLeft <= 0)
+            {
+                countdown.Stop();
+                button1.Enabled = false;
+                linkLabel1.Enabled = true;
+                label4.Text = "Mã OTP đã hết hạn.";
+                label4.ForeColor = Color.Red;
+            }
+        }
+
+        private void UpdateCountdownLabel()
+        {
+            label4.Text = $"Mã OTP sẽ hết hạn sau: {secondsLeft} giây";
         }
 
         private async void button1_Click(object sender, EventArgs e)
@@ -147,6 +187,8 @@ namespace BattleGame.Client.Forms
                 );
                 MessageBox.Show("Đã gửi lại mã OTP về email!",
                     "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                StartCountdown();
             }
             catch (Exception ex)
             {
@@ -167,6 +209,21 @@ namespace BattleGame.Client.Forms
                 SoundManager.SetVolume(0.0f);
                 _isMuted = true;
             }
+        }
+        protected override void OnFormClosed(FormClosedEventArgs e)
+        {
+            countdown?.Stop();
+            countdown?.Dispose();
+            base.OnFormClosed(e);
+        }
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void label4_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

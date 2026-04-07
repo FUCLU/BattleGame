@@ -12,11 +12,11 @@ namespace BattleGame.Server.Services
             _userRepo = userRepo;
         }
 
-        public enum LoginResult
+        public abstract record LoginResult
         {
-            Success,
-            UserNotFound,
-            WrongPassword
+            public record Success(int UserId, string Username) : LoginResult;
+            public record UserNotFound() : LoginResult;
+            public record WrongPassword() : LoginResult;
         }
 
         public enum RegisterResult
@@ -30,27 +30,19 @@ namespace BattleGame.Server.Services
         public LoginResult Login(string username, string password)
         {
             var user = _userRepo.FindByUsername(username);
-            if (user == null) return (LoginResult.UserNotFound);
+            if(user == null) return new LoginResult.UserNotFound();
+
             bool ok = BCrypt.Net.BCrypt.Verify(password, user.Value.PasswordHash);
-            if (!ok) return (LoginResult.WrongPassword);
-            return (LoginResult.Success);
+            if (!ok) return new LoginResult.WrongPassword();
+
+            return new LoginResult.Success(user.Value.UserId, user.Value.Username);
         }
 
-        public RegisterResult Register(string username, string password, string email)
+        public RegisterResult Register(string username, string email)
         {
             if (_userRepo.ExistsByUsername(username)) return RegisterResult.UsernameTaken;
             if (_userRepo.ExistsByEmail(email)) return RegisterResult.EmailTaken;
-            try
-            {
-                string hash = BCrypt.Net.BCrypt.HashPassword(password);
-                _userRepo.Save(username, hash, email);
-                return RegisterResult.Success;
-            }
-            catch (Exception ex)
-            {
-                ServerLogger.Error($"Register failed: {ex.Message}");
-                return RegisterResult.Failed;
-            }
+            return RegisterResult.Success;
         }
     }
 }
