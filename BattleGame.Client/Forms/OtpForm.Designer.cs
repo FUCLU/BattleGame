@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             panel1 = new Panel();
+            label4 = new Label();
             textBox6 = new TextBox();
             textBox5 = new TextBox();
             textBox4 = new TextBox();
@@ -47,6 +48,7 @@
             // 
             // panel1
             // 
+            panel1.Controls.Add(label4);
             panel1.Controls.Add(textBox6);
             panel1.Controls.Add(textBox5);
             panel1.Controls.Add(textBox4);
@@ -60,10 +62,21 @@
             panel1.Controls.Add(label2);
             panel1.Controls.Add(label1);
             panel1.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            panel1.Location = new Point(355, 129);
+            panel1.Location = new Point(350, 102);
             panel1.Name = "panel1";
-            panel1.Size = new Size(367, 283);
+            panel1.Size = new Size(367, 345);
             panel1.TabIndex = 0;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Font = new Font("Segoe UI", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            label4.Location = new Point(18, 211);
+            label4.Name = "label4";
+            label4.Size = new Size(330, 31);
+            label4.TabIndex = 13;
+            label4.Text = "Mã OTP sẽ hết hạn sau: 60 giây";
+            label4.Click += label4_Click;
             // 
             // textBox6
             // 
@@ -118,7 +131,7 @@
             linkLabel2.ActiveLinkColor = SystemColors.ActiveCaptionText;
             linkLabel2.AutoSize = true;
             linkLabel2.LinkColor = Color.Red;
-            linkLabel2.Location = new Point(225, 240);
+            linkLabel2.Location = new Point(225, 303);
             linkLabel2.Name = "linkLabel2";
             linkLabel2.Size = new Size(126, 28);
             linkLabel2.TabIndex = 6;
@@ -131,7 +144,7 @@
             linkLabel1.ActiveLinkColor = SystemColors.ActiveCaptionText;
             linkLabel1.AutoSize = true;
             linkLabel1.LinkColor = Color.Red;
-            linkLabel1.Location = new Point(16, 242);
+            linkLabel1.Location = new Point(16, 302);
             linkLabel1.Name = "linkLabel1";
             linkLabel1.Size = new Size(125, 28);
             linkLabel1.TabIndex = 5;
@@ -142,7 +155,7 @@
             // button1
             // 
             button1.BackColor = Color.SandyBrown;
-            button1.Location = new Point(18, 195);
+            button1.Location = new Point(18, 258);
             button1.Name = "button1";
             button1.Size = new Size(330, 44);
             button1.TabIndex = 4;
@@ -225,5 +238,6 @@
         private LinkLabel linkLabel2;
         private LinkLabel linkLabel1;
         private Button button2;
+        private Label label4;
     }
 }

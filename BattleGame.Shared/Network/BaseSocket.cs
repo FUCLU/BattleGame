@@ -1,5 +1,6 @@
 ﻿using System.Net.Sockets;
 using System.Text;
+using BattleGame.Shared.Security;
 
 namespace BattleGame.Shared.Network
 {
@@ -15,7 +16,10 @@ namespace BattleGame.Shared.Network
         {
             if (_stream == null)
                 throw new InvalidOperationException("Stream=null");
-            byte[] data = Encoding.UTF8.GetBytes(json);
+
+            string encrypted = AesEncryption.Encrypt(json);
+
+            byte[] data = Encoding.UTF8.GetBytes(encrypted);
             byte[] length = BitConverter.GetBytes(data.Length);
             await _stream.WriteAsync(length, 0, 4);
             await _stream.WriteAsync(data, 0, data.Length);
@@ -26,13 +30,18 @@ namespace BattleGame.Shared.Network
         {
             if (_stream == null)
                 throw new InvalidOperationException("Stream=null");
+
             byte[] lenBuf = new byte[4];
             await ReadExactAsync(lenBuf, 4);
             int size = BitConverter.ToInt32(lenBuf, 0);
 
+            Console.WriteLine($"[DEBUG] Receiving packet size: {size}");  
+
             byte[] dataBuf = new byte[size];
             await ReadExactAsync(dataBuf, size);
-            return Encoding.UTF8.GetString(dataBuf);
+
+            string encrypted = Encoding.UTF8.GetString(dataBuf);
+            return AesEncryption.Decrypt(encrypted);
         }
 
         // Đọc đúng số byte yêu cầu

@@ -1,6 +1,7 @@
 ﻿using BattleGame.Server.Config;
 using BattleGame.Server.Database;
 using BattleGame.Server.Services;
+using BattleGame.Server.Game;
 using System.Net;
 using System.Net.Sockets;
 
@@ -26,6 +27,9 @@ namespace BattleGame.Server.Network
             var emailSvc = new EmailService(_config.Smtp);
             var otpSvc = new OtpService(otpRepo, emailSvc);
             var authSvc = new AuthService(userRepo);
+
+            var gameManager = new GameManager();
+            var matchmaking = new MatchmakingService();
 
             Console.WriteLine("[INFO] Services initialized, waiting for connections...");
 

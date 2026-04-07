@@ -23,8 +23,8 @@
     container_name: battlegame_mailpit
     restart: unless-stopped
     ports:
-      - "8025:8025"   # Web UI xem email: http://localhost:8025
-      - "1025:1025"   # SMTP port cho server gửi vào
+      - "8025:8025"
+      - "1025:1025"
     environment:
       MP_MAX_MESSAGES: 100
       MP_SMTP_AUTH_ACCEPT_ANY: 1
@@ -53,6 +53,21 @@
         condition: service_started
     volumes:
       - ./logs:/app/logs
+
+  loadbalancer:
+    build:
+      context: .
+      dockerfile: BattleGame.LoadBalancer/Dockerfile
+    container_name: battlegame_lb
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    environment:
+      - LB_PORT=9000
+      - SERVERS=battlegame_server:9001
+    depends_on:
+      server:
+        condition: service_started
 
 volumes:
   pgdata:

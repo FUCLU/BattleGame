@@ -21,7 +21,6 @@ namespace BattleGame.Client.Managers
         // Kết nối tới Server
         public async Task ConnectAsync()
         {
-            if (_socket.IsConnected()) return;
             await _socket.ConnectAsync();
         }
 
