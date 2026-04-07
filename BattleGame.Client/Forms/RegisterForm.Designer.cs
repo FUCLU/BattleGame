@@ -41,6 +41,7 @@
             label3 = new Label();
             label2 = new Label();
             label1 = new Label();
+            button2 = new Button();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -102,19 +103,19 @@
             // 
             textBox4.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             textBox4.Location = new Point(28, 297);
-            textBox4.Multiline = true;
             textBox4.Name = "textBox4";
             textBox4.Size = new Size(260, 34);
             textBox4.TabIndex = 8;
+            textBox4.UseSystemPasswordChar = true;
             // 
             // textBox3
             // 
             textBox3.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             textBox3.Location = new Point(28, 220);
-            textBox3.Multiline = true;
             textBox3.Name = "textBox3";
             textBox3.Size = new Size(260, 34);
             textBox3.TabIndex = 7;
+            textBox3.UseSystemPasswordChar = true;
             // 
             // textBox2
             // 
@@ -186,6 +187,17 @@
             label1.TabIndex = 0;
             label1.Text = "Email";
             // 
+            // button2
+            // 
+            button2.BackgroundImage = Properties.Resources.loa;
+            button2.BackgroundImageLayout = ImageLayout.Zoom;
+            button2.Location = new Point(997, 519);
+            button2.Name = "button2";
+            button2.Size = new Size(35, 33);
+            button2.TabIndex = 2;
+            button2.UseVisualStyleBackColor = true;
+            button2.Click += button2_Click;
+            // 
             // RegisterForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -193,6 +205,7 @@
             BackgroundImage = Properties.Resources.login;
             BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1057, 581);
+            Controls.Add(button2);
             Controls.Add(panel1);
             DoubleBuffered = true;
             Name = "RegisterForm";
@@ -218,5 +231,6 @@
         private LinkLabel linkLabel1;
         private Label label5;
         private Label label6;
+        private Button button2;
     }
 }
