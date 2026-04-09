@@ -6,25 +6,24 @@ namespace BattleGame.Client
     internal static class Program
     {
         [STAThread]
-        static async Task Main()
+        static void Main()
         {
-            ApplicationConfiguration.Initialize();
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
 
             try
             {
-                await NetworkManager.Instance.ConnectAsync();
+                // Tạm thời mở GameForm để test
+                Application.Run(new Forms.GameForm());
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"Không thể kết nối Server!\n{ex.Message}",
-                    "Lỗi kết nối",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-                return; // Thoát app nếu không kết nối được
+                MessageBox.Show($"Lỗi khi chạy GameForm:\n\n{ex.Message}\n\nStack Trace:\n{ex.StackTrace}",
+                                "Lỗi khởi động",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
             }
-
-            Application.Run(new LoginForm());
         }
     }
+
 }

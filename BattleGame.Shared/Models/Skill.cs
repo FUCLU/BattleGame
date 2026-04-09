@@ -1,65 +1,64 @@
-﻿namespace BattleGame.Shared.Models;
+﻿using System;
 
-public enum SkillType
+namespace BattleGame.Shared.Models
 {
-    Fixed,    // Sát thương cố định
-    HPScale   // Sát thương theo % HP hiện tại của target
-}
-
-public class Skill
-{
-    public string Name { get; set; } = string.Empty;
-    public SkillType Type { get; set; }
-    public int MaxCooldown { get; set; }
-    public int CurrentCooldown { get; private set; } = 0;
-
-    public int FixedDamage { get; set; }       // Dùng cho Fixed
-    public float HPScaleRatio { get; set; }    // Dùng cho HPScale (0.3 = 30%)
-
-    public bool IsReady => CurrentCooldown == 0;
-
-    // Factory methods
-    public static Skill CreateFixed(string name, int damage, int cooldown) => new()
+    public abstract class Skill
     {
-        Name = name,
-        Type = SkillType.Fixed,
-        FixedDamage = damage,
-        MaxCooldown = cooldown
-    };
+        // ================= INFO =================
+        public string Name { get; protected set; } = string.Empty;
+        public SkillType Type { get; protected set; }
 
-    public static Skill CreateHPScale(string name, float ratio, int cooldown) => new()
-    {
-        Name = name,
-        Type = SkillType.HPScale,
-        HPScaleRatio = ratio,
-        MaxCooldown = cooldown
-    };
+        public int Damage { get; protected set; }
+        public float Cooldown { get; protected set; }   // seconds
 
-    public int CalculateDamage(Character target) => Type switch
-    {
-        SkillType.Fixed => FixedDamage,
-        SkillType.HPScale => (int)(target.CurrentHP * HPScaleRatio),
-        _ => 0
-    };
+        public string AnimationName { get; protected set; } = string.Empty;
 
-    public int GetDamagePreview(Character target) => CalculateDamage(target);
+        // ================= STATE =================
+        private DateTime _lastCastTime = DateTime.MinValue;
 
-    public void Use()
-    {
-        if (!IsReady) throw new InvalidOperationException($"{Name} đang cooldown!");
-        CurrentCooldown = MaxCooldown;
+        protected Skill() { }
+
+        protected Skill(string name, SkillType type, int damage, float cooldown)
+        {
+            Name = name;
+            Type = type;
+            Damage = damage;
+            Cooldown = cooldown;
+            AnimationName = name;
+        }
+
+        // ================= CORE =================
+
+        public bool CanCast()
+        {
+            return (DateTime.Now - _lastCastTime).TotalSeconds >= Cooldown;
+        }
+
+        public void TryCast(Character caster)
+        {
+            if (!CanCast()) return;
+
+
+            Use(caster);
+
+            _lastCastTime = DateTime.Now;
+        }
+
+        // ================= ABSTRACT =================
+        protected abstract void Use(Character caster);
+
+        // ================= OPTIONAL =================
+        public virtual void TickCooldown()
+        {
+            // để trống (dùng realtime)
+            // sau này có thể chuyển sang deltaTime
+        }
     }
 
-    public void ReduceCooldown()
+    public enum SkillType
     {
-        if (CurrentCooldown > 0) CurrentCooldown--;
-    }
-
-    public override string ToString()
-    {
-        string dmgInfo = Type == SkillType.Fixed
-            ? $"DMG: {FixedDamage}"
-            : $"DMG: {HPScaleRatio * 100}% HP";
-        return $"[{Name}] {dmgInfo} | CD: {(IsReady ? "Ready" : $"{CurrentCooldown} turns")}";
+        None = 0,
+        Shoot,
+        Grenade
     }
 }

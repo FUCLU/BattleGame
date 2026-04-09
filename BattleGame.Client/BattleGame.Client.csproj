@@ -10,10 +10,54 @@
 
   <ItemGroup>
     <None Remove="Assets\Background\login.png" />
+    <None Remove="Assets\Characters\Attack.png" />
+    <None Remove="Assets\Characters\Dead.png" />
+    <None Remove="Assets\Characters\Explosion.png" />
+    <None Remove="Assets\Characters\Grenade.png" />
+    <None Remove="Assets\Characters\Hurt.png" />
+    <None Remove="Assets\Characters\Idle.png" />
+    <None Remove="Assets\Characters\Recharge.png" />
+    <None Remove="Assets\Characters\Run.png" />
+    <None Remove="Assets\Characters\Shot_1.png" />
+    <None Remove="Assets\Characters\Shot_2.png" />
+    <None Remove="Assets\Characters\Walk.png" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="Assets\Background\login.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Characters\Soldier\Attack.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Characters\Soldier\Dead.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Characters\Soldier\Explosion.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Characters\Soldier\Grenade.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Characters\Soldier\Hurt.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Characters\Soldier\Idle.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Characters\Soldier\Recharge.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Characters\Soldier\Run.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Characters\Soldier\Shot_1.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Characters\Soldier\Shot_2.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\Characters\Soldier\Walk.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -23,7 +67,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Assets\Characters\" />
     <Folder Include="Assets\Sounds\BGM\" />
     <Folder Include="Assets\Sounds\SFX\" />
   </ItemGroup>

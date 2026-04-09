@@ -61,7 +61,7 @@
     container_name: battlegame_lb
     restart: unless-stopped
     ports:
-      - "9000:9000"
+      - "9002:9000"
     environment:
       - LB_PORT=9000
       - SERVERS=battlegame_server:9001
