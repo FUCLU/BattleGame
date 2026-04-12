@@ -34,7 +34,9 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1057, 581);
+            BackColor = Color.MediumAquamarine;
+            ClientSize = new Size(570, 351);
+            DoubleBuffered = true;
             Name = "RoundEndForm";
             Text = "RoundEndForm";
             ResumeLayout(false);

@@ -16,5 +16,19 @@ namespace BattleGame.Client.Forms
         {
             InitializeComponent();
         }
+
+        private void LeaderboardForm_Load(object sender, EventArgs e)
+        {
+            listView1.View = View.Details;
+
+            listView1.Columns.Add("Name", 200);
+            listView1.Columns.Add("Level", 100);
+            listView1.Columns.Add("Exp", 100);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

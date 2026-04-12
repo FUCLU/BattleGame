@@ -12,9 +12,17 @@ namespace BattleGame.Client.Forms
 {
     public partial class RoundStartForm : Form
     {
+       
         public RoundStartForm()
         {
             InitializeComponent();
         }
+
+        private void RoundStartForm_Load(object sender, EventArgs e)
+        {
+            panelRound.BackColor = Color.FromArgb(180, 0, 0, 0);
+        }
+
+       
     }
 }
