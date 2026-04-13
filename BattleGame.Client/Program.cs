@@ -13,7 +13,7 @@ namespace BattleGame.Client
             ApplicationConfiguration.Initialize();
 
             // 🔥 SWITCH MODE 
-            bool isTestMode = true; // 👉 bật/tắt ở đây
+            bool isTestMode = false; // 👉 bật/tắt ở đây
 
             if (isTestMode)
             {

@@ -13,7 +13,7 @@ namespace BattleGame.Shared.Models
         public int ATK { get; protected set; } = 10;
         public int DEF { get; protected set; } = 0;
         public int Speed { get; protected set; } = 0;
-
+        public bool IsAlive => !IsDead();
         public List<Skill> Skills { get; protected set; } = new();
 
 
