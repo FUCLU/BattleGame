@@ -51,7 +51,7 @@
             // 
             listView1.BackColor = SystemColors.Info;
             listView1.Font = new Font("Book Antiqua", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            listView1.Location = new Point(115, 126);
+            listView1.Location = new Point(120, 127);
             listView1.Name = "listView1";
             listView1.Size = new Size(818, 364);
             listView1.TabIndex = 1;
@@ -67,8 +67,9 @@
             button1.TabIndex = 2;
             button1.Text = "Close";
             button1.UseVisualStyleBackColor = false;
-            SuspendLayout();
+            // 
             // LeaderboardForm
+            // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Teal;
@@ -80,9 +81,6 @@
             Text = "LeaderboardForm";
             Load += LeaderboardForm_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
-            ClientSize = new Size(1057, 581);
-            Name = "LeaderboardForm";
-            Text = "LeaderboardForm";
             ResumeLayout(false);
         }
 

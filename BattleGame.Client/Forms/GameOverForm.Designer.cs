@@ -28,7 +28,6 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(GameOverForm));
             panel1 = new Panel();
             button1 = new Button();
             panel3 = new Panel();
@@ -48,38 +47,40 @@
             // 
             // panel1
             // 
-            panel1.BackColor = Color.DarkSeaGreen;
+            panel1.BackColor = SystemColors.ActiveCaptionText;
+            panel1.Controls.Add(label3);
             panel1.Controls.Add(button1);
             panel1.Controls.Add(panel3);
             panel1.Controls.Add(panel2);
             panel1.Controls.Add(label1);
-            panel1.Location = new Point(12, 12);
+            panel1.Location = new Point(-4, 0);
             panel1.Name = "panel1";
-            panel1.Size = new Size(630, 361);
+            panel1.Size = new Size(1060, 586);
             panel1.TabIndex = 0;
             // 
             // button1
             // 
             button1.BackColor = Color.DarkCyan;
             button1.Font = new Font("Book Antiqua", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button1.Location = new Point(218, 292);
+            button1.Location = new Point(431, 434);
             button1.Name = "button1";
-            button1.Size = new Size(195, 57);
+            button1.Size = new Size(195, 77);
             button1.TabIndex = 3;
             button1.Text = "Back to lobby";
             button1.UseVisualStyleBackColor = false;
+            button1.Click += button1_Click;
             // 
             // panel3
             // 
-            panel3.BackColor = Color.DarkKhaki;
+            panel3.BackColor = Color.DarkGray;
             panel3.Controls.Add(label8);
             panel3.Controls.Add(label7);
             panel3.Controls.Add(label6);
             panel3.Controls.Add(label5);
             panel3.Controls.Add(label4);
-            panel3.Location = new Point(58, 148);
+            panel3.Location = new Point(269, 232);
             panel3.Name = "panel3";
-            panel3.Size = new Size(533, 124);
+            panel3.Size = new Size(533, 162);
             panel3.TabIndex = 2;
             // 
             // label8
@@ -87,7 +88,7 @@
             label8.AutoSize = true;
             label8.Font = new Font("Book Antiqua", 12F, FontStyle.Italic, GraphicsUnit.Point, 0);
             label8.ForeColor = Color.Crimson;
-            label8.Location = new Point(223, 78);
+            label8.Location = new Point(233, 96);
             label8.Name = "label8";
             label8.Size = new Size(27, 26);
             label8.TabIndex = 6;
@@ -98,7 +99,7 @@
             label7.AutoSize = true;
             label7.Font = new Font("Book Antiqua", 12F, FontStyle.Italic, GraphicsUnit.Point, 0);
             label7.ForeColor = Color.Crimson;
-            label7.Location = new Point(223, 38);
+            label7.Location = new Point(233, 52);
             label7.Name = "label7";
             label7.Size = new Size(27, 26);
             label7.TabIndex = 5;
@@ -107,42 +108,41 @@
             // label6
             // 
             label6.AutoSize = true;
-            label6.Font = new Font("Book Antiqua", 12F, FontStyle.Italic, GraphicsUnit.Point, 0);
-            label6.ForeColor = Color.Crimson;
-            label6.Location = new Point(106, 78);
+            label6.Font = new Font("Book Antiqua", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label6.ForeColor = Color.White;
+            label6.Location = new Point(62, 96);
             label6.Name = "label6";
-            label6.Size = new Size(85, 26);
+            label6.Size = new Size(104, 28);
             label6.TabIndex = 4;
             label6.Text = "Player 2:";
             // 
             // label5
             // 
             label5.AutoSize = true;
-            label5.Font = new Font("Book Antiqua", 12F, FontStyle.Italic, GraphicsUnit.Point, 0);
-            label5.ForeColor = Color.Crimson;
-            label5.Location = new Point(106, 37);
+            label5.Font = new Font("Book Antiqua", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label5.ForeColor = Color.LavenderBlush;
+            label5.Location = new Point(62, 54);
             label5.Name = "label5";
-            label5.Size = new Size(85, 26);
+            label5.Size = new Size(104, 28);
             label5.TabIndex = 3;
             label5.Text = "Player 1:";
             // 
             // label4
             // 
             label4.AutoSize = true;
-            label4.Font = new Font("Book Antiqua", 12F, FontStyle.Italic, GraphicsUnit.Point, 0);
+            label4.Font = new Font("Book Antiqua", 16.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label4.ForeColor = Color.MidnightBlue;
-            label4.Location = new Point(205, 0);
+            label4.Location = new Point(173, 6);
             label4.Name = "label4";
-            label4.Size = new Size(114, 26);
+            label4.Size = new Size(171, 32);
             label4.TabIndex = 2;
             label4.Text = "Match Score";
             // 
             // panel2
             // 
-            panel2.BackColor = Color.DarkKhaki;
-            panel2.Controls.Add(label3);
+            panel2.BackColor = Color.Lime;
             panel2.Controls.Add(label2);
-            panel2.Location = new Point(58, 62);
+            panel2.Location = new Point(269, 105);
             panel2.Name = "panel2";
             panel2.Size = new Size(533, 80);
             panel2.TabIndex = 1;
@@ -151,21 +151,22 @@
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Book Antiqua", 24F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label3.ForeColor = Color.GreenYellow;
-            label3.Location = new Point(191, 26);
+            label3.ForeColor = SystemColors.ActiveCaptionText;
+            label3.Location = new Point(896, 247);
             label3.Name = "label3";
             label3.Size = new Size(137, 49);
             label3.TabIndex = 1;
             label3.Text = "Player";
+            label3.Click += label3_Click;
             // 
             // label2
             // 
             label2.AutoSize = true;
-            label2.Font = new Font("Book Antiqua", 12F, FontStyle.Italic, GraphicsUnit.Point, 0);
+            label2.Font = new Font("Book Antiqua", 22.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label2.ForeColor = Color.MidnightBlue;
-            label2.Location = new Point(223, -2);
+            label2.Location = new Point(184, 12);
             label2.Name = "label2";
-            label2.Size = new Size(74, 26);
+            label2.Size = new Size(144, 44);
             label2.TabIndex = 0;
             label2.Text = "Victory";
             // 
@@ -174,7 +175,7 @@
             label1.AutoSize = true;
             label1.Font = new Font("Book Antiqua", 25.8000011F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label1.ForeColor = Color.Firebrick;
-            label1.Location = new Point(185, 9);
+            label1.Location = new Point(409, 18);
             label1.Name = "label1";
             label1.Size = new Size(253, 52);
             label1.TabIndex = 0;
@@ -184,9 +185,8 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Stretch;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(1057, 581);
             Controls.Add(panel1);
             DoubleBuffered = true;
             Name = "GameOverForm";
