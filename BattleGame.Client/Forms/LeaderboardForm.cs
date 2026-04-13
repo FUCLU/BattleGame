@@ -16,7 +16,6 @@ namespace BattleGame.Client.Forms
         {
             InitializeComponent();
         }
-
         private void LeaderboardForm_Load(object sender, EventArgs e)
         {
             listView1.View = View.Details;

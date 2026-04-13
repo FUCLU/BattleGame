@@ -44,5 +44,10 @@ namespace BattleGame.Client.Forms
             modeForm.Show();
             this.Close();
         }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

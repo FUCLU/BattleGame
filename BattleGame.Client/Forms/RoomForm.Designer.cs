@@ -235,6 +235,8 @@
             button2.Text = "BACK";
             button2.UseVisualStyleBackColor = false;
             // 
+            SuspendLayout();
+            // 
             // RoomForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -251,11 +253,13 @@
             panel2.ResumeLayout(false);
             panel2.PerformLayout();
             panel1.ResumeLayout(false);
+            ClientSize = new Size(1057, 581);
+            Name = "RoomForm";
+            Text = "RoomForm";
             ResumeLayout(false);
         }
 
         #endregion
-
         private Panel panel3;
         private Panel panel2;
         private TextBox textBox2;

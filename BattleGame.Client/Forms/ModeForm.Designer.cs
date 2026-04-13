@@ -101,6 +101,8 @@
             pictureBox3.TabIndex = 6;
             pictureBox3.TabStop = false;
             // 
+            SuspendLayout();
+            // 
             // ModeForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -118,6 +120,9 @@
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox3).EndInit();
+            ClientSize = new Size(1057, 581);
+            Name = "ModeForm";
+            Text = "ModeForm";
             ResumeLayout(false);
         }
 

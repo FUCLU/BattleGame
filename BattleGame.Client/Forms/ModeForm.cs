@@ -16,8 +16,5 @@ namespace BattleGame.Client.Forms
         {
             InitializeComponent();
         }
-
-       
-      
     }
 }

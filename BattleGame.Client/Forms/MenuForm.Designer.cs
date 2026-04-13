@@ -60,13 +60,14 @@
             // 
             // button3
             // 
+            button3.BackColor = Color.Transparent;
             button3.BackgroundImage = Properties.Resources.Exit;
             button3.BackgroundImageLayout = ImageLayout.Stretch;
             button3.Location = new Point(452, 403);
             button3.Name = "button3";
             button3.Size = new Size(186, 67);
             button3.TabIndex = 5;
-            button3.UseVisualStyleBackColor = true;
+            button3.UseVisualStyleBackColor = false;
             button3.Click += button3_Click;
             // 
             // pictureBox1
@@ -78,6 +79,7 @@
             pictureBox1.Size = new Size(526, 188);
             pictureBox1.TabIndex = 6;
             pictureBox1.TabStop = false;
+            pictureBox1.Click += pictureBox1_Click;
             // 
             // MenuForm
             // 

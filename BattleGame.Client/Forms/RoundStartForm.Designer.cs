@@ -52,6 +52,8 @@
             label1.TabIndex = 0;
             label1.Text = "ROUND 1";
             // 
+            SuspendLayout();
+            // 
             // RoundStartForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -65,11 +67,13 @@
             Load += RoundStartForm_Load;
             panelRound.ResumeLayout(false);
             panelRound.PerformLayout();
+            ClientSize = new Size(1057, 581);
+            Name = "RoundStartForm";
+            Text = "RoundStartForm";
             ResumeLayout(false);
         }
 
         #endregion
-
         private Panel panelRound;
         private Label label1;
     }

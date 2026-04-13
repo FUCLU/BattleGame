@@ -1,10 +1,30 @@
-﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Windows.Forms;
 
 namespace BattleGame.Client.Managers
 {
-    internal class InputManager
+    public class InputManager
     {
+        private readonly HashSet<Keys> _keys = new();
+
+        public void SetKeyDown(Keys key)
+        {
+            _keys.Add(key);
+        }
+
+        public void SetKeyUp(Keys key)
+        {
+            _keys.Remove(key);
+        }
+
+        public bool IsKeyDown(Keys key)
+        {
+            return _keys.Contains(key);
+        }
+
+        public void Update()
+        {
+            // có thể xử lý thêm sau (input buffer, combo...)
+        }
     }
 }

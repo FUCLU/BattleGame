@@ -1,4 +1,6 @@
 using BattleGame.Client.Forms;
+using BattleGame.Client.Game;
+using BattleGame.Client.Game.Characters;
 using BattleGame.Client.Managers;
 
 namespace BattleGame.Client
@@ -10,6 +12,17 @@ namespace BattleGame.Client
         {
             ApplicationConfiguration.Initialize();
 
+            // 🔥 SWITCH MODE 
+            bool isTestMode = true; // 👉 bật/tắt ở đây
+
+            if (isTestMode)
+            {
+                // TEST MODE (OFFLINE) 
+                Application.Run(new GameForm(new Soldier()));
+                return;
+            }
+
+            // ONLINE MODE 
             try
             {
                 await NetworkManager.Instance.ConnectAsync();
@@ -21,7 +34,7 @@ namespace BattleGame.Client
                     "Lỗi kết nối",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
-                return; // Thoát app nếu không kết nối được
+                return;
             }
 
             Application.Run(new LoginForm());

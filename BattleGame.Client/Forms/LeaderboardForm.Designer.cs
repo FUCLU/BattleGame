@@ -67,9 +67,8 @@
             button1.TabIndex = 2;
             button1.Text = "Close";
             button1.UseVisualStyleBackColor = false;
-            // 
+            SuspendLayout();
             // LeaderboardForm
-            // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Teal;
@@ -81,6 +80,9 @@
             Text = "LeaderboardForm";
             Load += LeaderboardForm_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ClientSize = new Size(1057, 581);
+            Name = "LeaderboardForm";
+            Text = "LeaderboardForm";
             ResumeLayout(false);
         }
 
