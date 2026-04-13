@@ -34,7 +34,7 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(765, 366);
+            ClientSize = new Size(1057, 581);
             Name = "MatchHistoryForm";
             Text = "MatchHistoryForm";
             ResumeLayout(false);

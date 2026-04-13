@@ -36,7 +36,7 @@
             // panelRound
             // 
             panelRound.Controls.Add(label1);
-            panelRound.Location = new Point(2, 2);
+            panelRound.Location = new Point(300, 180);
             panelRound.Name = "panelRound";
             panelRound.Size = new Size(482, 255);
             panelRound.TabIndex = 0;
@@ -57,7 +57,7 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackgroundImageLayout = ImageLayout.Stretch;
-            ClientSize = new Size(483, 257);
+            ClientSize = new Size(1057, 581);
             Controls.Add(panelRound);
             DoubleBuffered = true;
             Name = "RoundStartForm";

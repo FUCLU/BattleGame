@@ -51,7 +51,7 @@
             // 
             button1.BackgroundImage = Properties.Resources.Mode;
             button1.BackgroundImageLayout = ImageLayout.Zoom;
-            button1.Location = new Point(452, 274);
+            button1.Location = new Point(452, 301);
             button1.Name = "button1";
             button1.Size = new Size(186, 67);
             button1.TabIndex = 4;
@@ -62,7 +62,7 @@
             // 
             button3.BackgroundImage = Properties.Resources.Exit;
             button3.BackgroundImageLayout = ImageLayout.Stretch;
-            button3.Location = new Point(452, 376);
+            button3.Location = new Point(452, 403);
             button3.Name = "button3";
             button3.Size = new Size(186, 67);
             button3.TabIndex = 5;
@@ -73,7 +73,7 @@
             // 
             pictureBox1.BackgroundImage = Properties.Resources.Name;
             pictureBox1.BackgroundImageLayout = ImageLayout.Zoom;
-            pictureBox1.Location = new Point(278, 40);
+            pictureBox1.Location = new Point(284, 60);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(526, 188);
             pictureBox1.TabIndex = 6;

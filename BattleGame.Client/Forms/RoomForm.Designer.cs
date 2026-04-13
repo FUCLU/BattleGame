@@ -56,7 +56,7 @@
             panel3.Controls.Add(textBox3);
             panel3.Controls.Add(label3);
             panel3.Controls.Add(richTextBox1);
-            panel3.Location = new Point(420, 28);
+            panel3.Location = new Point(447, 28);
             panel3.Name = "panel3";
             panel3.Size = new Size(552, 439);
             panel3.TabIndex = 3;
@@ -116,7 +116,7 @@
             panel2.Controls.Add(button1);
             panel2.Controls.Add(textBox2);
             panel2.Controls.Add(textBox1);
-            panel2.Location = new Point(24, 28);
+            panel2.Location = new Point(51, 28);
             panel2.Name = "panel2";
             panel2.Size = new Size(370, 439);
             panel2.TabIndex = 2;
@@ -188,7 +188,7 @@
             panel1.Controls.Add(button4);
             panel1.Controls.Add(button3);
             panel1.Controls.Add(button2);
-            panel1.Location = new Point(24, 483);
+            panel1.Location = new Point(51, 483);
             panel1.Name = "panel1";
             panel1.Size = new Size(948, 68);
             panel1.TabIndex = 3;
@@ -240,7 +240,7 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Teal;
-            ClientSize = new Size(1015, 581);
+            ClientSize = new Size(1057, 581);
             Controls.Add(panel1);
             Controls.Add(panel3);
             Controls.Add(panel2);

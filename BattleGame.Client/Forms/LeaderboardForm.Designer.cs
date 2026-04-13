@@ -39,20 +39,21 @@
             // 
             pictureBox1.BorderStyle = BorderStyle.Fixed3D;
             pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.Location = new Point(157, 12);
+            pictureBox1.Location = new Point(386, 31);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(273, 90);
+            pictureBox1.Size = new Size(273, 69);
             pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureBox1.TabIndex = 0;
             pictureBox1.TabStop = false;
+            pictureBox1.Click += pictureBox1_Click;
             // 
             // listView1
             // 
             listView1.BackColor = SystemColors.Info;
             listView1.Font = new Font("Book Antiqua", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            listView1.Location = new Point(29, 123);
+            listView1.Location = new Point(115, 126);
             listView1.Name = "listView1";
-            listView1.Size = new Size(540, 364);
+            listView1.Size = new Size(818, 364);
             listView1.TabIndex = 1;
             listView1.UseCompatibleStateImageBehavior = false;
             // 
@@ -60,7 +61,7 @@
             // 
             button1.BackColor = Color.Brown;
             button1.Font = new Font("Book Antiqua", 16.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            button1.Location = new Point(29, 510);
+            button1.Location = new Point(472, 515);
             button1.Name = "button1";
             button1.Size = new Size(119, 42);
             button1.TabIndex = 2;
@@ -72,7 +73,7 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.Teal;
-            ClientSize = new Size(604, 581);
+            ClientSize = new Size(1057, 581);
             Controls.Add(button1);
             Controls.Add(listView1);
             Controls.Add(pictureBox1);
