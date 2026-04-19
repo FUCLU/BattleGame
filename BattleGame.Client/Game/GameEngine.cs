@@ -1,84 +1,56 @@
-﻿using BattleGame.Client.Game.Characters;
-using BattleGame.Client.Game.Skills;
-using BattleGame.Shared.Models;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Windows.Forms;
+using BattleGame.Client.Game.Core;
+using BattleGame.Client.Game.Gameplay;
+using BattleGame.Client.Game.Input;
+using BattleGame.Client.Game.Rendering;
+using BattleGame.Client.Game.Systems;
 
 namespace BattleGame.Client.Game
 {
     public class GameEngine
     {
-        // Core objects 
-        private readonly Character _player; // đổi sang Character
-        private readonly PlayerController _controller;
-        private readonly AnimationManager _animationManager;
-        private readonly ProjectileManager _projectileManager;
+        private Entity _player = null!;
 
-        // Input 
-        private readonly HashSet<Keys> _keys = new();
+        private readonly AnimationSystem _animSystem = new();
+        private readonly MovementSystem _moveSystem = new();
+        private readonly CombatSystem _combatSystem = new();
+        private CharacterRenderer _renderer = null!;
+        private PlayerController _controller = null!;
 
-        // Constructor mặc định 
-        public GameEngine() : this(new Soldier())
+        private DateTime _lastTime;
+        private const float GroundY = 400f;
+
+        public GameEngine(string characterId)
         {
+            var loader = new AnimationLoader("Assets");
+            var animations = loader.Load(characterId);
+
+            var animKeys = new Dictionary<string, object>();
+            foreach (var kv in animations)
+                animKeys[kv.Key] = kv.Value;
+
+            _player = CharacterFactory.Create(characterId, 200f, GroundY, animKeys);
+            _renderer = new CharacterRenderer(animations);
+            _controller = new PlayerController(_player, _combatSystem);
+            _lastTime = DateTime.Now;
         }
 
-        // Constructor mới để test nhân vật
-        public GameEngine(Character player)
-        {
-            _player = player;
-
-            _projectileManager = new ProjectileManager();
-
-            // chỉ tạo controller nếu là Soldier
-            if (_player is Soldier soldier)
-            {
-                _controller = new PlayerController(soldier);
-                _animationManager = new AnimationManager(soldier);
-
-                foreach (var skill in soldier.Skills)
-                {
-                    if (skill is ShootSkill ss) ss.Init(_projectileManager);
-                    if (skill is GrenadeSkill gs) gs.Init(_projectileManager);
-                }
-            }
-        }
-
-        //  INPUT
-        public void KeyDown(Keys key) => _keys.Add(key);
-        public void KeyUp(Keys key) => _keys.Remove(key);
-
-        //  UPDATE
         public void Update()
         {
-            if (_player is Soldier soldier)
-            {
-                _controller.Update(_keys);
-                soldier.Update();
-                _animationManager.Update();
+            var now = DateTime.Now;
+            float dt = (float)(now - _lastTime).TotalSeconds;
+            _lastTime = now;
+            dt = Math.Min(dt, 0.05f);
 
-                foreach (var skill in soldier.Skills)
-                    if (skill is GrenadeSkill gs) gs.UpdateDelay();
-            }
-
-            _projectileManager.Update();
+            _controller.Update();
+            _combatSystem.Update(_player, dt);
+            _moveSystem.Update(_player, dt);
+            _animSystem.Update(_player, dt);
+            _renderer.Update(_player, dt);
         }
 
-        //  DRAW
-        public void Draw(Graphics g)
-        {
-            _projectileManager.Draw(g);
-
-            if (_player is Soldier soldier)
-                soldier.Draw(g);
-        }
-
-        //  HUD INFO
-        public int PlayerHP => _player.CurrentHP;
-        public int PlayerMaxHP => _player.MaxHP;
-        public bool PlayerIsDead => _player.IsDead();
-
-        public string PlayerAnim =>
-            _animationManager != null ? _animationManager.CurrentAnimation : "None";
+        public void Draw(Graphics g) => _renderer.Draw(g, _player);
     }
 }

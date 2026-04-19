@@ -3,28 +3,16 @@ using System.Windows.Forms;
 
 namespace BattleGame.Client.Managers
 {
-    public class InputManager
+    public static class InputManager
     {
-        private readonly HashSet<Keys> _keys = new();
+        private static readonly HashSet<Keys> _held = new();
 
-        public void SetKeyDown(Keys key)
+        public static void SetKey(Keys key, bool isDown)
         {
-            _keys.Add(key);
+            if (isDown) _held.Add(key);
+            else _held.Remove(key);
         }
 
-        public void SetKeyUp(Keys key)
-        {
-            _keys.Remove(key);
-        }
-
-        public bool IsKeyDown(Keys key)
-        {
-            return _keys.Contains(key);
-        }
-
-        public void Update()
-        {
-            // có thể xử lý thêm sau (input buffer, combo...)
-        }
+        public static bool IsKeyDown(Keys key) => _held.Contains(key);
     }
 }

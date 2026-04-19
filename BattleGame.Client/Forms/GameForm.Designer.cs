@@ -121,7 +121,6 @@
             panel3.Name = "panel3";
             panel3.Size = new Size(301, 23);
             panel3.TabIndex = 14;
-            panel3.Paint += panel3_Paint;
             // 
             // panel4
             // 
@@ -277,7 +276,6 @@
             DoubleBuffered = true;
             Name = "GameForm";
             Text = "GameForm";
-            Load += GameForm_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             panel1.ResumeLayout(false);
             panel2.ResumeLayout(false);

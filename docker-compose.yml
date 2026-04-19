@@ -13,7 +13,7 @@
       - pgdata:/var/lib/postgresql/data
       - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -37,10 +37,10 @@
     container_name: battlegame_server
     restart: unless-stopped
     ports:
-      - "${SERVER_PORT}:9001"
+      - "9999:9001" 
     environment:
       - DB_CONNECTION=Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
-      - SERVER_PORT=${SERVER_PORT}
+      - SERVER_PORT=9001 
       - SMTP_HOST=mailpit
       - SMTP_PORT=1025
       - SMTP_USERNAME=test@battlegame.local
@@ -61,7 +61,7 @@
     container_name: battlegame_lb
     restart: unless-stopped
     ports:
-      - "9000:9000"
+      - "9090:9000"
     environment:
       - LB_PORT=9000
       - SERVERS=battlegame_server:9001
