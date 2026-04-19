@@ -1,5 +1,5 @@
 {
-  "id": "samurai",
+  "id": "wizard",
 
   "stats": {
     "hp": 100,
@@ -9,13 +9,13 @@
     "speed": 200,
     "atkSpeed": 2.0,
     "stunDuration": 0.0,
-    "attackRange": 110
+    "attackRange": 150
   },
 
   "skills": {
     "skill1": {
-      "id": "multi_slash",
-      "animation": "Skill1",
+      "id": "light_charge",
+      "animation": "Light_charge",
       "manaCost": 0,
       "cooldown": 0.0,
 
@@ -23,17 +23,17 @@
         {
           "type": "melee",
           "trigger": "onFrames",
-          "frames": [ 3, 4, 7, 8 ],
-          "damage": 15,
+          "frames": [ 5, 6, 7, 8,9,10,11,12,13 ],
+          "damage": 5,
           "stun": 0.0,
-          "range": 110
+          "range": 300
         }
       ]
     },
 
     "skill2": {
-      "id": "blade_wave",
-      "animation": "Skill2",
+      "id": "Light_ball",
+      "animation": "Light_ball",
       "manaCost": 0,
       "cooldown": 0.0,
 
@@ -41,11 +41,11 @@
         {
           "type": "projectile",
           "trigger": "onEnd",
-          "projectileAnim": "Skill2_flash",
+          "projectileAnim": "Charge",
           "damage": 30,
           "stun": 1.0,
           "speed": 600,
-          "range": 100
+          "range": 50
         }
       ]
     }
@@ -53,7 +53,7 @@
 
   "animations": {
     "Idle": {
-      "frameCount": 6,
+      "frameCount": 7,
       "fps": 8,
       "loop": true
     },
@@ -69,21 +69,15 @@
     },
 
     "Attack_1": {
-      "frameCount": 4,
+      "frameCount": 10,
       "fps": 12,
       "loop": false
     },
     "Attack_2": {
-      "frameCount": 5,
-      "fps": 12,
-      "loop": false
-    },
-    "Attack_3": {
       "frameCount": 4,
       "fps": 12,
       "loop": false
     },
-
     "Protection": {
       "frameCount": 2,
       "fps": 8,
@@ -105,19 +99,19 @@
       "loop": false
     },
 
-    "Skill1": {
-      "frameCount": 9,
+    "Light_charge": {
+      "frameCount": 13,
       "fps": 10,
       "loop": false
     },
-    "Skill2": {
-      "frameCount": 4,
+    "Light_ball": {
+      "frameCount": 7,
       "fps": 10,
       "loop": false
     },
-    "Skill2_flash": {
-      "frameCount": 4,
-      "fps": 10,
+    "Charge": {
+      "frameCount": 10,
+      "fps": 12,
       "loop": true
     }
   }

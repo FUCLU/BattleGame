@@ -1,27 +1,38 @@
 ﻿using BattleGame.Client.Game.Core;
 using BattleGame.Client.Game.Core.Components;
-using System.Diagnostics;
 
 namespace BattleGame.Client.Game.Rendering;
 
 public class CharacterRenderer
 {
-    private readonly Dictionary<string, SpriteAnimation> _animations;
+    private readonly Dictionary<string, SpriteAnimation> _playerAnimations;
+    private readonly Dictionary<string, SpriteAnimation> _enemyAnimations;
+    private readonly int _playerId;
     private const int DrawWidth = 128;
     private const int DrawHeight = 128;
 
-    public CharacterRenderer(Dictionary<string, SpriteAnimation> animations)
-        => _animations = animations;
+    public CharacterRenderer(int playerId, Dictionary<string, SpriteAnimation> playerAnimations, Dictionary<string, SpriteAnimation> enemyAnimations)
+    {
+        _playerId = playerId;
+        _playerAnimations = playerAnimations;
+        _enemyAnimations = enemyAnimations;
+    }
+
+    private Dictionary<string, SpriteAnimation> GetAnimationsForEntity(Entity entity)
+        => entity.Id == _playerId ? _playerAnimations : _enemyAnimations;
 
     public void Update(Entity entity, float deltaTime)
     {
         var sp = entity.Get<SpriteComponent>();
-        if (!_animations.TryGetValue(sp.CurrentAnimation, out var anim)) return;
+        var animations = GetAnimationsForEntity(entity);
+        if (!animations.TryGetValue(sp.CurrentAnimation, out var anim)) return;
+        if (anim.Frames.Length == 0) return;
 
         sp.FrameTimer += deltaTime;
-        if (sp.FrameTimer >= anim.FrameDuration)
+        while (sp.FrameTimer >= anim.FrameDuration)
         {
-            sp.FrameTimer = 0f;
+            sp.FrameTimer -= anim.FrameDuration;
+
             if (sp.CurrentFrame < anim.Frames.Length - 1)
             {
                 sp.CurrentFrame++;
@@ -39,27 +50,34 @@ public class CharacterRenderer
         var sp = entity.Get<SpriteComponent>();
         var mv = entity.Get<MovementComponent>();
 
-        if (!_animations.TryGetValue(sp.CurrentAnimation, out var anim)) return;
-        var frame = anim.Frames[Math.Min(sp.CurrentFrame, anim.Frames.Length - 1)];
+        var animations = GetAnimationsForEntity(entity);
+        if (!animations.TryGetValue(sp.CurrentAnimation, out var anim)) return;
+        if (anim.Frames.Length == 0) return;
 
-        int drawW = frame.Width;
-        int drawH = frame.Height;
-        int drawX = (int)mv.X - drawW / 2;
-        int drawY = (int)mv.Y - drawH + anim.OffsetY;
+        var frameIndex = Math.Min(sp.CurrentFrame, anim.Frames.Length - 1);
+        var frame = anim.Frames[frameIndex];
+        var destinationRect = GetDestinationRect(mv, anim);
 
         var state = g.Save();
 
         if (mv.FacingRight)
         {
-            g.DrawImage(frame, drawX, drawY, DrawWidth, DrawHeight);
+            g.DrawImage(frame, destinationRect);
         }
         else
         {
-            g.TranslateTransform(drawX + DrawWidth / 2f, drawY + DrawHeight / 2f);
+            g.TranslateTransform(destinationRect.X + destinationRect.Width / 2f, destinationRect.Y + destinationRect.Height / 2f);
             g.ScaleTransform(-1, 1);
-            g.DrawImage(frame, -DrawWidth / 2, -DrawHeight / 2, DrawWidth, DrawHeight);
+            g.DrawImage(frame, -destinationRect.Width / 2, -destinationRect.Height / 2, destinationRect.Width, destinationRect.Height);
         }
 
         g.Restore(state);
+    }
+
+    private static Rectangle GetDestinationRect(MovementComponent mv, SpriteAnimation anim)
+    {
+        int x = (int)MathF.Round(mv.X - DrawWidth / 2f);
+        int y = (int)MathF.Round(mv.Y - DrawHeight + anim.OffsetY);
+        return new Rectangle(x, y, DrawWidth, DrawHeight);
     }
 }

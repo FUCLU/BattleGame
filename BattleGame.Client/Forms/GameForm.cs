@@ -26,6 +26,8 @@ namespace BattleGame.Client.Forms
                 this.DoubleBuffered = true;
                 this.KeyPreview = true;
 
+                InputManager.Clear();
+
                 _engine = new GameEngine(characterId);
                 gameTimer.Start();
 
@@ -71,9 +73,16 @@ namespace BattleGame.Client.Forms
 
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
+            InputManager.Clear();
             gameTimer.Stop();
             gameTimer.Dispose();
             base.OnFormClosed(e);
+        }
+
+        protected override void OnDeactivate(EventArgs e)
+        {
+            base.OnDeactivate(e);
+            InputManager.Clear();
         }
     }
 }

@@ -20,7 +20,7 @@ namespace BattleGame.Client
             {
                 if (isTestMode)
                 {
-                    Application.Run(new GameForm("samurai"));
+                    Application.Run(new GameForm("wizard"));
                 }
                 else
                 {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using BattleGame.Client.Game.Core;
+using BattleGame.Client.Game.Core.Components;
 using BattleGame.Client.Game.Gameplay;
 using BattleGame.Client.Game.Input;
 using BattleGame.Client.Game.Rendering;
@@ -12,10 +13,13 @@ namespace BattleGame.Client.Game
     public class GameEngine
     {
         private Entity _player = null!;
+        private Entity _enemy = null!;
 
         private readonly AnimationSystem _animSystem = new();
         private readonly MovementSystem _moveSystem = new();
-        private readonly CombatSystem _combatSystem = new();
+        private ProjectileSystem _projectileSystem = null!;
+        private CombatSystem _combatSystem = null!;
+
         private CharacterRenderer _renderer = null!;
         private PlayerController _controller = null!;
 
@@ -24,6 +28,7 @@ namespace BattleGame.Client.Game
 
         public GameEngine(string characterId)
         {
+            // Load animations trước — ProjectileSystem cần để render
             var loader = new AnimationLoader("Assets");
             var animations = loader.Load(characterId);
 
@@ -31,9 +36,30 @@ namespace BattleGame.Client.Game
             foreach (var kv in animations)
                 animKeys[kv.Key] = kv.Value;
 
+            // Khởi tạo theo thứ tự dependency
+            _projectileSystem = new ProjectileSystem(animations);
+            _combatSystem = new CombatSystem(_projectileSystem);
+
+            // Tạo nhân vật
             _player = CharacterFactory.Create(characterId, 200f, GroundY, animKeys);
-            _renderer = new CharacterRenderer(animations);
-            _controller = new PlayerController(_player, _combatSystem);
+
+            // Enemy luôn là Samurai (để test)
+            var enemyLoader = new AnimationLoader("Assets");
+            var enemyAnimations = enemyLoader.Load("samurai");
+            var enemyAnimKeys = new Dictionary<string, object>();
+            foreach (var kv in enemyAnimations)
+                enemyAnimKeys[kv.Key] = kv.Value;
+            _enemy = CharacterFactory.Create("samurai", 500f, GroundY, enemyAnimKeys);
+
+            // Đăng ký target cho projectile collision
+            _projectileSystem.RegisterTarget(_player);
+            _projectileSystem.RegisterTarget(_enemy);
+
+            // Player đánh enemy
+            _combatSystem.SetTarget(_enemy);
+
+            _renderer = new CharacterRenderer(_player.Id, animations, enemyAnimations);
+            _controller = new PlayerController(_player, _enemy, _combatSystem);
             _lastTime = DateTime.Now;
         }
 
@@ -45,12 +71,29 @@ namespace BattleGame.Client.Game
             dt = Math.Min(dt, 0.05f);
 
             _controller.Update();
-            _combatSystem.Update(_player, dt);
-            _moveSystem.Update(_player, dt);
-            _animSystem.Update(_player, dt);
+
+            // ===== UPDATE ANIMATION FIRST (before combat check) =====
             _renderer.Update(_player, dt);
+            _renderer.Update(_enemy, dt);
+
+            // ===== COMBAT (now AnimationFinished is up-to-date) =====
+            _combatSystem.Update(_player, dt);
+            _combatSystem.Update(_enemy, dt);
+
+            _moveSystem.Update(_player, dt);
+            _moveSystem.Update(_enemy, dt);
+
+            _animSystem.Update(_player, dt);
+            _animSystem.Update(_enemy, dt);
+
+            _projectileSystem.Update(dt);
         }
 
-        public void Draw(Graphics g) => _renderer.Draw(g, _player);
+        public void Draw(Graphics g)
+        {
+            _renderer.Draw(g, _player);
+            _renderer.Draw(g, _enemy);
+            _projectileSystem.Draw(g);
+        }
     }
 }

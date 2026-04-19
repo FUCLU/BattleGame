@@ -1,44 +1,55 @@
 ﻿using BattleGame.Shared.Models;
-using System.ComponentModel;
+using System.Collections.Generic;
 
-namespace BattleGame.Client.Game.Core.Components;
-
-public class CharacterComponent : IComponent
+namespace BattleGame.Client.Game.Core.Components
 {
-    // Chỉ số gốc (load từ config, không đổi)
-    public CharacterStats BaseStats { get; set; } = new();
+    public class CharacterComponent : IComponent
+    {
+        // ===== BASE STATS =====
+        public CharacterStats BaseStats { get; set; } = new();
 
-    // Chỉ số hiện tại
-    public int Hp { get; set; }
-    public int Mana { get; set; }
+        // ===== CURRENT STATS =====
+        public int Hp { get; set; }
+        public int Mana { get; set; }
 
-    // Skills
-    public SkillData? Skill1 { get; set; }
-    public SkillData? Skill2 { get; set; }
-    public float Skill1Cooldown { get; set; }
-    public float Skill2Cooldown { get; set; }
-    public string CurrentSkillAnim { get; set; } = "Skill1";
-    // Trạng thái hành động
-    public bool IsProtecting { get; set; }
-    public bool IsAttacking { get; set; }
-    public bool IsUsingSkill { get; set; }
-    public bool IsHurt { get; set; }
-    public bool IsStunned { get; set; }
-    public bool IsDead { get; set; }
+        // ===== SKILLS =====
+        public SkillData? Skill1 { get; set; }
+        public SkillData? Skill2 { get; set; }
 
-    // Timer hành động (dùng chung cho attack / skill)
-    public float ActionTimer { get; set; }
-    public float ActionDuration { get; set; }
+        public float Skill1Cooldown { get; set; }
+        public float Skill2Cooldown { get; set; }
 
-    public float HurtTimer { get; set; }
-    public float HurtDuration { get; set; } = 0.3f;
+        public string CurrentSkillAnim { get; set; } = "Skill1";
 
-    public float StunTimer { get; set; }
+        // ===== STATES =====
+        public bool IsProtecting { get; set; }
+        public bool IsAttacking { get; set; }
+        public bool IsUsingSkill { get; set; }
+        public bool IsHurt { get; set; }
+        public bool IsStunned { get; set; }
+        public bool IsDead { get; set; }
 
-    // Animation attack hiện tại (random mỗi lần đánh)
-    public string CurrentAttackAnim { get; set; } = "Attack_1";
-    public int AttackAnimCount { get; set; } = 1;
+        // ===== TIMERS =====
+        public float ActionTimer { get; set; }
+        public float ActionDuration { get; set; }
 
-    // Shortcut
-    public bool IsBusy => IsAttacking || IsUsingSkill || IsHurt || IsStunned || IsDead;
+        public float HurtTimer { get; set; }
+        public float HurtDuration { get; set; } = 0.3f;
+
+        public float StunTimer { get; set; }
+
+        // ===== ATTACK =====
+        public int AttackHitFrame { get; set; } = 2;
+        public bool AttackHitDone { get; set; } = false;
+        public string CurrentAttackAnim { get; set; } = "Attack_1";
+        public int AttackAnimCount { get; set; } = 1;
+
+        // ===== STATE LOCK =====
+        public bool IsBusy => IsAttacking || IsUsingSkill || IsStunned || IsDead;
+
+        // ===== SKILL SYSTEM =====
+        public int CurrentSkillSlot { get; set; }
+        public HashSet<int> TriggeredEffects { get; set; } = new();
+        public HashSet<(int, int)> TriggeredFrames { get; set; } = new(); // (effectIdx, frameIdx)
+    }
 }

@@ -28,8 +28,10 @@ namespace BattleGame.Client.Game.Rendering
             if (!File.Exists(configPath))
                 throw new FileNotFoundException($"Config not found: {configPath}");
 
-            var doc = JsonDocument.Parse(File.ReadAllText(configPath)).RootElement;
-            var animations = doc.GetProperty("animations");
+            using var doc = JsonDocument.Parse(File.ReadAllText(configPath));
+            var root = doc.RootElement;
+
+            var animations = root.GetProperty("animations");
             var result = new Dictionary<string, SpriteAnimation>();
 
             foreach (var anim in animations.EnumerateObject())
@@ -38,18 +40,18 @@ namespace BattleGame.Client.Game.Rendering
                 var frameCount = anim.Value.GetProperty("frameCount").GetInt32();
                 var fps = anim.Value.GetProperty("fps").GetSingle();
                 var loop = anim.Value.GetProperty("loop").GetBoolean();
-                var offsetY = anim.Value.TryGetProperty("offsetY", out var oy) ? oy.GetInt32() : 0;
 
                 var sheet = LoadSheet(characterId, name);
                 if (sheet == null) continue;
 
+                var frames = SliceFrames(sheet, frameCount);
+
                 result[name] = new SpriteAnimation
                 {
                     Name = name,
-                    Frames = SliceFrames(sheet, frameCount),
+                    Frames = frames,
                     Fps = fps,
-                    Loop = loop,
-                    OffsetY = offsetY
+                    Loop = loop
                 };
 
                 sheet.Dispose();
@@ -60,6 +62,9 @@ namespace BattleGame.Client.Game.Rendering
 
         private Bitmap? LoadSheet(string characterId, string animName)
         {
+            if (string.IsNullOrWhiteSpace(characterId))
+                return null;
+
             string folder = char.ToUpper(characterId[0]) + characterId[1..];
             string path = Path.Combine(_assetRoot, "Characters", folder, $"{animName}.png");
             if (!File.Exists(path)) return null;
@@ -89,23 +94,20 @@ namespace BattleGame.Client.Game.Rendering
 
             for (int i = 0; i < frameCount; i++)
             {
-                byte[] frameBytes = new byte[fw * fh * 4];
-
-                for (int y = 0; y < fh; y++)
-                {
-                    int srcRow = y * stride + i * fw * 4;
-                    int dstRow = y * fw * 4;
-
-                    // 👉 copy nguyên hàng pixel (NHANH NHẤT)
-                    Buffer.BlockCopy(sheetBytes, srcRow, frameBytes, dstRow, fw * 4);
-                }
-
                 var frame = new Bitmap(fw, fh, PixelFormat.Format32bppArgb);
-
                 var frameData = frame.LockBits(
                     new Rectangle(0, 0, fw, fh),
                     ImageLockMode.WriteOnly,
                     PixelFormat.Format32bppArgb);
+
+                byte[] frameBytes = new byte[frameData.Stride * fh];
+
+                for (int y = 0; y < fh; y++)
+                {
+                    int srcRow = y * stride + i * fw * 4;
+                    int dstRow = y * frameData.Stride;
+                    Buffer.BlockCopy(sheetBytes, srcRow, frameBytes, dstRow, fw * 4);
+                }
 
                 Marshal.Copy(frameBytes, 0, frameData.Scan0, frameBytes.Length);
                 frame.UnlockBits(frameData);
@@ -115,5 +117,6 @@ namespace BattleGame.Client.Game.Rendering
 
             return frames;
         }
+
     }
 }

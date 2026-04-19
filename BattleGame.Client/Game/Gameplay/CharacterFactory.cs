@@ -28,7 +28,8 @@ namespace BattleGame.Client.Game.Gameplay
                 Atk = stats.GetProperty("atk").GetInt32(),
                 Speed = stats.GetProperty("speed").GetSingle(),
                 AtkSpeed = stats.GetProperty("atkSpeed").GetSingle(),
-                StunDuration = stats.GetProperty("stunDuration").GetSingle()
+                StunDuration = stats.GetProperty("stunDuration").GetSingle(),
+                AttackRange = stats.TryGetProperty("attackRange", out var ar) ? ar.GetSingle() : 150f
             };
 
             SkillData? skill1 = null;
@@ -64,7 +65,9 @@ namespace BattleGame.Client.Game.Gameplay
                 X = startX,
                 Y = groundY,
                 GroundY = groundY,
-                Speed = baseStats.Speed
+                Speed = baseStats.Speed,
+                VelocityX = 0f,
+                VelocityY = 0f
             });
 
             entity.Add(new SpriteComponent());
@@ -72,14 +75,43 @@ namespace BattleGame.Client.Game.Gameplay
             return entity;
         }
 
-        private static SkillData ParseSkill(JsonElement el) => new()
+        private static SkillData ParseSkill(JsonElement el)
         {
-            Id = el.GetProperty("id").GetString() ?? "",
-            Type = el.GetProperty("type").GetString() ?? "",
-            ManaCost = el.GetProperty("manaCost").GetInt32(),
-            Cooldown = el.GetProperty("cooldown").GetSingle(),
-            Damage = el.GetProperty("damage").GetInt32(),
-            StunDuration = el.TryGetProperty("stunDuration", out var sd) ? sd.GetSingle() : 0f
-        };
+            var skill = new SkillData
+            {
+                Id = el.GetProperty("id").GetString() ?? "",
+                ManaCost = el.GetProperty("manaCost").GetInt32(),
+                Cooldown = el.GetProperty("cooldown").GetSingle(),
+                Animation = el.TryGetProperty("animation", out var anim) ? anim.GetString() ?? "" : ""
+            };
+
+            if (el.TryGetProperty("effects", out var effects))
+            {
+                foreach (var e in effects.EnumerateArray())
+                {
+                    var effect = new EffectData
+                    {
+                        Type = e.GetProperty("type").GetString() ?? "",
+                        Trigger = e.GetProperty("trigger").GetString() ?? "",
+                        Damage = e.TryGetProperty("damage", out var d) ? d.GetInt32() : 0,
+                        Stun = e.TryGetProperty("stun", out var s) ? s.GetSingle() : 0,
+                        Speed = e.TryGetProperty("speed", out var sp) ? sp.GetSingle() : 0,
+                        ProjectileAnim = e.TryGetProperty("projectileAnim", out var pa) ? pa.GetString() ?? "" : "",
+                        Range = e.TryGetProperty("range", out var r) ? r.GetSingle() : 50f
+                    };
+
+                    if (e.TryGetProperty("frames", out var frames))
+                    {
+                        effect.Frames = new List<int>();
+                        foreach (var f in frames.EnumerateArray())
+                            effect.Frames.Add(f.GetInt32());
+                    }
+
+                    skill.Effects.Add(effect);
+                }
+            }
+
+            return skill;
+        }
     }
 }

@@ -64,6 +64,18 @@ namespace BattleGame.Client.Forms
                     HP = 110, ATK = 45, DEF = 15, SPD = 20,
                     Skill = "Shoot"
                 },
+                new CharacterData {
+                    Name      = "Wizard",
+                    IdleImage = Path.Combine(AssetsRoot, "Wizard", "Idle.png"),
+                    HP = 100, ATK = 20, DEF = 10, SPD = 20,
+                    Skill = "Light Ball"
+                },
+                new CharacterData {
+                    Name      = "Samurai",
+                    IdleImage = Path.Combine(AssetsRoot, "Samurai", "Idle.png"),
+                    HP = 100, ATK = 20, DEF = 10, SPD = 20,
+                    Skill = "Blade Wave"
+                },
             };
 
             _idx = 0;
@@ -119,7 +131,14 @@ namespace BattleGame.Client.Forms
         // SELECT 
         private void button1_Click(object sender, EventArgs e)
         {
-            MessageBox.Show($"Đã chọn: {_chars[_idx].Name}");
+            string characterName = _chars[_idx].Name;
+            // Convert tên nhân vật thành characterId (lowercase)
+            string characterId = characterName.ToLower();
+
+            // Chuyển sang GameForm
+            GameForm gameForm = new GameForm(characterId);
+            gameForm.Show();
+            this.Hide();
         }
 
         // Giữ nguyên handler cũ để tránh lỗi build

@@ -14,5 +14,8 @@ namespace BattleGame.Client.Managers
         }
 
         public static bool IsKeyDown(Keys key) => _held.Contains(key);
+
+        public static void Clear()
+            => _held.Clear();
     }
 }

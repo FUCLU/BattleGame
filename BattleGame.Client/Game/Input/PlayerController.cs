@@ -10,13 +10,15 @@ namespace BattleGame.Client.Game.Input
     {
         private readonly Entity _entity;
         private readonly CombatSystem _combat;
+        private readonly Entity _target;
 
         // Theo dõi phím trigger một lần (attack, skill)
         private bool _prevJ, _prevU, _prevI;
 
-        public PlayerController(Entity entity, CombatSystem combat)
+        public PlayerController(Entity entity, Entity target, CombatSystem combat)
         {
             _entity = entity;
+            _target = target;
             _combat = combat;
         }
 
@@ -27,9 +29,10 @@ namespace BattleGame.Client.Game.Input
 
             if (ch.IsDead) return;
 
-            // --- Di chuyển (held) ---
+            // ===== MOVEMENT =====
             mv.VelocityX = 0;
-            if (!ch.IsHurt && !ch.IsStunned && !ch.IsDead && !ch.IsBusy && !ch.IsProtecting)
+
+            if (!ch.IsBusy && !ch.IsProtecting)
             {
                 if (InputManager.IsKeyDown(Keys.A))
                 {
@@ -43,17 +46,31 @@ namespace BattleGame.Client.Game.Input
                 }
             }
 
-            // --- Đỡ đòn (held) ---
+            // ===== BLOCK =====
             ch.IsProtecting = InputManager.IsKeyDown(Keys.S) && !ch.IsBusy;
 
-            // --- Attack / Skill (trigger một lần khi nhấn xuống) ---
+            // ===== INPUT TRIGGER =====
             bool curJ = InputManager.IsKeyDown(Keys.J);
             bool curU = InputManager.IsKeyDown(Keys.U);
             bool curI = InputManager.IsKeyDown(Keys.I);
 
-            if (curJ && !_prevJ) _combat.Attack(_entity);
-            if (curU && !_prevU) _combat.UseSkill(_entity, 1);
-            if (curI && !_prevI) _combat.UseSkill(_entity, 2);
+            // ===== ATTACK =====
+            if (curJ && !_prevJ && !ch.IsBusy)
+            {
+                _combat.Attack(_entity);
+            }
+
+            // ===== SKILL 1 (DAMAGE) =====
+            if (curU && !_prevU && !ch.IsBusy)
+            {
+                _combat.UseSkill(_entity, 1);
+            }
+
+            // ===== SKILL 2 (STUN) =====
+            if (curI && !_prevI && !ch.IsBusy)
+            {
+                _combat.UseSkill(_entity, 2);
+            }
 
             _prevJ = curJ;
             _prevU = curU;
