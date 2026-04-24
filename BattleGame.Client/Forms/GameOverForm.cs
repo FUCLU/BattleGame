@@ -19,19 +19,15 @@ namespace BattleGame.Client.Forms
         {
 
         }
-        private void panel3_Paint(object sender, PaintEventArgs e)
+
+        private void btnBackLobby_Click(object sender, EventArgs e)
         {
 
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void btnBackLobby_MouseHover(object sender, EventArgs e)
         {
-
-        }
-
-        private void label3_Click(object sender, EventArgs e)
-        {
-
+            btnBackLobby.BackColor = ColorTranslator.FromHtml("#2980B9");
         }
     }
 }

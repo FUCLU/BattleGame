@@ -86,9 +86,9 @@
             panel1.BackColor = Color.RosyBrown;
             panel1.BorderStyle = BorderStyle.Fixed3D;
             panel1.Controls.Add(panel2);
-            panel1.Location = new Point(770, 130);
+            panel1.Location = new Point(790, 130);
             panel1.Name = "panel1";
-            panel1.Size = new Size(301, 23);
+            panel1.Size = new Size(281, 23);
             panel1.TabIndex = 15;
             // 
             // panel2
@@ -117,9 +117,9 @@
             panel3.BackColor = Color.RosyBrown;
             panel3.BorderStyle = BorderStyle.Fixed3D;
             panel3.Controls.Add(panel4);
-            panel3.Location = new Point(770, 93);
+            panel3.Location = new Point(790, 92);
             panel3.Name = "panel3";
-            panel3.Size = new Size(301, 23);
+            panel3.Size = new Size(281, 23);
             panel3.TabIndex = 14;
             panel3.Paint += panel3_Paint;
             // 
@@ -171,7 +171,7 @@
             panelManaBack.Controls.Add(panelManaFill);
             panelManaBack.Location = new Point(69, 127);
             panelManaBack.Name = "panelManaBack";
-            panelManaBack.Size = new Size(301, 23);
+            panelManaBack.Size = new Size(281, 23);
             panelManaBack.TabIndex = 11;
             // 
             // panelManaFill
@@ -202,7 +202,7 @@
             panelHPBack.Controls.Add(panelHPFill);
             panelHPBack.Location = new Point(69, 90);
             panelHPBack.Name = "panelHPBack";
-            panelHPBack.Size = new Size(301, 23);
+            panelHPBack.Size = new Size(281, 23);
             panelHPBack.TabIndex = 10;
             // 
             // panelHPFill
@@ -218,6 +218,7 @@
             // lblHP
             // 
             lblHP.AutoSize = true;
+            lblHP.BackColor = Color.Firebrick;
             lblHP.Font = new Font("Book Antiqua", 9F, FontStyle.Regular, GraphicsUnit.Point, 0);
             lblHP.ForeColor = Color.White;
             lblHP.Location = new Point(93, -3);
@@ -228,6 +229,7 @@
             // 
             // panelStatus
             // 
+            panelStatus.BackColor = Color.Silver;
             panelStatus.Controls.Add(label2);
             panelStatus.Controls.Add(label1);
             panelStatus.Location = new Point(428, 28);
@@ -264,7 +266,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Stretch;
-            ClientSize = new Size(1139, 594);
+            ClientSize = new Size(1106, 540);
             Controls.Add(label4);
             Controls.Add(pictureBox2);
             Controls.Add(panel1);

@@ -54,7 +54,7 @@
             // 
             pictureBox1.BackgroundImage = (Image)resources.GetObject("pictureBox1.BackgroundImage");
             pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox1.Location = new Point(332, 23);
+            pictureBox1.Location = new Point(355, 41);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(372, 60);
             pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -65,7 +65,8 @@
             // 
             button3.BackgroundImage = (Image)resources.GetObject("button3.BackgroundImage");
             button3.BackgroundImageLayout = ImageLayout.Stretch;
-            button3.Location = new Point(12, 519);
+            button3.FlatStyle = FlatStyle.Flat;
+            button3.Location = new Point(44, 500);
             button3.Name = "button3";
             button3.Size = new Size(112, 50);
             button3.TabIndex = 3;
@@ -101,28 +102,26 @@
             pictureBox3.TabIndex = 6;
             pictureBox3.TabStop = false;
             // 
-            SuspendLayout();
-            // 
             // ModeForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.RoyalBlue;
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
-            ClientSize = new Size(1057, 581);
+            BackgroundImageLayout = ImageLayout.Stretch;
+            ClientSize = new Size(1057, 585);
             Controls.Add(button2);
             Controls.Add(pictureBox3);
             Controls.Add(button4);
             Controls.Add(pictureBox2);
             Controls.Add(button3);
             Controls.Add(pictureBox1);
+            DoubleBuffered = true;
             Name = "ModeForm";
             Text = "ModeForm";
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox3).EndInit();
-            ClientSize = new Size(1057, 581);
-            Name = "ModeForm";
-            Text = "ModeForm";
             ResumeLayout(false);
         }
 

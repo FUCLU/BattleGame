@@ -20,12 +20,6 @@ namespace BattleGame.Client.Forms
             this.Hide();
         }
 
-        private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            ForgotPasswordForm forgot = new ForgotPasswordForm();
-            forgot.Show();
-            this.Hide();
-        }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
@@ -84,7 +78,7 @@ namespace BattleGame.Client.Forms
         {
             if (_isMuted)
             {
-                SoundManager.SetVolume(1.0f); 
+                SoundManager.SetVolume(1.0f);
                 _isMuted = false;
             }
             else
@@ -92,6 +86,21 @@ namespace BattleGame.Client.Forms
                 SoundManager.SetVolume(0.0f);
                 _isMuted = true;
             }
+        }
+
+        //đổi thành btn sign up
+        private void button3_Click(object sender, EventArgs e)
+        {
+            RegisterForm registerForm = new RegisterForm();
+            registerForm.Show();
+            this.Hide();
+        }
+
+        private void linkLabel2_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            ForgotPasswordForm forgotPasswordForm = new ForgotPasswordForm();
+            forgotPasswordForm.Show();
+            this.Hide();
         }
     }
 }
