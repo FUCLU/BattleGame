@@ -37,7 +37,7 @@ namespace BattleGame.Client
                 return;
             }
 
-            Application.Run(new JoinRoom());
+            Application.Run(new OfflineModeSelection());
         }
     }
 }

@@ -38,6 +38,8 @@ namespace BattleGame.Client.Forms
 
         }
 
+        public string SelectedCharacterName { get; private set; } //hàm để trả dữ liệu cho form khác
+
         private void CharacterSelection_Load(object sender, EventArgs e)
         {
             kabold = new CharacterData
@@ -151,6 +153,12 @@ namespace BattleGame.Client.Forms
         private void btnSellect_Click(object sender, EventArgs e)
         {
             MessageBox.Show($"Đã chọn: {_selectedChar.Name}");
+            if (_selectedChar == null) return;
+
+            SelectedCharacterName = _selectedChar.Name;
+
+            this.DialogResult = DialogResult.OK; // báo form cha biết là đã chọn
+            this.Close();
         }
 
 
