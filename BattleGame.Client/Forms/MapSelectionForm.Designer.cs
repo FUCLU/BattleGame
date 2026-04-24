@@ -48,11 +48,11 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Font = new Font("Goudy Stout", 19.8000011F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.Font = new Font("Algerian", 31.8000011F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label1.ForeColor = Color.MidnightBlue;
-            label1.Location = new Point(23, 21);
+            label1.Location = new Point(89, 24);
             label1.Name = "label1";
-            label1.Size = new Size(717, 47);
+            label1.Size = new Size(583, 60);
             label1.TabIndex = 1;
             label1.Text = "Choose Background";
             // 
