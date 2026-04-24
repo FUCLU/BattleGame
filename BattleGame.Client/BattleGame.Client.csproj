@@ -224,6 +224,9 @@
 		<None Update="Assets\Background\roomcode.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="Assets\Background\Select.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="Assets\Background\SelectChar.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
