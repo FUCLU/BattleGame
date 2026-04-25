@@ -42,6 +42,7 @@
             button1.Size = new Size(179, 69);
             button1.TabIndex = 0;
             button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
             // 
             // button2
             // 
@@ -52,6 +53,7 @@
             button2.Size = new Size(183, 69);
             button2.TabIndex = 1;
             button2.UseVisualStyleBackColor = true;
+            button2.Click += button2_Click;
             // 
             // VictoryForm
             // 
@@ -65,6 +67,7 @@
             DoubleBuffered = true;
             Name = "VictoryForm";
             Text = "VictoryForm";
+            Load += VictoryForm_Load;
             ResumeLayout(false);
         }
 

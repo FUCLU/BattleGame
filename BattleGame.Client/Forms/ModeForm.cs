@@ -15,6 +15,31 @@ namespace BattleGame.Client.Forms
         public ModeForm()
         {
             InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            OfflineModeSelection offlineModeSelection = new OfflineModeSelection();
+            offlineModeSelection.ShowDialog();
+            this.Close();
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            JoinRoom joinRoom = new JoinRoom();
+            joinRoom.ShowDialog();
+            this.Close();
+        }
+
+        private void ModeForm_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

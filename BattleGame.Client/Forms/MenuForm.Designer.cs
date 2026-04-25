@@ -84,6 +84,7 @@
             DoubleBuffered = true;
             Name = "MenuForm";
             Text = "MenuForm";
+            Load += MenuForm_Load;
             ResumeLayout(false);
         }
 

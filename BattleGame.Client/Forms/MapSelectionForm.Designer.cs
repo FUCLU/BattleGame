@@ -49,7 +49,7 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Algerian", 31.8000011F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label1.ForeColor = Color.MidnightBlue;
+            label1.ForeColor = SystemColors.Control;
             label1.Location = new Point(89, 24);
             label1.Name = "label1";
             label1.Size = new Size(583, 60);
@@ -58,7 +58,7 @@
             // 
             // pictureBoxMap
             // 
-            pictureBoxMap.BackColor = Color.CadetBlue;
+            pictureBoxMap.BackColor = Color.Azure;
             pictureBoxMap.Location = new Point(48, 138);
             pictureBoxMap.Name = "pictureBoxMap";
             pictureBoxMap.Size = new Size(653, 310);
@@ -74,7 +74,7 @@
             buttonSelect.FlatAppearance.BorderSize = 2;
             buttonSelect.FlatStyle = FlatStyle.Flat;
             buttonSelect.Font = new Font("Book Antiqua", 13.8F, FontStyle.Bold);
-            buttonSelect.Location = new Point(164, 479);
+            buttonSelect.Location = new Point(48, 479);
             buttonSelect.Name = "buttonSelect";
             buttonSelect.Size = new Size(127, 39);
             buttonSelect.TabIndex = 3;
@@ -89,7 +89,7 @@
             buttonCancel.FlatAppearance.BorderSize = 2;
             buttonCancel.FlatStyle = FlatStyle.Flat;
             buttonCancel.Font = new Font("Book Antiqua", 13.8F, FontStyle.Bold);
-            buttonCancel.Location = new Point(467, 479);
+            buttonCancel.Location = new Point(574, 479);
             buttonCancel.Name = "buttonCancel";
             buttonCancel.Size = new Size(127, 39);
             buttonCancel.TabIndex = 4;
@@ -101,7 +101,7 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.SteelBlue;
+            BackColor = Color.RoyalBlue;
             ClientSize = new Size(753, 538);
             Controls.Add(buttonCancel);
             Controls.Add(buttonSelect);

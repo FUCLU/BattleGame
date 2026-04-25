@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ForgotPasswordForm));
             panel1 = new Panel();
             btnBackLogin = new Button();
@@ -39,10 +40,12 @@
             label2 = new Label();
             pictureBox1 = new PictureBox();
             button2 = new Button();
+            bindingSource1 = new BindingSource(components);
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)bindingSource1).BeginInit();
             SuspendLayout();
             // 
             // panel1
@@ -69,8 +72,8 @@
             btnBackLogin.FlatAppearance.BorderColor = Color.Teal;
             btnBackLogin.FlatAppearance.BorderSize = 3;
             btnBackLogin.FlatStyle = FlatStyle.Popup;
-            btnBackLogin.Font = new Font("Georgia", 9F);
-            btnBackLogin.Location = new Point(247, 258);
+            btnBackLogin.Font = new Font("Georgia", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnBackLogin.Location = new Point(239, 274);
             btnBackLogin.Name = "btnBackLogin";
             btnBackLogin.Size = new Size(163, 43);
             btnBackLogin.TabIndex = 10;
@@ -101,20 +104,20 @@
             // textBox1
             // 
             textBox1.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            textBox1.Location = new Point(25, 190);
+            textBox1.Location = new Point(26, 206);
             textBox1.Multiline = true;
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(385, 38);
+            textBox1.Size = new Size(376, 38);
             textBox1.TabIndex = 6;
             // 
             // label3
             // 
             label3.AutoSize = true;
-            label3.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
+            label3.Font = new Font("Segoe UI", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label3.ForeColor = SystemColors.Window;
-            label3.Location = new Point(22, 154);
+            label3.Location = new Point(20, 172);
             label3.Name = "label3";
-            label3.Size = new Size(75, 31);
+            label3.Size = new Size(73, 31);
             label3.TabIndex = 5;
             label3.Text = "Email";
             // 
@@ -124,10 +127,10 @@
             button1.FlatAppearance.BorderColor = Color.Teal;
             button1.FlatAppearance.BorderSize = 3;
             button1.FlatStyle = FlatStyle.Popup;
-            button1.Font = new Font("Georgia", 9F);
-            button1.Location = new Point(19, 258);
+            button1.Font = new Font("Georgia", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button1.Location = new Point(23, 274);
             button1.Name = "button1";
-            button1.Size = new Size(163, 43);
+            button1.Size = new Size(178, 43);
             button1.TabIndex = 3;
             button1.Text = "SEND RESET CODE";
             button1.UseVisualStyleBackColor = false;
@@ -136,13 +139,13 @@
             // label2
             // 
             label2.AutoSize = true;
-            label2.Font = new Font("Yu Gothic Medium", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label2.ForeColor = Color.DarkSalmon;
-            label2.Location = new Point(25, 96);
+            label2.Font = new Font("Calibri", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            label2.ForeColor = SystemColors.ControlText;
+            label2.Location = new Point(25, 102);
             label2.Name = "label2";
-            label2.Size = new Size(279, 44);
+            label2.Size = new Size(364, 56);
             label2.TabIndex = 2;
-            label2.Text = "Enter your registered email to \r\nreceive reset code.\r\n";
+            label2.Text = "Enter your registered email to receive \r\nreset code.\r\n";
             // 
             // pictureBox1
             // 
@@ -151,7 +154,7 @@
             pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
             pictureBox1.Location = new Point(73, 24);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(289, 57);
+            pictureBox1.Size = new Size(289, 70);
             pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureBox1.TabIndex = 7;
             pictureBox1.TabStop = false;
@@ -185,6 +188,7 @@
             ((System.ComponentModel.ISupportInitialize)pictureBox3).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)bindingSource1).EndInit();
             ResumeLayout(false);
         }
 
@@ -200,5 +204,6 @@
         private PictureBox pictureBox3;
         private PictureBox pictureBox2;
         private Button btnBackLogin;
+        private BindingSource bindingSource1;
     }
 }

@@ -62,6 +62,7 @@
             panel1.Name = "panel1";
             panel1.Size = new Size(952, 569);
             panel1.TabIndex = 0;
+            panel1.Paint += panel1_Paint;
             // 
             // BtnLeaderBoard
             // 
@@ -71,7 +72,7 @@
             BtnLeaderBoard.FlatStyle = FlatStyle.Popup;
             BtnLeaderBoard.Font = new Font("Book Antiqua", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             BtnLeaderBoard.ForeColor = Color.White;
-            BtnLeaderBoard.Location = new Point(523, 335);
+            BtnLeaderBoard.Location = new Point(528, 335);
             BtnLeaderBoard.Name = "BtnLeaderBoard";
             BtnLeaderBoard.Size = new Size(276, 77);
             BtnLeaderBoard.TabIndex = 4;

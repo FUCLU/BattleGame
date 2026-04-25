@@ -13,6 +13,7 @@ namespace BattleGame.Client.Forms
         public GameOverForm()
         {
             InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
         }
 
         private void GameOverForm_Load(object sender, EventArgs e)
@@ -28,6 +29,11 @@ namespace BattleGame.Client.Forms
         private void btnBackLobby_MouseHover(object sender, EventArgs e)
         {
             btnBackLobby.BackColor = ColorTranslator.FromHtml("#2980B9");
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }

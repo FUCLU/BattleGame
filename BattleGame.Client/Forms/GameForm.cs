@@ -11,6 +11,9 @@ namespace BattleGame.Client.Forms
     {
         private readonly GameEngine _engine;
         private readonly WinTimer _gameTimer;
+        private Character _bot;
+        private string _map;
+        private string _mode;
 
         private Character _player; // nhận từ ngoài
 
@@ -40,6 +43,40 @@ namespace BattleGame.Client.Forms
             _gameTimer.Start();
 
             // INPUT
+            this.KeyDown += GameForm_KeyDown;
+            this.KeyUp += GameForm_KeyUp;
+
+            this.Load += (s, e) => this.Focus();
+        }
+
+        public GameForm(Character player, Character bot, string map, string mode)
+        {
+            InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
+
+            _player = player;
+            _bot = bot;
+            _map = map;
+            _mode = mode;
+
+            // WINDOW CONFIG
+            this.DoubleBuffered = true;
+            this.KeyPreview = true;
+            this.Text = $"Battle Game - {_mode} - {_map}";
+            this.ClientSize = new Size(1280, 720);
+            this.BackColor = Color.FromArgb(20, 20, 35);
+
+            // ENGINE (truyền cả bot nếu cần)
+            _engine = new GameEngine(_player /*, _bot nếu có */);
+
+            _gameTimer = new WinTimer
+            {
+                Interval = 16
+            };
+
+            _gameTimer.Tick += GameLoop;
+            _gameTimer.Start();
+
             this.KeyDown += GameForm_KeyDown;
             this.KeyUp += GameForm_KeyUp;
 

@@ -15,6 +15,7 @@ namespace BattleGame.Client.Forms
         public JoinRoom()
         {
             InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
         }
         public class Room
         {
@@ -181,6 +182,27 @@ namespace BattleGame.Client.Forms
         {
             //server trả về danh sách phòng mới nhất
             RenderRooms(fakeRooms);
+        }
+
+        private void btnBack_Click(object sender, EventArgs e)
+        {
+            ModeForm modeForm = new ModeForm();
+            modeForm.ShowDialog();
+            this.Close();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            OfflineModeSelection offlineModeSelection = new OfflineModeSelection();
+            offlineModeSelection.Show();
+            this.Close();
+        }
+
+        private void btnJoin_Click_1(object sender, EventArgs e)
+        {
+            RoomForm roomForm = new RoomForm();
+            roomForm.Show();
+            this.Close();
         }
     }
 }

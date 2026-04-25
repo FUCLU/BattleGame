@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace BattleGame.Shared.Models
 {
-    public abstract class Character
+    public class Character
     {
         // ===== IDENTITY =====
         public string Name { get; protected set; } = "Unknown";
@@ -16,7 +16,15 @@ namespace BattleGame.Shared.Models
         public bool IsAlive => !IsDead();
         public List<Skill> Skills { get; protected set; } = new();
 
-
+        public Character(string name, int maxHp, int atk, int def, int speed)
+        {
+            Name = name;
+            MaxHP = maxHp;
+            CurrentHP = maxHp;
+            ATK = atk;
+            DEF = def;
+            Speed = speed;
+        }
         public virtual int TakeDamage(int rawDamage)
         {
             if (rawDamage <= 0) return 0;

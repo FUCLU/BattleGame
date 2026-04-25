@@ -37,7 +37,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Stretch;
-            ClientSize = new Size(747, 419);
+            ClientSize = new Size(702, 373);
             DoubleBuffered = true;
             Name = "RoundStartForm";
             Text = "RoundStartForm";

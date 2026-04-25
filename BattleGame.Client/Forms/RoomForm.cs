@@ -15,6 +15,7 @@ namespace BattleGame.Client.Forms
         public RoomForm()
         {
             InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
         }
 
         private void RoomForm_Load(object sender, EventArgs e)
@@ -28,7 +29,7 @@ namespace BattleGame.Client.Forms
             mapSelectionForm.Show();
         }
 
-  
+
         void AddMessage(string sender, string message)
         {
             string time = DateTime.Now.ToString("HH:mm");
@@ -60,5 +61,9 @@ namespace BattleGame.Client.Forms
             }
         }
 
+        private void panel2_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
     }
 }

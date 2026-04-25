@@ -84,11 +84,11 @@
             // 
             linkLabel1.ActiveLinkColor = SystemColors.ActiveCaptionText;
             linkLabel1.AutoSize = true;
-            linkLabel1.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            linkLabel1.LinkColor = Color.DarkGreen;
-            linkLabel1.Location = new Point(244, 447);
+            linkLabel1.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            linkLabel1.LinkColor = Color.Red;
+            linkLabel1.Location = new Point(283, 446);
             linkLabel1.Name = "linkLabel1";
-            linkLabel1.Size = new Size(61, 28);
+            linkLabel1.Size = new Size(64, 28);
             linkLabel1.TabIndex = 10;
             linkLabel1.TabStop = true;
             linkLabel1.Text = "Login";
@@ -98,7 +98,7 @@
             // 
             label5.AutoSize = true;
             label5.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label5.Location = new Point(15, 449);
+            label5.Location = new Point(33, 447);
             label5.Name = "label5";
             label5.Size = new Size(225, 28);
             label5.TabIndex = 9;
@@ -107,7 +107,7 @@
             // textBox4
             // 
             textBox4.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            textBox4.Location = new Point(28, 351);
+            textBox4.Location = new Point(36, 346);
             textBox4.Name = "textBox4";
             textBox4.Size = new Size(311, 34);
             textBox4.TabIndex = 8;
@@ -116,7 +116,7 @@
             // textBox3
             // 
             textBox3.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            textBox3.Location = new Point(28, 274);
+            textBox3.Location = new Point(36, 269);
             textBox3.Name = "textBox3";
             textBox3.Size = new Size(311, 34);
             textBox3.TabIndex = 7;
@@ -125,7 +125,7 @@
             // textBox2
             // 
             textBox2.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            textBox2.Location = new Point(28, 199);
+            textBox2.Location = new Point(36, 194);
             textBox2.Multiline = true;
             textBox2.Name = "textBox2";
             textBox2.Size = new Size(311, 34);
@@ -134,7 +134,7 @@
             // textBox1
             // 
             textBox1.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            textBox1.Location = new Point(28, 130);
+            textBox1.Location = new Point(36, 125);
             textBox1.Multiline = true;
             textBox1.Name = "textBox1";
             textBox1.Size = new Size(311, 34);
@@ -143,10 +143,10 @@
             // button1
             // 
             button1.BackColor = Color.SandyBrown;
-            button1.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            button1.Location = new Point(25, 402);
+            button1.Font = new Font("Segoe UI", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            button1.Location = new Point(33, 398);
             button1.Name = "button1";
-            button1.Size = new Size(314, 39);
+            button1.Size = new Size(314, 43);
             button1.TabIndex = 4;
             button1.Text = "Register";
             button1.UseVisualStyleBackColor = false;
@@ -157,7 +157,7 @@
             label4.AutoSize = true;
             label4.Font = new Font("Book Antiqua", 10.2F, FontStyle.Bold);
             label4.ForeColor = SystemColors.HighlightText;
-            label4.Location = new Point(25, 322);
+            label4.Location = new Point(33, 317);
             label4.Name = "label4";
             label4.Size = new Size(155, 22);
             label4.TabIndex = 3;
@@ -168,7 +168,7 @@
             label3.AutoSize = true;
             label3.Font = new Font("Book Antiqua", 10.2F, FontStyle.Bold);
             label3.ForeColor = SystemColors.HighlightText;
-            label3.Location = new Point(25, 248);
+            label3.Location = new Point(33, 243);
             label3.Name = "label3";
             label3.Size = new Size(85, 22);
             label3.TabIndex = 2;
@@ -179,7 +179,7 @@
             label2.AutoSize = true;
             label2.Font = new Font("Book Antiqua", 10.2F, FontStyle.Bold);
             label2.ForeColor = SystemColors.HighlightText;
-            label2.Location = new Point(25, 173);
+            label2.Location = new Point(33, 168);
             label2.Name = "label2";
             label2.Size = new Size(47, 22);
             label2.TabIndex = 1;
@@ -190,7 +190,7 @@
             label1.AutoSize = true;
             label1.Font = new Font("Book Antiqua", 10.2F, FontStyle.Bold);
             label1.ForeColor = SystemColors.HighlightText;
-            label1.Location = new Point(25, 104);
+            label1.Location = new Point(33, 99);
             label1.Name = "label1";
             label1.Size = new Size(56, 22);
             label1.TabIndex = 0;

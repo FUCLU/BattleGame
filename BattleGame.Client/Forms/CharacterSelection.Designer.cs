@@ -74,11 +74,11 @@
             // label5
             // 
             label5.AutoSize = true;
-            label5.Font = new Font("Book Antiqua", 19.8000011F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
+            label5.Font = new Font("Britannic Bold", 19.8000011F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label5.ForeColor = Color.PaleTurquoise;
-            label5.Location = new Point(318, 8);
+            label5.Location = new Point(368, 2);
             label5.Name = "label5";
-            label5.Size = new Size(335, 40);
+            label5.Size = new Size(310, 37);
             label5.TabIndex = 3;
             label5.Text = "🛡️Chọn nhân vật🛡️ ";
             // 
@@ -111,7 +111,7 @@
             label4.AutoSize = true;
             label4.Font = new Font("Book Antiqua", 19.8000011F, FontStyle.Bold | FontStyle.Italic);
             label4.ForeColor = Color.FromArgb(208, 230, 255);
-            label4.Location = new Point(154, 14);
+            label4.Location = new Point(158, 21);
             label4.Name = "label4";
             label4.Size = new Size(124, 40);
             label4.TabIndex = 1;
@@ -144,7 +144,7 @@
             label3.AutoSize = true;
             label3.Font = new Font("Book Antiqua", 19.8000011F, FontStyle.Bold | FontStyle.Italic);
             label3.ForeColor = Color.FromArgb(208, 230, 255);
-            label3.Location = new Point(154, 14);
+            label3.Location = new Point(154, 16);
             label3.Name = "label3";
             label3.Size = new Size(139, 40);
             label3.TabIndex = 1;
@@ -176,7 +176,7 @@
             label8.AutoSize = true;
             label8.Font = new Font("Book Antiqua", 19.8000011F, FontStyle.Bold | FontStyle.Italic);
             label8.ForeColor = Color.FromArgb(208, 230, 255);
-            label8.Location = new Point(154, 14);
+            label8.Location = new Point(154, 27);
             label8.Name = "label8";
             label8.Size = new Size(128, 40);
             label8.TabIndex = 1;
@@ -209,7 +209,7 @@
             label1.AutoSize = true;
             label1.Font = new Font("Book Antiqua", 19.8000011F, FontStyle.Bold | FontStyle.Italic);
             label1.ForeColor = Color.FromArgb(208, 230, 255);
-            label1.Location = new Point(135, 12);
+            label1.Location = new Point(141, 22);
             label1.Name = "label1";
             label1.Size = new Size(163, 40);
             label1.TabIndex = 2;
@@ -299,7 +299,7 @@
             lblSPD.AutoSize = true;
             lblSPD.Font = new Font("Showcard Gothic", 10.8F, FontStyle.Italic);
             lblSPD.ForeColor = Color.DarkOrange;
-            lblSPD.Location = new Point(20, 131);
+            lblSPD.Location = new Point(19, 130);
             lblSPD.Name = "lblSPD";
             lblSPD.Size = new Size(44, 23);
             lblSPD.TabIndex = 8;
@@ -321,7 +321,7 @@
             lblHP.AutoSize = true;
             lblHP.Font = new Font("Showcard Gothic", 10.8F, FontStyle.Italic);
             lblHP.ForeColor = Color.DarkOrange;
-            lblHP.Location = new Point(18, 10);
+            lblHP.Location = new Point(20, 10);
             lblHP.Name = "lblHP";
             lblHP.Size = new Size(36, 23);
             lblHP.TabIndex = 5;
@@ -331,7 +331,7 @@
             // 
             btnSellect.BackgroundImage = (Image)resources.GetObject("btnSellect.BackgroundImage");
             btnSellect.BackgroundImageLayout = ImageLayout.Stretch;
-            btnSellect.Location = new Point(238, 378);
+            btnSellect.Location = new Point(247, 364);
             btnSellect.Name = "btnSellect";
             btnSellect.Size = new Size(138, 43);
             btnSellect.TabIndex = 1;
@@ -341,7 +341,7 @@
             // 
             button2.BackgroundImage = (Image)resources.GetObject("button2.BackgroundImage");
             button2.BackgroundImageLayout = ImageLayout.Stretch;
-            button2.Location = new Point(396, 378);
+            button2.Location = new Point(409, 364);
             button2.Name = "button2";
             button2.Size = new Size(129, 43);
             button2.TabIndex = 0;
@@ -351,7 +351,7 @@
             label2.AutoSize = true;
             label2.Font = new Font("Book Antiqua", 36F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
             label2.ForeColor = Color.FromArgb(208, 230, 255);
-            label2.Location = new Point(143, 6);
+            label2.Location = new Point(167, 6);
             label2.Name = "label2";
             label2.Size = new Size(224, 72);
             label2.TabIndex = 2;

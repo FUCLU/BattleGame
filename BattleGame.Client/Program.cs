@@ -12,17 +12,6 @@ namespace BattleGame.Client
         {
             ApplicationConfiguration.Initialize();
 
-            // 🔥 SWITCH MODE 
-            bool isTestMode = false; // 👉 bật/tắt ở đây
-
-            if (isTestMode)
-            {
-                // TEST MODE (OFFLINE) 
-                Application.Run(new GameForm(new Soldier()));
-                return;
-            }
-
-            // ONLINE MODE 
             try
             {
                 await NetworkManager.Instance.ConnectAsync();
@@ -37,7 +26,7 @@ namespace BattleGame.Client
                 return;
             }
 
-            Application.Run(new OfflineModeSelection());
+            Application.Run(new LoginForm());
         }
     }
 }

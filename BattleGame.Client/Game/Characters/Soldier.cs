@@ -48,13 +48,8 @@ namespace BattleGame.Client.Game.Characters
         // ═══════════════════════════════════════
         //  CONSTRUCTOR
         // ═══════════════════════════════════════
-        public Soldier()
+        public Soldier() : base("Soldier", 100, 10, 0, 5)
         {
-            Name = "Soldier";
-            MaxHP = 100;
-            CurrentHP = 100;
-            ATK = 10;
-
             _animations = new Dictionary<string, SpriteAnimation>
             {
                 { "Idle",     new SpriteAnimation("Assets/Characters/Soldier/Idle.png",     128, 128, 120) },

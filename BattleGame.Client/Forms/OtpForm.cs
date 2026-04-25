@@ -25,6 +25,7 @@ namespace BattleGame.Client.Forms
         public OtpForm(string email, bool isReset)
         {
             InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
             _email = email;
             _isReset = isReset;
         }

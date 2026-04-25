@@ -35,7 +35,7 @@ namespace BattleGame.Client.Forms
         public CharacterSelection()
         {
             InitializeComponent();
-
+            this.StartPosition = FormStartPosition.CenterScreen;
         }
 
         public string SelectedCharacterName { get; private set; } //hàm để trả dữ liệu cho form khác

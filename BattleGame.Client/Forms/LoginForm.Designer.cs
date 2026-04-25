@@ -68,7 +68,7 @@
             button3.FlatAppearance.BorderColor = Color.FromArgb(255, 192, 128);
             button3.FlatStyle = FlatStyle.Popup;
             button3.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            button3.Location = new Point(206, 233);
+            button3.Location = new Point(206, 239);
             button3.Name = "button3";
             button3.Size = new Size(157, 47);
             button3.TabIndex = 9;
@@ -81,7 +81,7 @@
             linkLabel2.AutoSize = true;
             linkLabel2.Font = new Font("Book Antiqua", 12F, FontStyle.Bold);
             linkLabel2.LinkColor = Color.Red;
-            linkLabel2.Location = new Point(203, 296);
+            linkLabel2.Location = new Point(203, 302);
             linkLabel2.Name = "linkLabel2";
             linkLabel2.Size = new Size(162, 24);
             linkLabel2.TabIndex = 8;
@@ -96,7 +96,7 @@
             button1.BackgroundImageLayout = ImageLayout.Stretch;
             button1.FlatStyle = FlatStyle.Popup;
             button1.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            button1.Location = new Point(34, 233);
+            button1.Location = new Point(34, 239);
             button1.Name = "button1";
             button1.Size = new Size(157, 47);
             button1.TabIndex = 6;
@@ -107,7 +107,8 @@
             // 
             checkBox1.AutoSize = true;
             checkBox1.Font = new Font("Book Antiqua", 12F, FontStyle.Bold);
-            checkBox1.Location = new Point(193, 184);
+            checkBox1.ForeColor = Color.Transparent;
+            checkBox1.Location = new Point(193, 198);
             checkBox1.Name = "checkBox1";
             checkBox1.Size = new Size(177, 28);
             checkBox1.TabIndex = 5;
@@ -138,7 +139,7 @@
             label2.AutoSize = true;
             label2.Font = new Font("Book Antiqua", 12F, FontStyle.Bold);
             label2.ForeColor = Color.Turquoise;
-            label2.Location = new Point(35, 115);
+            label2.Location = new Point(32, 115);
             label2.Name = "label2";
             label2.Size = new Size(98, 24);
             label2.TabIndex = 1;
@@ -149,7 +150,7 @@
             label1.AutoSize = true;
             label1.Font = new Font("Book Antiqua", 12F, FontStyle.Bold);
             label1.ForeColor = Color.Turquoise;
-            label1.Location = new Point(34, 34);
+            label1.Location = new Point(31, 34);
             label1.Name = "label1";
             label1.Size = new Size(103, 24);
             label1.TabIndex = 0;

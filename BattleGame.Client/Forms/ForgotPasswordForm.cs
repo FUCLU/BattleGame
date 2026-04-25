@@ -21,6 +21,7 @@ namespace BattleGame.Client.Forms
         public ForgotPasswordForm()
         {
             InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
         }
 
         private void ForgotPasswordForm_Load(object sender, EventArgs e)

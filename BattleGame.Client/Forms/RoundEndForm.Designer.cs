@@ -38,7 +38,7 @@
             BackColor = Color.MediumAquamarine;
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Stretch;
-            ClientSize = new Size(772, 412);
+            ClientSize = new Size(702, 373);
             DoubleBuffered = true;
             Name = "RoundEndForm";
             Text = "RoundEndForm";

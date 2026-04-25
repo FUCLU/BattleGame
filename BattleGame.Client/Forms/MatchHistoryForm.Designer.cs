@@ -85,7 +85,7 @@
             // 
             label5.AutoSize = true;
             label5.Font = new Font("Algerian", 16.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label5.ForeColor = Color.Firebrick;
+            label5.ForeColor = Color.Transparent;
             label5.Location = new Point(295, 23);
             label5.Name = "label5";
             label5.Size = new Size(195, 31);
@@ -96,7 +96,7 @@
             // 
             label4.AutoSize = true;
             label4.Font = new Font("Algerian", 16.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label4.ForeColor = Color.Firebrick;
+            label4.ForeColor = Color.Black;
             label4.Location = new Point(13, 23);
             label4.Name = "label4";
             label4.Size = new Size(227, 31);
@@ -121,7 +121,7 @@
             label7.AutoSize = true;
             label7.Font = new Font("Algerian", 16.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label7.ForeColor = Color.Chartreuse;
-            label7.Location = new Point(630, 33);
+            label7.Location = new Point(620, 24);
             label7.Name = "label7";
             label7.Size = new Size(132, 31);
             label7.TabIndex = 2;
@@ -131,8 +131,8 @@
             // 
             label8.AutoSize = true;
             label8.Font = new Font("Algerian", 16.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label8.ForeColor = Color.Firebrick;
-            label8.Location = new Point(295, 33);
+            label8.ForeColor = Color.Transparent;
+            label8.Location = new Point(295, 24);
             label8.Name = "label8";
             label8.Size = new Size(195, 31);
             label8.TabIndex = 1;
@@ -142,8 +142,8 @@
             // 
             label9.AutoSize = true;
             label9.Font = new Font("Algerian", 16.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label9.ForeColor = Color.Firebrick;
-            label9.Location = new Point(23, 33);
+            label9.ForeColor = Color.Black;
+            label9.Location = new Point(13, 24);
             label9.Name = "label9";
             label9.Size = new Size(227, 31);
             label9.TabIndex = 0;
@@ -198,6 +198,7 @@
             Controls.Add(flowLayoutPanel1);
             Name = "MatchHistoryForm";
             Text = "MatchHistoryForm";
+            Load += MatchHistoryForm_Load;
             flowLayoutPanel1.ResumeLayout(false);
             panel1.ResumeLayout(false);
             panel1.PerformLayout();

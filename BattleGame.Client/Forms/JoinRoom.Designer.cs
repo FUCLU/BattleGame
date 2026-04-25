@@ -74,7 +74,7 @@
             btnRefresh.BackgroundImage = (Image)resources.GetObject("btnRefresh.BackgroundImage");
             btnRefresh.BackgroundImageLayout = ImageLayout.Stretch;
             btnRefresh.FlatStyle = FlatStyle.Popup;
-            btnRefresh.Location = new Point(181, 235);
+            btnRefresh.Location = new Point(181, 266);
             btnRefresh.Name = "btnRefresh";
             btnRefresh.Size = new Size(162, 49);
             btnRefresh.TabIndex = 2;
@@ -87,18 +87,19 @@
             btnBack.BackgroundImage = (Image)resources.GetObject("btnBack.BackgroundImage");
             btnBack.BackgroundImageLayout = ImageLayout.Stretch;
             btnBack.FlatStyle = FlatStyle.Popup;
-            btnBack.Location = new Point(66, 363);
+            btnBack.Location = new Point(70, 356);
             btnBack.Name = "btnBack";
-            btnBack.Size = new Size(198, 60);
+            btnBack.Size = new Size(204, 68);
             btnBack.TabIndex = 2;
             btnBack.UseVisualStyleBackColor = false;
+            btnBack.Click += btnBack_Click;
             // 
             // btnCreateRoom
             // 
             btnCreateRoom.BackgroundImage = (Image)resources.GetObject("btnCreateRoom.BackgroundImage");
             btnCreateRoom.BackgroundImageLayout = ImageLayout.Stretch;
             btnCreateRoom.FlatStyle = FlatStyle.Popup;
-            btnCreateRoom.Location = new Point(16, 236);
+            btnCreateRoom.Location = new Point(16, 267);
             btnCreateRoom.Name = "btnCreateRoom";
             btnCreateRoom.Size = new Size(159, 48);
             btnCreateRoom.TabIndex = 5;
@@ -110,7 +111,7 @@
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label3.ForeColor = Color.Gold;
-            label3.Location = new Point(19, 145);
+            label3.Location = new Point(16, 179);
             label3.Name = "label3";
             label3.Size = new Size(86, 23);
             label3.TabIndex = 4;
@@ -118,9 +119,9 @@
             // 
             // txtPass
             // 
-            txtPass.Location = new Point(19, 171);
+            txtPass.Location = new Point(19, 205);
             txtPass.Name = "txtPass";
-            txtPass.Size = new Size(303, 27);
+            txtPass.Size = new Size(324, 27);
             txtPass.TabIndex = 3;
             txtPass.UseSystemPasswordChar = true;
             // 
@@ -129,7 +130,7 @@
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label2.ForeColor = Color.Gold;
-            label2.Location = new Point(19, 68);
+            label2.Location = new Point(16, 102);
             label2.Name = "label2";
             label2.Size = new Size(111, 23);
             label2.TabIndex = 2;
@@ -137,9 +138,9 @@
             // 
             // txtRoomName
             // 
-            txtRoomName.Location = new Point(19, 94);
+            txtRoomName.Location = new Point(19, 128);
             txtRoomName.Name = "txtRoomName";
-            txtRoomName.Size = new Size(303, 27);
+            txtRoomName.Size = new Size(324, 27);
             txtRoomName.TabIndex = 1;
             // 
             // label1
@@ -147,7 +148,7 @@
             label1.AutoSize = true;
             label1.Font = new Font("Bookman Old Style", 16.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label1.ForeColor = Color.PaleGreen;
-            label1.Location = new Point(51, 19);
+            label1.Location = new Point(66, 23);
             label1.Name = "label1";
             label1.Size = new Size(240, 32);
             label1.TabIndex = 0;
@@ -201,6 +202,7 @@
             btnJoin.TabIndex = 3;
             btnJoin.Text = "Join";
             btnJoin.UseVisualStyleBackColor = false;
+            btnJoin.Click += btnJoin_Click_1;
             // 
             // lblSlot
             // 
@@ -239,11 +241,12 @@
             button1.BackgroundImage = (Image)resources.GetObject("button1.BackgroundImage");
             button1.BackgroundImageLayout = ImageLayout.Stretch;
             button1.FlatStyle = FlatStyle.Popup;
-            button1.Location = new Point(896, 543);
+            button1.Location = new Point(882, 543);
             button1.Name = "button1";
-            button1.Size = new Size(180, 52);
+            button1.Size = new Size(194, 52);
             button1.TabIndex = 2;
             button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
             // 
             // JoinRoom
             // 

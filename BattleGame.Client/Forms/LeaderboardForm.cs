@@ -15,6 +15,7 @@ namespace BattleGame.Client.Forms
         public LeaderboardForm()
         {
             InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
         }
         private void LeaderboardForm_Load(object sender, EventArgs e)
         {

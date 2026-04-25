@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using BattleGame.Shared.Models;
+
 
 namespace BattleGame.Client.Forms
 {
@@ -15,6 +17,7 @@ namespace BattleGame.Client.Forms
         public OfflineModeSelection()
         {
             InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
         }
 
         private static readonly string AssetsRoot = Path.Combine(
@@ -25,8 +28,33 @@ namespace BattleGame.Client.Forms
         string currentMap = ""; //biến lưu map đã chọn
         string currentMode = ""; //biến lưu mode đã chọn
 
-        string playerChar = ""; //biến lưu nhân vật người chơi đã chọn
-        string botChar = "";
+        private Character playerChar; //biến lưu nhân vật người chơi đã chọn
+        private Character botChar;
+
+        private Character CreateRandomBot()
+        {
+            Random rnd = new Random();
+            int r = rnd.Next(2);
+
+            if (r == 0)
+            {
+                return CreateCharacter("Knight");
+            }
+            else
+            {
+                return CreateCharacter("Mage");
+            }
+        }
+
+        private Character CreateCharacter(string name)
+        {
+            return name switch
+            {
+                "Knight" => new Character("Knight", 150, 20, 10, 5),
+                "Mage" => new Character("Mage", 100, 30, 3, 10),
+                _ => throw new Exception("Character không hợp lệ")
+            };
+        }
         private void comboBoxMap_SelectedIndexChanged(object sender, EventArgs e)
         {
 
@@ -95,6 +123,10 @@ namespace BattleGame.Client.Forms
             string map = currentMap;
             string mode = currentMode;
 
+            GameForm gameForm = new GameForm(playerChar, botChar, map, mode);
+            gameForm.Show();
+            this.Close();
+
             // gửi lên server
         }
 
@@ -103,20 +135,17 @@ namespace BattleGame.Client.Forms
             CharacterSelection f = new CharacterSelection();
             if (f.ShowDialog() == DialogResult.OK)
             {
-                playerChar = f.SelectedCharacterName;
-                lblNameCharPlayer.Text = playerChar;
+                playerChar = CreateCharacter(f.SelectedCharacterName);
+                lblNameCharPlayer.Text = playerChar.Name;
             }
         }
 
-        private void btnSelCharBot_Click(object sender, EventArgs e)
+        private void button2_Click(object sender, EventArgs e)
         {
-            CharacterSelection f = new CharacterSelection();
-
-            if (f.ShowDialog() == DialogResult.OK)
-            {
-                botChar = f.SelectedCharacterName;
-                lblNameCharBot.Text = botChar;
-            }
+            MenuForm menuForm = new MenuForm();
+            menuForm.Show();
+            this.Close();
         }
+
     }
 }
