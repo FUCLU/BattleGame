@@ -9,8 +9,9 @@ namespace BattleGame.Client.Forms
 {
     public partial class CharacterSelection : Form
     {
-        private List<CharacterSelectionItem> _chars = new();
-        private int _idx = 0;
+        private readonly List<CharacterSelectionItem> _chars = new();
+        private readonly Dictionary<Panel, int> _panelToIndex = new();
+        private int _selectedIndex = -1;
 
         private static readonly string ConfigRoot = Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory,
@@ -23,81 +24,163 @@ namespace BattleGame.Client.Forms
         public CharacterSelection()
         {
             InitializeComponent();
-
-            btnPrev.Click += btnPrev_Click;
-            btnNext.Click += btnNext_Click;
+            StartPosition = FormStartPosition.CenterScreen;
         }
+
+        public string SelectedCharacterName { get; private set; } = string.Empty;
 
         private void CharacterSelection_Load(object sender, EventArgs e)
         {
-            _chars = CharacterCatalog.LoadSelectionItems(ConfigRoot);
+            _chars.Clear();
+            _chars.AddRange(CharacterCatalog.LoadSelectionItems(ConfigRoot));
 
-            _idx = 0;
-            UpdateDisplay();
+            BuildPanelMapping();
+            BindPanelTitles();
+
+            if (_chars.Count > 0)
+                SelectCharacter(0);
         }
 
-        // Cập nhật UI
-        private void UpdateDisplay()
+        private void BuildPanelMapping()
         {
-            var c = _chars[_idx];
+            _panelToIndex.Clear();
 
-            // Load ảnh từ file
-            Image img = LoadImage(c.GetPreviewPath(AssetsRoot));
-            pictureBox2.Image = img;   // trái
-            pictureBox5.Image = img;   // phải
-
-            // Tên
-            label1.Text = c.DisplayName;
-            label5.Text = c.DisplayName;
-
-            // Thông số
-            lblHP.Text = $"❤  HP     :  {c.Hp}";
-            lblATK.Text = $"⚔  ATK    :  {c.Atk}";
-            lblDEF.Text = $"🛡  DEF    :  {c.Def}";
-            lblSPD.Text = $"💨  SPEED  :  {c.Speed}";
-            lblSkill.Text = $"✨  SKILL   :  {c.SkillLabel}";
+            Panel[] panels = { pnlGirlKnight, pnlKabold, pnlWarrior, pnlSoldier };
+            for (int i = 0; i < panels.Length; i++)
+            {
+                if (i < _chars.Count)
+                {
+                    _panelToIndex[panels[i]] = i;
+                    panels[i].Enabled = true;
+                    panels[i].Visible = true;
+                    SetHandCursor(panels[i]);
+                }
+                else
+                {
+                    panels[i].Enabled = false;
+                    panels[i].Visible = false;
+                }
+            }
         }
 
-        private Image LoadImage(string path)
+        private void BindPanelTitles()
+        {
+            if (_chars.Count > 0) label1.Text = _chars[0].DisplayName;
+            if (_chars.Count > 1) label8.Text = _chars[1].DisplayName;
+            if (_chars.Count > 2) label3.Text = _chars[2].DisplayName;
+            if (_chars.Count > 3) label4.Text = _chars[3].DisplayName;
+        }
+
+        private void SelectCharacter(int index)
+        {
+            if (index < 0 || index >= _chars.Count)
+                return;
+
+            _selectedIndex = index;
+            CharacterSelectionItem item = _chars[index];
+
+            UpdateDisplay(item);
+            HighlightSelected(GetPanelByIndex(index));
+        }
+
+        private void UpdateDisplay(CharacterSelectionItem character)
+        {
+            label2.Text = character.DisplayName;
+            lblHP.Text = $"HP   : {character.Hp}";
+            lblATK.Text = $"ATK  : {character.Atk}";
+            lblDEF.Text = $"DEF  : {character.Def}";
+            lblSPD.Text = $"SPD  : {character.Speed}";
+            lblSkill.Text = $"SKILL: {character.SkillLabel}";
+
+            string previewPath = character.GetPreviewPath(AssetsRoot);
+            var newImage = LoadImage(previewPath);
+
+            var oldImage = pbInfor.Image;
+            pbInfor.Image = newImage;
+            oldImage?.Dispose();
+        }
+
+        private static Image? LoadImage(string path)
         {
             try
             {
-                if (File.Exists(path))
-                    return Image.FromFile(path);
+                if (!File.Exists(path))
+                    return null;
+
+                using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                return Image.FromStream(stream);
             }
-            catch { }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private void HighlightSelected(Panel? selectedPanel)
+        {
+            if (selectedPanel is null)
+                return;
+
+            Panel[] panels = { pnlGirlKnight, pnlKabold, pnlWarrior, pnlSoldier };
+            foreach (var panel in panels)
+                panel.BackColor = panel == selectedPanel ? Color.FromArgb(78, 125, 181) : Color.FromArgb(44, 74, 110);
+        }
+
+        private static void SetHandCursor(Control control)
+        {
+            control.Cursor = Cursors.Hand;
+            foreach (Control child in control.Controls)
+                SetHandCursor(child);
+        }
+
+        private Panel? GetPanelByIndex(int index)
+        {
+            foreach (var pair in _panelToIndex)
+            {
+                if (pair.Value == index)
+                    return pair.Key;
+            }
+
             return null;
         }
 
-        // Mũi tên carouse
-        private void btnPrev_Click(object sender, EventArgs e)
+        private void SelectByPanel(Panel panel)
         {
-            _idx = (_idx - 1 + _chars.Count) % _chars.Count;
-            UpdateDisplay();
+            if (_panelToIndex.TryGetValue(panel, out int index))
+                SelectCharacter(index);
         }
 
-        private void btnNext_Click(object sender, EventArgs e)
+        private void btnSellect_Click(object sender, EventArgs e)
         {
-            _idx = (_idx + 1) % _chars.Count;
-            UpdateDisplay();
+            if (_selectedIndex < 0 || _selectedIndex >= _chars.Count)
+                return;
+
+            CharacterSelectionItem selected = _chars[_selectedIndex];
+            SelectedCharacterName = selected.Id;
+
+            MessageBox.Show($"Da chon: {selected.DisplayName}");
+            DialogResult = DialogResult.OK;
+            Close();
         }
 
-        // SELECT 
-        private void button1_Click(object sender, EventArgs e)
+        private void pnlGirlKnight_Click(object sender, EventArgs e)
         {
-            string characterId = _chars[_idx].Id;
-
-            // Chuyển sang GameForm
-            GameForm gameForm = new GameForm(characterId);
-            gameForm.Show();
-            this.Hide();
+            SelectByPanel(pnlGirlKnight);
         }
 
-        // Giữ nguyên handler cũ để tránh lỗi build
-        private void pictureBox2_Click(object sender, EventArgs e) { }
-        private void pictureBox1_Click(object sender, EventArgs e) { }
-        private void pictureBox1_Click_1(object sender, EventArgs e) { }
-        private void label2_Click(object sender, EventArgs e) { }
+        private void pnlKabold_Click(object sender, EventArgs e)
+        {
+            SelectByPanel(pnlKabold);
+        }
 
+        private void pnlWarrior_Click(object sender, EventArgs e)
+        {
+            SelectByPanel(pnlWarrior);
+        }
+
+        private void pnlSoldier_Click(object sender, EventArgs e)
+        {
+            SelectByPanel(pnlSoldier);
+        }
     }
 }

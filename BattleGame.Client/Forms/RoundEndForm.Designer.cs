@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(RoundEndForm));
             SuspendLayout();
             // 
             // RoundEndForm
@@ -35,7 +36,9 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.MediumAquamarine;
-            ClientSize = new Size(1057, 581);
+            BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
+            BackgroundImageLayout = ImageLayout.Stretch;
+            ClientSize = new Size(702, 373);
             DoubleBuffered = true;
             Name = "RoundEndForm";
             Text = "RoundEndForm";

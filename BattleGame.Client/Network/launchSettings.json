@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "BattleGame.LoadBalancer": {
+      "commandName": "Project"
+    }
+  }
+}

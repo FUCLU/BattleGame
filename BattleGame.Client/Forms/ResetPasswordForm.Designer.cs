@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ResetPasswordForm));
             panel1 = new Panel();
             linkLabel1 = new LinkLabel();
             textBox2 = new TextBox();
@@ -42,6 +43,9 @@
             // 
             // panel1
             // 
+            panel1.BackColor = Color.SteelBlue;
+            panel1.BackgroundImage = (Image)resources.GetObject("panel1.BackgroundImage");
+            panel1.BackgroundImageLayout = ImageLayout.Stretch;
             panel1.Controls.Add(linkLabel1);
             panel1.Controls.Add(textBox2);
             panel1.Controls.Add(textBox1);
@@ -49,20 +53,20 @@
             panel1.Controls.Add(label4);
             panel1.Controls.Add(label3);
             panel1.Controls.Add(label1);
-            panel1.Location = new Point(370, 139);
+            panel1.Location = new Point(363, 137);
             panel1.Name = "panel1";
-            panel1.Size = new Size(321, 301);
+            panel1.Size = new Size(335, 335);
             panel1.TabIndex = 0;
             // 
             // linkLabel1
             // 
             linkLabel1.ActiveLinkColor = SystemColors.ActiveCaptionText;
             linkLabel1.AutoSize = true;
-            linkLabel1.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            linkLabel1.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             linkLabel1.LinkColor = Color.Red;
-            linkLabel1.Location = new Point(92, 257);
+            linkLabel1.Location = new Point(23, 279);
             linkLabel1.Name = "linkLabel1";
-            linkLabel1.Size = new Size(126, 28);
+            linkLabel1.Size = new Size(137, 28);
             linkLabel1.TabIndex = 7;
             linkLabel1.TabStop = true;
             linkLabel1.Text = "Back to login";
@@ -71,9 +75,9 @@
             // textBox2
             // 
             textBox2.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            textBox2.Location = new Point(26, 160);
+            textBox2.Location = new Point(30, 166);
             textBox2.Name = "textBox2";
-            textBox2.Size = new Size(266, 34);
+            textBox2.Size = new Size(271, 34);
             textBox2.TabIndex = 6;
             textBox2.UseSystemPasswordChar = true;
             textBox2.TextChanged += textBox2_TextChanged;
@@ -81,9 +85,9 @@
             // textBox1
             // 
             textBox1.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            textBox1.Location = new Point(27, 89);
+            textBox1.Location = new Point(31, 91);
             textBox1.Name = "textBox1";
-            textBox1.Size = new Size(266, 34);
+            textBox1.Size = new Size(270, 34);
             textBox1.TabIndex = 5;
             textBox1.UseSystemPasswordChar = true;
             textBox1.TextChanged += textBox1_TextChanged;
@@ -91,8 +95,8 @@
             // button1
             // 
             button1.BackColor = Color.SandyBrown;
-            button1.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            button1.Location = new Point(23, 206);
+            button1.Font = new Font("Segoe UI", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            button1.Location = new Point(27, 220);
             button1.Name = "button1";
             button1.Size = new Size(274, 48);
             button1.TabIndex = 4;
@@ -104,7 +108,7 @@
             // 
             label4.AutoSize = true;
             label4.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label4.Location = new Point(26, 129);
+            label4.Location = new Point(26, 135);
             label4.Name = "label4";
             label4.Size = new Size(210, 28);
             label4.TabIndex = 3;
@@ -115,7 +119,7 @@
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label3.Location = new Point(26, 56);
+            label3.Location = new Point(26, 58);
             label3.Name = "label3";
             label3.Size = new Size(139, 28);
             label3.TabIndex = 2;
@@ -125,10 +129,12 @@
             // label1
             // 
             label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label1.Location = new Point(63, 12);
+            label1.BackColor = Color.Transparent;
+            label1.Font = new Font("Bookman Old Style", 18F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.ForeColor = SystemColors.ButtonFace;
+            label1.Location = new Point(10, 17);
             label1.Name = "label1";
-            label1.Size = new Size(200, 31);
+            label1.Size = new Size(314, 36);
             label1.TabIndex = 0;
             label1.Text = "RESET PASSWORD";
             label1.Click += label1_Click;
