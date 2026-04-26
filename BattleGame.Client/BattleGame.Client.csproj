@@ -23,6 +23,31 @@
 		<None Remove="Assets\Characters\Grenade.png" />
 		<None Remove="Assets\Characters\Hurt.png" />
 		<None Remove="Assets\Characters\Idle.png" />
+		<None Remove="Assets\Characters\Kitsune\Attack_1.png" />
+		<None Remove="Assets\Characters\Kitsune\Dead.png" />
+		<None Remove="Assets\Characters\Kitsune\Fire.png" />
+		<None Remove="Assets\Characters\Kitsune\Fire_2.png" />
+		<None Remove="Assets\Characters\Kitsune\Hurt.png" />
+		<None Remove="Assets\Characters\Kitsune\Idle.png" />
+		<None Remove="Assets\Characters\Kitsune\Idle_2.png" />
+		<None Remove="Assets\Characters\Kitsune\Jump.png" />
+		<None Remove="Assets\Characters\Kitsune\Object.png" />
+		<None Remove="Assets\Characters\Kitsune\Run.png" />
+		<None Remove="Assets\Characters\Kitsune\Skill1.png" />
+		<None Remove="Assets\Characters\Kitsune\Skill2.png" />
+		<None Remove="Assets\Characters\Kitsune\Walk.png" />
+		<None Remove="Assets\Characters\Lord\Attack1.png" />
+		<None Remove="Assets\Characters\Lord\Bloom.png" />
+		<None Remove="Assets\Characters\Lord\Dead.png" />
+		<None Remove="Assets\Characters\Lord\Fireball.png" />
+		<None Remove="Assets\Characters\Lord\Hurt.png" />
+		<None Remove="Assets\Characters\Lord\Idle.png" />
+		<None Remove="Assets\Characters\Lord\Lightning.png" />
+		<None Remove="Assets\Characters\Lord\Necromancer_creativekind-Sheet.png" />
+		<None Remove="Assets\Characters\Lord\Protection.png" />
+		<None Remove="Assets\Characters\Lord\Run.png" />
+		<None Remove="Assets\Characters\Lord\Skill1.png" />
+		<None Remove="Assets\Characters\Lord\Skill2.png" />
 		<None Remove="Assets\Characters\Recharge.png" />
 		<None Remove="Assets\Characters\Run.png" />
 		<None Remove="Assets\Characters\Samurai\Attack_1.png" />
@@ -48,11 +73,87 @@
 		<None Remove="Assets\Characters\Wizard\Jump.png" />
 		<None Remove="Assets\Characters\Wizard\Light_ball.png" />
 		<None Remove="Assets\Characters\Wizard\Light_charge.png" />
+		<None Remove="Assets\Characters\Wizard\Protection.png" />
 		<None Remove="Assets\Characters\Wizard\Run.png" />
 		<None Remove="Assets\Characters\Wizard\Walk.png" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Content Include="Assets\Characters\Kitsune\Attack_1.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Kitsune\Dead.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Kitsune\Fire.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Kitsune\Fire_2.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Kitsune\Hurt.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Kitsune\Idle.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Kitsune\Idle_2.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Kitsune\Jump.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Kitsune\Object.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Kitsune\Run.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Kitsune\Skill1.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Kitsune\Skill2.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Kitsune\Walk.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Lord\Attack1.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Lord\Bloom.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Lord\Dead.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Lord\Fireball.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Lord\Hurt.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Lord\Idle.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Lord\Lightning.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Lord\Necromancer_creativekind-Sheet.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Lord\Protection.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Lord\Run.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Lord\Skill1.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="Assets\Characters\Lord\Skill2.png">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	  <Content Include="Assets\Characters\Samurai\Attack_1.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
@@ -117,6 +218,9 @@
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Assets\Characters\Wizard\Light_charge.png">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Assets\Characters\Wizard\Protection.png">
 		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</Content>
 		<Content Include="Assets\Characters\Wizard\Run.png">

@@ -1,5 +1,6 @@
 ﻿using BattleGame.Client.Game.Core;
 using BattleGame.Client.Game.Core.Components;
+using System;
 
 namespace BattleGame.Client.Game.Rendering;
 
@@ -27,6 +28,10 @@ public class CharacterRenderer
         var animations = GetAnimationsForEntity(entity);
         if (!animations.TryGetValue(sp.CurrentAnimation, out var anim)) return;
         if (anim.Frames.Length == 0) return;
+        sp.CurrentAnimationFrameCount = anim.Frames.Length;
+
+        // Reset AnimationFinished mỗi frame
+        sp.AnimationFinished = false;
 
         sp.FrameTimer += deltaTime;
         while (sp.FrameTimer >= anim.FrameDuration)
@@ -49,6 +54,7 @@ public class CharacterRenderer
     {
         var sp = entity.Get<SpriteComponent>();
         var mv = entity.Get<MovementComponent>();
+        var ch = entity.Get<CharacterComponent>();
 
         var animations = GetAnimationsForEntity(entity);
         if (!animations.TryGetValue(sp.CurrentAnimation, out var anim)) return;
@@ -56,11 +62,38 @@ public class CharacterRenderer
 
         var frameIndex = Math.Min(sp.CurrentFrame, anim.Frames.Length - 1);
         var frame = anim.Frames[frameIndex];
-        var destinationRect = GetDestinationRect(mv, anim);
+        var destinationRect = GetDestinationRect(mv, anim, ch.Render.Scale, ch.Render.OffsetY);
 
+        // Protection should wrap around the character, so keep Idle as the base layer.
+        if (string.Equals(sp.CurrentAnimation, "Protection", StringComparison.OrdinalIgnoreCase)
+            && ch.Render.ProtectionUsesIdleBase
+            && animations.TryGetValue("Idle", out var idleAnim)
+            && idleAnim.Frames.Length > 0)
+        {
+            int idleFrameIndex = (int)MathF.Floor((float)sp.CurrentFrame / Math.Max(1, anim.Frames.Length) * idleAnim.Frames.Length);
+            idleFrameIndex = Math.Clamp(idleFrameIndex, 0, idleAnim.Frames.Length - 1);
+
+            var idleFrame = idleAnim.Frames[idleFrameIndex];
+            var idleRect = GetDestinationRect(mv, idleAnim, ch.Render.Scale, ch.Render.OffsetY);
+            var protectionRect = GetDestinationRect(
+                mv,
+                anim,
+                ch.Render.Scale,
+                ch.Render.OffsetY + ch.Render.ProtectionOverlayOffsetY);
+
+            DrawFrame(g, idleFrame, idleRect, mv.FacingRight);
+            DrawFrame(g, frame, protectionRect, mv.FacingRight);
+            return;
+        }
+
+        DrawFrame(g, frame, destinationRect, mv.FacingRight);
+    }
+
+    private static void DrawFrame(Graphics g, Image frame, Rectangle destinationRect, bool facingRight)
+    {
         var state = g.Save();
 
-        if (mv.FacingRight)
+        if (facingRight)
         {
             g.DrawImage(frame, destinationRect);
         }
@@ -74,10 +107,12 @@ public class CharacterRenderer
         g.Restore(state);
     }
 
-    private static Rectangle GetDestinationRect(MovementComponent mv, SpriteAnimation anim)
+    private static Rectangle GetDestinationRect(MovementComponent mv, SpriteAnimation anim, float scale, float extraOffsetY)
     {
-        int x = (int)MathF.Round(mv.X - DrawWidth / 2f);
-        int y = (int)MathF.Round(mv.Y - DrawHeight + anim.OffsetY);
-        return new Rectangle(x, y, DrawWidth, DrawHeight);
+        int width = (int)MathF.Round(DrawWidth * scale);
+        int height = (int)MathF.Round(DrawHeight * scale);
+        int x = (int)MathF.Round(mv.X - width / 2f);
+        int y = (int)MathF.Round(mv.Y - height + anim.OffsetY + extraOffsetY);
+        return new Rectangle(x, y, width, height);
     }
 }

@@ -9,7 +9,15 @@
     "speed": 200,
     "atkSpeed": 2.0,
     "stunDuration": 0.0,
-    "attackRange": 110
+    "attackRange": 100
+  },
+
+  "render": {
+    "scale": 1.0,
+    "offsetY": 0.0,
+    "protectionOverlayOffsetY": 0.0,
+    "protectionUsesIdleBase": false,
+    "protectionBlocksAllDirections": false
   },
 
   "skills": {
@@ -24,7 +32,7 @@
           "type": "melee",
           "trigger": "onFrames",
           "frames": [ 3, 4, 7, 8 ],
-          "damage": 15,
+          "damage": 25,
           "stun": 0.0,
           "range": 110
         }
@@ -45,7 +53,14 @@
           "damage": 30,
           "stun": 1.0,
           "speed": 600,
-          "range": 100
+          "range": 100,
+          "render": {
+            "scale": 1.0,
+            "offsetX": 0.0,
+            "offsetY": 0.0,
+            "useSpriteSize": true,
+            "alignY": "center"
+          }
         }
       ]
     }

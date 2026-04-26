@@ -2,6 +2,7 @@
 using System.Windows.Forms;
 using BattleGame.Client.Managers;
 using BattleGame.Client.Game;
+using BattleGame.Client.Game.Core.Components;
 
 namespace BattleGame.Client.Forms
 {
@@ -68,7 +69,84 @@ namespace BattleGame.Client.Forms
         private void gameTimer_Tick(object sender, EventArgs e)
         {
             _engine.Update();
+            UpdateUIBars();
             this.Invalidate();
+        }
+
+        private void UpdateUIBars()
+        {
+            try
+            {
+                // Update player HP and Mana
+                var playerChar = _engine.Player.Get<CharacterComponent>();
+                if (playerChar != null)
+                {
+                    lblHP.Text = $"{playerChar.Hp}/{playerChar.BaseStats.Hp}";
+                    lblMana.Text = $"{playerChar.Mana}/{playerChar.BaseStats.Mana}";
+
+                    // Calculate bar widths
+                    int maxHPWidth = 301;
+                    int maxManaWidth = 301;
+
+                    if (playerChar.BaseStats.Hp > 0)
+                    {
+                        int hpWidth = (int)(maxHPWidth * playerChar.Hp / (float)playerChar.BaseStats.Hp);
+                        panelHPFill.Width = Math.Max(0, hpWidth);
+                    }
+                    else
+                    {
+                        panelHPFill.Width = 0;
+                    }
+
+                    if (playerChar.BaseStats.Mana > 0)
+                    {
+                        int manaWidth = (int)(maxManaWidth * playerChar.Mana / (float)playerChar.BaseStats.Mana);
+                        panelManaFill.Width = Math.Max(0, manaWidth);
+                    }
+                    else
+                    {
+                        panelManaFill.Width = 0;
+                    }
+                }
+
+                // Update enemy HP and Mana
+                var enemyChar = _engine.Enemy.Get<CharacterComponent>();
+                if (enemyChar != null)
+                {
+                    label6.Text = $"{enemyChar.Hp}/{enemyChar.BaseStats.Hp}";
+                    label5.Text = $"{enemyChar.Mana}/{enemyChar.BaseStats.Mana}";
+
+                    // Calculate bar widths for enemy
+                    int maxHPWidth = 301;
+                    int maxManaWidth = 301;
+
+                    // panel4 = HP (màu đỏ Firebrick)
+                    if (enemyChar.BaseStats.Hp > 0)
+                    {
+                        int hpWidth = (int)(maxHPWidth * enemyChar.Hp / (float)enemyChar.BaseStats.Hp);
+                        panel4.Width = Math.Max(0, hpWidth);
+                    }
+                    else
+                    {
+                        panel4.Width = 0;
+                    }
+
+                    // panel2 = Mana (màu xanh MidnightBlue)
+                    if (enemyChar.BaseStats.Mana > 0)
+                    {
+                        int manaWidth = (int)(maxManaWidth * enemyChar.Mana / (float)enemyChar.BaseStats.Mana);
+                        panel2.Width = Math.Max(0, manaWidth);
+                    }
+                    else
+                    {
+                        panel2.Width = 0;
+                    }
+                }
+            }
+            catch
+            {
+                // Silently handle any errors during UI update
+            }
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)

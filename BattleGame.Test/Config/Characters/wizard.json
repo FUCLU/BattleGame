@@ -1,0 +1,118 @@
+{
+  "id": "wizard",
+
+  "stats": {
+    "hp": 100,
+    "def": 10,
+    "mana": 100,
+    "atk": 20,
+    "speed": 200,
+    "atkSpeed": 2.0,
+    "stunDuration": 0.0,
+    "attackRange": 150
+  },
+
+  "skills": {
+    "skill1": {
+      "id": "light_charge",
+      "animation": "Light_charge",
+      "manaCost": 0,
+      "cooldown": 0.0,
+
+      "effects": [
+        {
+          "type": "melee",
+          "trigger": "onFrames",
+          "frames": [ 5, 6, 7, 8,9,10,11,12,13 ],
+          "damage": 5,
+          "stun": 0.0,
+          "range": 300
+        }
+      ]
+    },
+
+    "skill2": {
+      "id": "Light_ball",
+      "animation": "Light_ball",
+      "manaCost": 0,
+      "cooldown": 0.0,
+
+      "effects": [
+        {
+          "type": "projectile",
+          "trigger": "onEnd",
+          "projectileAnim": "Charge",
+          "damage": 30,
+          "stun": 1.0,
+          "speed": 600,
+          "range": 50
+        }
+      ]
+    }
+  },
+
+  "animations": {
+    "Idle": {
+      "frameCount": 7,
+      "fps": 8,
+      "loop": true
+    },
+    "Walk": {
+      "frameCount": 9,
+      "fps": 10,
+      "loop": true
+    },
+    "Run": {
+      "frameCount": 8,
+      "fps": 12,
+      "loop": true
+    },
+
+    "Attack_1": {
+      "frameCount": 10,
+      "fps": 12,
+      "loop": false
+    },
+    "Attack_2": {
+      "frameCount": 4,
+      "fps": 12,
+      "loop": false
+    },
+    "Protection": {
+      "frameCount": 5,
+      "fps": 4,
+      "loop": false
+    },
+    "Hurt": {
+      "frameCount": 3,
+      "fps": 10,
+      "loop": false
+    },
+    "Dead": {
+      "frameCount": 6,
+      "fps": 8,
+      "loop": false
+    },
+    "Jump": {
+      "frameCount": 9,
+      "fps": 10,
+      "loop": false
+    },
+
+    "Light_charge": {
+      "frameCount": 13,
+      "fps": 10,
+      "loop": false
+    },
+    "Light_ball": {
+      "frameCount": 7,
+      "fps": 10,
+      "loop": false
+    },
+    "Charge": {
+      "frameCount": 10,
+      "fps": 12,
+      "loop": true
+    }
+  }
+}

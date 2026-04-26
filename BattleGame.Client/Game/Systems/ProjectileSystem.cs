@@ -1,6 +1,7 @@
 ﻿using BattleGame.Client.Game.Core;
 using BattleGame.Client.Game.Core.Components;
 using BattleGame.Client.Game.Rendering;
+using BattleGame.Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -12,11 +13,14 @@ namespace BattleGame.Client.Game.Systems
         private readonly List<Entity> _projectiles = new();
         private readonly List<Entity> _targets = new();
         private readonly Dictionary<string, SpriteAnimation> _animations;
+        private Func<IEnumerable<Entity>> _barrierProvider = () => Array.Empty<Entity>();
 
         public ProjectileSystem(Dictionary<string, SpriteAnimation> animations)
         {
             _animations = animations;
         }
+
+        public void SetBarrierProvider(Func<IEnumerable<Entity>> barrierProvider) => _barrierProvider = barrierProvider;
 
         // ===== REGISTER =====
         public void RegisterTarget(Entity entity)
@@ -28,8 +32,6 @@ namespace BattleGame.Client.Game.Systems
         public void Spawn(Entity projectile) 
         { 
             _projectiles.Add(projectile);
-            var p = projectile.Get<ProjectileComponent>();
-            System.Diagnostics.Debug.WriteLine($"[ProjectileSystem.Spawn] Total projectiles: {_projectiles.Count}, Anim: {p.AnimationKey}");
         }
 
         // ===== UPDATE =====
@@ -56,6 +58,13 @@ namespace BattleGame.Client.Game.Systems
                     }
                 }
 
+                if (IsBlockedByBarrier(p))
+                {
+                    var visualCenter = GetCollisionPoint(p);
+                    System.Diagnostics.Debug.WriteLine($"[ProjectileSystem] Projectile blocked by barrier at ({visualCenter.X}, {visualCenter.Y})");
+                    p.IsDestroyed = true;
+                }
+
                 // Lifetime
                 p.Timer += dt;
                 if (p.Timer >= p.Lifetime)
@@ -65,19 +74,30 @@ namespace BattleGame.Client.Game.Systems
                 }
 
                 // Collision
-                foreach (var target in _targets)
+                if (!p.IsDestroyed)
                 {
-                    if (target == p.Owner) continue;
-
-                    var mv = target.Get<MovementComponent>();
-                    var ch = target.Get<CharacterComponent>();
-                    if (ch.IsDead) continue;
-
-                    if (CheckHit(p, mv))
+                    foreach (var target in _targets)
                     {
-                        ApplyDamage(target, p);
-                        p.IsDestroyed = true;
-                        break;
+                        if (target == p.Owner) continue;
+
+                        var mv = target.Get<MovementComponent>();
+                        var ch = target.Get<CharacterComponent>();
+                        if (ch.IsDead) continue;
+
+                        if (CheckHit(p, mv))
+                        {
+                            if (IsBlockedByProtection(p, target))
+                            {
+                                p.IsDestroyed = true;
+                                break;
+                            }
+
+                            var visualCenter = GetCollisionPoint(p);
+                            System.Diagnostics.Debug.WriteLine($"[ProjectileSystem] Collision! Projectile at ({visualCenter.X}, {visualCenter.Y}), Target at ({mv.X}, {mv.Y}), Range={p.Range}");
+                            ApplyDamage(target, p);
+                            p.IsDestroyed = true;
+                            break;
+                        }
                     }
                 }
 
@@ -99,10 +119,12 @@ namespace BattleGame.Client.Game.Systems
                     !_animations.TryGetValue(p.AnimationKey, out var anim)) continue;
 
                 var frame = anim.Frames[Math.Min(p.CurrentFrame, anim.Frames.Length - 1)];
-                int drawW = frame.Width;
-                int drawH = frame.Height;
-                int drawX = (int)p.X - drawW / 2;
-                int drawY = (int)p.Y - drawH / 2;
+                int baseW = p.Render.UseSpriteSize ? frame.Width : 80;
+                int baseH = p.Render.UseSpriteSize ? frame.Height : 80;
+                int drawW = (int)MathF.Round(baseW * p.Render.Scale);
+                int drawH = (int)MathF.Round(baseH * p.Render.Scale);
+                int drawX = (int)MathF.Round(p.X + p.Render.OffsetX - drawW / 2f);
+                int drawY = ResolveDrawY(p.Y, drawH, p.Render);
 
                 var state = g.Save();
 
@@ -121,13 +143,75 @@ namespace BattleGame.Client.Game.Systems
             }
         }
 
+        private static int ResolveDrawY(float y, int drawHeight, EffectRenderData render)
+        {
+            float finalY = (render.AlignY ?? "center").Trim().ToLowerInvariant() switch
+            {
+                "bottom" => y + render.OffsetY - drawHeight,
+                "top" => y + render.OffsetY,
+                _ => y + render.OffsetY - drawHeight / 2f
+            };
+
+            return (int)MathF.Round(finalY);
+        }
+
+        private bool IsBlockedByBarrier(ProjectileComponent p)
+        {
+            var collisionPoint = GetCollisionPoint(p);
+
+            foreach (var barrier in _barrierProvider())
+            {
+                var bc = barrier.Get<BarrierComponent>();
+                if (!bc.IsActive || bc.RemainingTime <= 0)
+                    continue;
+
+                if (bc.Owner == p.Owner || !bc.BlockEnemyProjectile)
+                    continue;
+
+                if (IsInsideBarrierFrame(collisionPoint.X, collisionPoint.Y, bc))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private static bool IsInsideBarrierFrame(float x, float y, BarrierComponent bc)
+        {
+            float halfW = bc.CollisionWidth / 2f;
+            float halfH = bc.CollisionHeight / 2f;
+            return x >= bc.X - halfW && x <= bc.X + halfW && y >= bc.Y - halfH && y <= bc.Y + halfH;
+        }
+
+        private static bool IsBlockedByProtection(ProjectileComponent projectile, Entity target)
+        {
+            var targetCh = target.Get<CharacterComponent>();
+            if (!targetCh.IsProtecting || targetCh.IsDead)
+                return false;
+
+            if (targetCh.Render.ProtectionBlocksAllDirections)
+                return true;
+
+            var targetMv = target.Get<MovementComponent>();
+            var collisionPoint = GetCollisionPoint(projectile);
+
+            return targetMv.FacingRight
+                ? collisionPoint.X >= targetMv.X
+                : collisionPoint.X <= targetMv.X;
+        }
+
         // ===== HITBOX =====
         private bool CheckHit(ProjectileComponent p, MovementComponent mv)
         {
-            float dx = Math.Abs(p.X - mv.X);
-            float dy = Math.Abs(p.Y - mv.Y);
+            var collisionPoint = GetCollisionPoint(p);
+            float dx = Math.Abs(collisionPoint.X - mv.X);
+            float dy = Math.Abs(collisionPoint.Y - mv.Y);
             // Dùng range từ effect config thay vì hardcode
             return dx < p.Range && dy < p.Range * 1.6f;
+        }
+
+        private static (float X, float Y) GetCollisionPoint(ProjectileComponent p)
+        {
+            return (p.X + p.Render.OffsetX, p.Y + p.Render.OffsetY);
         }
 
         private void ApplyDamage(Entity target, ProjectileComponent p)

@@ -42,7 +42,11 @@ namespace BattleGame.Client.Game.Rendering
                 var loop = anim.Value.GetProperty("loop").GetBoolean();
 
                 var sheet = LoadSheet(characterId, name);
-                if (sheet == null) continue;
+                if (sheet == null)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[AnimationLoader] Animation {characterId}/{name} NOT found (file missing)");
+                    continue;
+                }
 
                 var frames = SliceFrames(sheet, frameCount);
 
@@ -54,9 +58,12 @@ namespace BattleGame.Client.Game.Rendering
                     Loop = loop
                 };
 
+                System.Diagnostics.Debug.WriteLine($"[AnimationLoader] Animation {characterId}/{name} loaded successfully");
+
                 sheet.Dispose();
             }
 
+            System.Diagnostics.Debug.WriteLine($"[AnimationLoader] Total animations loaded for {characterId}: {result.Count}");
             return result;
         }
 
@@ -67,6 +74,14 @@ namespace BattleGame.Client.Game.Rendering
 
             string folder = char.ToUpper(characterId[0]) + characterId[1..];
             string path = Path.Combine(_assetRoot, "Characters", folder, $"{animName}.png");
+            if (!File.Exists(path) && animName.StartsWith("Attack_", StringComparison.OrdinalIgnoreCase))
+            {
+                string legacyAttackName = "Attack" + animName[7..];
+                string legacyPath = Path.Combine(_assetRoot, "Characters", folder, $"{legacyAttackName}.png");
+                if (File.Exists(legacyPath))
+                    path = legacyPath;
+            }
+
             if (!File.Exists(path)) return null;
 
             using var raw = new Bitmap(path);

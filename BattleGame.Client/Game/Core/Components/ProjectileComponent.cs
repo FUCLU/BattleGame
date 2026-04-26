@@ -1,4 +1,5 @@
-﻿using BattleGame.Client.Game.Core;
+using BattleGame.Client.Game.Core;
+using BattleGame.Shared.Models;
 
 namespace BattleGame.Client.Game.Core.Components
 {
@@ -12,7 +13,7 @@ namespace BattleGame.Client.Game.Core.Components
 
         public int Damage;
         public float StunDuration;
-        public float Range = 50f;  // Phạm vi collision (pixel)
+        public float Range = 50f;
 
         public float Lifetime = 3f;
         public float Timer = 0f;
@@ -21,9 +22,9 @@ namespace BattleGame.Client.Game.Core.Components
 
         public bool IsDestroyed = false;
 
-        // Animation
         public string AnimationKey { get; set; } = "";
         public int CurrentFrame { get; set; } = 0;
         public float FrameTimer { get; set; } = 0f;
+        public EffectRenderData Render { get; set; } = new();
     }
 }
