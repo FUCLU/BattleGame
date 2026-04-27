@@ -1,14 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 using System.Windows.Forms;
-using BattleGame.Shared.Models;
-
 
 namespace BattleGame.Client.Forms
 {
@@ -25,54 +18,69 @@ namespace BattleGame.Client.Forms
            "..", "..", "..", "Assets", "Background");
 
 
-        string currentMap = ""; //biến lưu map đã chọn
-        string currentMode = ""; //biến lưu mode đã chọn
+        private string currentMap = "";
+        private string currentMode = "easy";
 
-        private Character playerChar; //biến lưu nhân vật người chơi đã chọn
-        private Character botChar;
+        private string playerCharId = "lord";
+        private string botCharId = "samurai";
 
-        private Character CreateRandomBot()
+        private string CreateRandomBotId()
         {
             Random rnd = new Random();
-            int r = rnd.Next(2);
-
-            if (r == 0)
-            {
-                return CreateCharacter("Knight");
-            }
-            else
-            {
-                return CreateCharacter("Mage");
-            }
+            string[] ids = { "lord", "samurai", "kitsune", "wizard" };
+            return ids[rnd.Next(ids.Length)];
         }
 
-        private Character CreateCharacter(string name)
+        private static string ToDisplayName(string characterId)
         {
-            return name switch
+            return characterId switch
             {
-                "Knight" => new Character("Knight", 150, 20, 10, 5),
-                "Mage" => new Character("Mage", 100, 30, 3, 10),
-                _ => throw new Exception("Character không hợp lệ")
+                "lord" => "Lord",
+                "samurai" => "Samurai",
+                "kitsune" => "Kitsune",
+                "wizard" => "Wizard",
+                _ => characterId
             };
         }
+
+        private static string? GetMapImageFile(string mapId)
+        {
+            return mapId switch
+            {
+                "terrace" => "terrace.png",
+                "throneroom" => "throneroom.png",
+                "castle" => "castle.png",
+                _ => null
+            };
+        }
+
+        private void SetMap(string mapId)
+        {
+            currentMap = mapId;
+            string? imageFile = GetMapImageFile(mapId);
+            if (string.IsNullOrWhiteSpace(imageFile))
+                return;
+
+            string imagePath = Path.Combine(AssetsRoot, imageFile);
+            if (File.Exists(imagePath))
+                pictureBoxMap.Image = Image.FromFile(imagePath);
+        }
+
         private void comboBoxMap_SelectedIndexChanged(object sender, EventArgs e)
         {
 
             switch (comboBoxMap.SelectedIndex)
             {
                 case 0:
-                    pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "terrace.png"));
-                    currentMap = "terrace";
+                    SetMap("terrace");
                     break;
 
                 case 1:
-                    pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "throneroom.png"));
-                    currentMap = "throneroom";
+                    SetMap("throneroom");
                     break;
 
                 case 2:
-                    pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "castle.png"));
-                    currentMap = "castle";
+                    SetMap("castle");
                     break;
             }
         }
@@ -81,8 +89,9 @@ namespace BattleGame.Client.Forms
         private void OfflineModeSelection_Load(object sender, EventArgs e)
         {
             comboBoxMap.SelectedIndex = 0;
-            pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "terrace.png"));
-            currentMap = "terrace";
+            SetMap("terrace");
+            lblNameCharPlayer.Text = ToDisplayName(playerCharId);
+            botCharId = CreateRandomBotId();
         }
 
 
@@ -120,14 +129,16 @@ namespace BattleGame.Client.Forms
 
         private void btnPlay_Click(object sender, EventArgs e)
         {
-            string map = currentMap;
-            string mode = currentMode;
+            if (string.IsNullOrWhiteSpace(playerCharId))
+            {
+                MessageBox.Show("Vui long chon nhan vat truoc khi choi.", "Thong bao", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
-            GameForm gameForm = new GameForm(playerChar, botChar, map, mode);
+            // currentMap/currentMode/botCharId are still tracked for future offline tuning.
+            GameForm gameForm = new GameForm(playerCharId);
             gameForm.Show();
             this.Close();
-
-            // gửi lên server
         }
 
         private void btnSelCharPlayer_Click(object sender, EventArgs e)
@@ -135,8 +146,9 @@ namespace BattleGame.Client.Forms
             CharacterSelection f = new CharacterSelection();
             if (f.ShowDialog() == DialogResult.OK)
             {
-                playerChar = CreateCharacter(f.SelectedCharacterName);
-                lblNameCharPlayer.Text = playerChar.Name;
+                playerCharId = f.SelectedCharacterName;
+                lblNameCharPlayer.Text = ToDisplayName(playerCharId);
+                botCharId = CreateRandomBotId();
             }
         }
 
