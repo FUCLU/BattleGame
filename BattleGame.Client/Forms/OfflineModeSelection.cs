@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+using System;
 using System.Drawing;
+using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using BattleGame.Client.Config;
 
@@ -25,27 +22,67 @@ namespace BattleGame.Client.Forms
            "..", "..", "..", "Assets", "Background");
 
 
-        string currentMap = ""; //biến lưu map đã chọn
-        string currentMode = ""; //biến lưu mode đã chọn
+        private string currentMap = "";
+        private string currentMode = "easy";
         private string playerCharacterId = string.Empty;
+
+        private string CreateRandomBotId()
+        {
+            Random rnd = new Random();
+            string[] ids = { "lord", "samurai", "kitsune", "wizard" };
+            return ids[rnd.Next(ids.Length)];
+        }
+
+        private static string ToDisplayName(string characterId)
+        {
+            return characterId switch
+            {
+                "lord" => "Lord",
+                "samurai" => "Samurai",
+                "kitsune" => "Kitsune",
+                "wizard" => "Wizard",
+                _ => characterId
+            };
+        }
+
+        private static string? GetMapImageFile(string mapId)
+        {
+            return mapId switch
+            {
+                "terrace" => "terrace.png",
+                "throneroom" => "throneroom.png",
+                "castle" => "castle.png",
+                _ => null
+            };
+        }
+
+        private void SetMap(string mapId)
+        {
+            currentMap = mapId;
+            string? imageFile = GetMapImageFile(mapId);
+            if (string.IsNullOrWhiteSpace(imageFile))
+                return;
+
+            string imagePath = Path.Combine(AssetsRoot, imageFile);
+            if (File.Exists(imagePath))
+                pictureBoxMap.Image = Image.FromFile(imagePath);
+        }
+
         private void comboBoxMap_SelectedIndexChanged(object sender, EventArgs e)
         {
 
             switch (comboBoxMap.SelectedIndex)
             {
                 case 0:
-                    pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "terrace.png"));
-                    currentMap = "terrace";
+                    SetMap("terrace");
                     break;
 
                 case 1:
-                    pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "throneroom.png"));
-                    currentMap = "throneroom";
+                    SetMap("throneroom");
                     break;
 
                 case 2:
-                    pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "castle.png"));
-                    currentMap = "castle";
+                    SetMap("castle");
                     break;
             }
         }
@@ -54,8 +91,14 @@ namespace BattleGame.Client.Forms
         private void OfflineModeSelection_Load(object sender, EventArgs e)
         {
             comboBoxMap.SelectedIndex = 0;
-            pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "terrace.png"));
-            currentMap = "terrace";
+            SetMap("terrace");
+            if (string.IsNullOrWhiteSpace(playerCharacterId))
+            {
+                playerCharacterId = "lord";
+            }
+
+            lblNameCharPlayer.Text = ToDisplayName(playerCharacterId);
+            _ = CreateRandomBotId();
         }
 
 
@@ -102,8 +145,6 @@ namespace BattleGame.Client.Forms
             GameForm gameForm = new GameForm(playerCharacterId);
             gameForm.Show();
             this.Close();
-
-            // gửi lên server
         }
 
         private void btnSelCharPlayer_Click(object sender, EventArgs e)

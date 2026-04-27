@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Windows.Forms;
 using BattleGame.Client.Managers;
 using BattleGame.Client.Game;
@@ -16,6 +16,8 @@ namespace BattleGame.Client.Forms
             try
             {
                 InitializeComponent();
+
+                Load += GameForm_Load;
 
 
                 this.AutoScaleMode = AutoScaleMode.None;
@@ -45,6 +47,25 @@ namespace BattleGame.Client.Forms
                     MessageBoxIcon.Error);
                 throw;
             }
+        }
+
+        private void GameForm_Load(object? sender, EventArgs e)
+        {
+            // Keep HUD readable on top of the game rendering surface.
+            panelStatus.BackColor = Color.FromArgb(180, 0, 0, 0);
+            panelStatus.BringToFront();
+
+            panelHPBack.BringToFront();
+            panelManaBack.BringToFront();
+            panel3.BringToFront();
+            panel1.BringToFront();
+
+            label3.BringToFront();
+            label4.BringToFront();
+            pictureBox1.BringToFront();
+            pictureBox2.BringToFront();
+
+            UpdateUIBars();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)

@@ -37,6 +37,7 @@ namespace BattleGame.Client.Forms
         {
             InitializeComponent();
             StartPosition = FormStartPosition.CenterScreen;
+            StartPosition = FormStartPosition.CenterScreen;
         }
 
         public string SelectedCharacterId { get; private set; } = string.Empty;
