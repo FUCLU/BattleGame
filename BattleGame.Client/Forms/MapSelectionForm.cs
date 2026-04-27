@@ -17,36 +17,48 @@ namespace BattleGame.Client.Forms
             InitializeComponent();
         }
 
+        private static readonly string AssetsRoot = Path.Combine(
+           AppDomain.CurrentDomain.BaseDirectory,
+           "..", "..", "..", "Assets", "Background");
+
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
 
             switch (comboBoxMap.SelectedIndex)
             {
                 case 0:
-                    pictureBoxMap.Image = Image.FromFile("Assets/Background/terrace.png");
+                    pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "terrace.png"));
                     break;
 
                 case 1:
-                    pictureBoxMap.Image = Image.FromFile("Assets/Background/throneroom.png");
+                    pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "throneroom.png"));
                     break;
 
                 case 2:
-                    pictureBoxMap.Image = Image.FromFile("Assets/Background/castle.png");
+                    pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "castle.png"));
                     break;
-
-
             }
         }
 
         private void MapSelectionForm_Load(object sender, EventArgs e)
         {
             comboBoxMap.SelectedIndex = 0;
-            pictureBoxMap.Image = Image.FromFile("Assets/Background/terrace.png");
+            pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "terrace.png"));
         }
 
         private void pictureBoxMap_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void buttonSelect_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void buttonCancel_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }

@@ -17,6 +17,7 @@ namespace BattleGame.Client.Forms
         public MenuForm()
         {
             InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -45,7 +46,7 @@ namespace BattleGame.Client.Forms
             this.Close();
         }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
+        private void MenuForm_Load(object sender, EventArgs e)
         {
 
         }

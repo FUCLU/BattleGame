@@ -18,7 +18,7 @@ namespace BattleGame.Client.Forms
         }
         private void RoundStartForm_Load(object sender, EventArgs e)
         {
-            panelRound.BackColor = Color.FromArgb(180, 0, 0, 0);
+           
         }
     }
 }

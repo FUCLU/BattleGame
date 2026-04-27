@@ -20,6 +20,7 @@ namespace BattleGame.Client.Forms
         public ResetPasswordForm(string email)
         {
             InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
             _email = email;
         }
 

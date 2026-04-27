@@ -15,6 +15,7 @@ namespace BattleGame.Client.Forms
         public RegisterForm()
         {
             InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
         }
 
         private void label6_Click(object sender, EventArgs e)

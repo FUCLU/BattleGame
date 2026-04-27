@@ -12,42 +12,21 @@ namespace BattleGame.Client
         static async Task Main()
         {
             ApplicationConfiguration.Initialize();
-
-            // Sửa logic để không bị báo Unreachable code
-            bool isTestMode = true;
-
             try
             {
-                if (isTestMode)
-                {
-                    Application.Run(new GameForm("lord"));
-                }
-                else
-                {
-                    // ONLINE MODE 
-                    try
-                    {
-                        await NetworkManager.Instance.ConnectAsync();
-                        Application.Run(new LoginForm());
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show(
-                            $"Không thể kết nối Server!\n{ex.Message}",
-                            "Lỗi kết nối",
-                            MessageBoxButtons.OK,
-                            MessageBoxIcon.Error);
-                    }
-                }
+                await NetworkManager.Instance.ConnectAsync();
             }
             catch (Exception ex)
             {
                 MessageBox.Show(
-                    $"Lỗi khởi động ứng dụng:\n{ex.Message}\n\n{ex.StackTrace}",
-                    "Lỗi",
+                    $"Khong the ket noi Server!\n{ex.Message}",
+                    "Loi ket noi",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
+                return;
             }
+
+            Application.Run(new LoginForm());
         }
     }
 }

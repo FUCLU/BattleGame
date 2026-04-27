@@ -15,6 +15,12 @@ namespace BattleGame.Client.Forms
         public MatchHistoryForm()
         {
             InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
+        }
+
+        private void MatchHistoryForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

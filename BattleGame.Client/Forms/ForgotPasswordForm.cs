@@ -21,6 +21,7 @@ namespace BattleGame.Client.Forms
         public ForgotPasswordForm()
         {
             InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
         }
 
         private void ForgotPasswordForm_Load(object sender, EventArgs e)
@@ -28,17 +29,7 @@ namespace BattleGame.Client.Forms
 
         }
 
-        private void label2_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            LoginForm loginForm = new LoginForm();
-            loginForm.ShowDialog();
-            this.Close();
-        }
+      
 
         private async void button1_Click(object sender, EventArgs e)
         {
@@ -100,6 +91,13 @@ namespace BattleGame.Client.Forms
                 SoundManager.SetVolume(0.0f);
                 _isMuted = true;
             }
+        }
+
+        private void btnBackLogin_Click(object sender, EventArgs e)
+        {
+            LoginForm loginForm = new LoginForm();
+            loginForm.Show();
+            this.Close();
         }
     }
 }
