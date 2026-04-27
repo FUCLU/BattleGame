@@ -47,7 +47,7 @@ namespace BattleGame.Client.Config
         public static List<CharacterSelectionItem> LoadSelectionItems(string configRoot)
         {
             var items = new List<CharacterSelectionItem>();
-            string configDir = Path.Combine(configRoot, "Characters");
+            string configDir = Path.Combine(configRoot, "Config", "Characters");
 
             if (Directory.Exists(configDir))
             {
@@ -66,15 +66,7 @@ namespace BattleGame.Client.Config
 
         private static void MergeLegacyItems(List<CharacterSelectionItem> items)
         {
-            var existingIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var item in items)
-                existingIds.Add(item.Id);
-
-            foreach (var legacy in GetLegacyItems())
-            {
-                if (existingIds.Add(legacy.Id))
-                    items.Add(legacy);
-            }
+            // Removed: Legacy items are no longer merged, only JSON characters are used
         }
 
         private static bool TryLoadFromConfig(string configPath, out CharacterSelectionItem item)

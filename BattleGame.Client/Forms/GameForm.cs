@@ -1,4 +1,7 @@
 using System;
+using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using BattleGame.Client.Managers;
 using BattleGame.Client.Game;
@@ -11,30 +14,44 @@ namespace BattleGame.Client.Forms
         private readonly GameEngine _engine;
         private System.Windows.Forms.Timer gameTimer;
 
-        public GameForm(string characterId)
+        private readonly Stopwatch _stopwatch = new();
+        private float _frameAccumulator = 0f;
+        private const float FixedTimestep = 1f / 60f; // Fixed 60 FPS
+
+        private Bitmap? _backBuffer;
+        private Graphics? _backGraphics;
+
+        public GameForm(string characterId, string mapId = "terrace")
         {
             try
             {
                 InitializeComponent();
 
-                Load += GameForm_Load;
-
-
                 this.AutoScaleMode = AutoScaleMode.None;
-                this.Font = new Font(this.Font.FontFamily, this.Font.Size);
-                gameTimer = new System.Windows.Forms.Timer();
-                gameTimer.Interval = 16;
-                gameTimer.Tick += gameTimer_Tick;
-
                 this.DoubleBuffered = true;
                 this.KeyPreview = true;
 
-                InputManager.Clear();
+                SetStyle(
+                    ControlStyles.AllPaintingInWmPaint |
+                    ControlStyles.UserPaint |
+                    ControlStyles.OptimizedDoubleBuffer,
+                    true);
+                UpdateStyles();
 
-                _engine = new GameEngine(characterId);
+                InputManager.Clear();
+                _engine = new GameEngine(characterId, mapId, this.ClientSize.Width, this.ClientSize.Height);
+
+                CreateBackBuffer();
+
+                Load += GameForm_Load;
+
+                gameTimer = new System.Windows.Forms.Timer();
+                gameTimer.Interval = 16; // ~60fps
+                gameTimer.Tick += gameTimer_Tick;
                 gameTimer.Start();
 
-                // Đảm bảo form hiển thị
+                _stopwatch.Start();
+
                 this.Visible = true;
                 this.BringToFront();
             }
@@ -42,28 +59,36 @@ namespace BattleGame.Client.Forms
             {
                 MessageBox.Show(
                     $"Lỗi khởi tạo GameForm:\n{ex.Message}\n\n{ex.StackTrace}",
-                    "Lỗi",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
+                    "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 throw;
             }
         }
 
+        private void CreateBackBuffer()
+        {
+            _backBuffer?.Dispose();
+            _backGraphics?.Dispose();
+
+            int w = Math.Max(1, this.ClientSize.Width);
+            int h = Math.Max(1, this.ClientSize.Height);
+
+            _backBuffer = new Bitmap(w, h, System.Drawing.Imaging.PixelFormat.Format32bppPArgb);
+            _backGraphics = Graphics.FromImage(_backBuffer);
+
+            _backGraphics.InterpolationMode = InterpolationMode.NearestNeighbor;
+            _backGraphics.SmoothingMode = SmoothingMode.None;
+            _backGraphics.PixelOffsetMode = PixelOffsetMode.None;
+            _backGraphics.CompositingQuality = CompositingQuality.HighSpeed;
+        }
+
         private void GameForm_Load(object? sender, EventArgs e)
         {
-            // Keep HUD readable on top of the game rendering surface.
             panelStatus.BackColor = Color.FromArgb(180, 0, 0, 0);
-            panelStatus.BringToFront();
 
-            panelHPBack.BringToFront();
-            panelManaBack.BringToFront();
-            panel3.BringToFront();
-            panel1.BringToFront();
-
-            label3.BringToFront();
-            label4.BringToFront();
-            pictureBox1.BringToFront();
-            pictureBox2.BringToFront();
+            foreach (Control c in new Control[]
+                { panelStatus, panelHPBack, panelManaBack,
+                  panel3, panel1, label3, label4, pictureBox1, pictureBox2 })
+                c.BringToFront();
 
             UpdateUIBars();
         }
@@ -83,98 +108,102 @@ namespace BattleGame.Client.Forms
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            base.OnPaint(e);
-            _engine.Draw(e.Graphics);
+            if (_backBuffer == null) return;
+            e.Graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
+            e.Graphics.DrawImageUnscaled(_backBuffer, 0, 0);
         }
 
-        private void gameTimer_Tick(object sender, EventArgs e)
+        protected override void OnPaintBackground(PaintEventArgs e) { }
+
+        private void gameTimer_Tick(object? sender, EventArgs e)
         {
-            _engine.Update();
+            // Tính delta time từ Stopwatch
+            float dt = (float)_stopwatch.Elapsed.TotalSeconds;
+            _stopwatch.Restart();
+            
+            // Giới hạn frame time để tránh simulation lag
+            dt = Math.Min(dt, FixedTimestep * 2);
+
+            // Accumulate delta time
+            _frameAccumulator += dt;
+
+            // Update với fixed timestep
+            while (_frameAccumulator >= FixedTimestep)
+            {
+                _engine.Update(FixedTimestep);
+                _frameAccumulator -= FixedTimestep;
+            }
+
+            // Vẽ frame
+            if (_backGraphics != null)
+            {
+                _backGraphics.Clear(Color.Black);
+                _engine.Draw(_backGraphics);
+            }
+
             UpdateUIBars();
-            this.Invalidate();
+
+            // Vẽ lên màn hình
+            this.Invalidate(false);
+        }
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            CreateBackBuffer();
         }
 
         private void UpdateUIBars()
         {
             try
             {
-                // Update player HP and Mana
                 var playerChar = _engine.Player.Get<CharacterComponent>();
                 if (playerChar != null)
                 {
-                    lblHP.Text = $"{playerChar.Hp}/{playerChar.BaseStats.Hp}";
-                    lblMana.Text = $"{playerChar.Mana}/{playerChar.BaseStats.Mana}";
+                    string hpText = $"{playerChar.Hp}/{playerChar.BaseStats.Hp}";
+                    if (lblHP.Text != hpText) lblHP.Text = hpText;
 
-                    // Calculate bar widths
-                    int maxHPWidth = 301;
-                    int maxManaWidth = 301;
+                    string manaText = $"{playerChar.Mana}/{playerChar.BaseStats.Mana}";
+                    if (lblMana.Text != manaText) lblMana.Text = manaText;
 
-                    if (playerChar.BaseStats.Hp > 0)
-                    {
-                        int hpWidth = (int)(maxHPWidth * playerChar.Hp / (float)playerChar.BaseStats.Hp);
-                        panelHPFill.Width = Math.Max(0, hpWidth);
-                    }
-                    else
-                    {
-                        panelHPFill.Width = 0;
-                    }
+                    int maxW = 301;
+                    int hpW = playerChar.BaseStats.Hp > 0
+                        ? (int)(maxW * playerChar.Hp / (float)playerChar.BaseStats.Hp) : 0;
+                    int manaW = playerChar.BaseStats.Mana > 0
+                        ? (int)(maxW * playerChar.Mana / (float)playerChar.BaseStats.Mana) : 0;
 
-                    if (playerChar.BaseStats.Mana > 0)
-                    {
-                        int manaWidth = (int)(maxManaWidth * playerChar.Mana / (float)playerChar.BaseStats.Mana);
-                        panelManaFill.Width = Math.Max(0, manaWidth);
-                    }
-                    else
-                    {
-                        panelManaFill.Width = 0;
-                    }
+                    if (panelHPFill.Width != hpW) panelHPFill.Width = Math.Max(0, hpW);
+                    if (panelManaFill.Width != manaW) panelManaFill.Width = Math.Max(0, manaW);
                 }
 
-                // Update enemy HP and Mana
                 var enemyChar = _engine.Enemy.Get<CharacterComponent>();
                 if (enemyChar != null)
                 {
-                    label6.Text = $"{enemyChar.Hp}/{enemyChar.BaseStats.Hp}";
-                    label5.Text = $"{enemyChar.Mana}/{enemyChar.BaseStats.Mana}";
+                    string hpText = $"{enemyChar.Hp}/{enemyChar.BaseStats.Hp}";
+                    if (label6.Text != hpText) label6.Text = hpText;
 
-                    // Calculate bar widths for enemy
-                    int maxHPWidth = 301;
-                    int maxManaWidth = 301;
+                    string manaText = $"{enemyChar.Mana}/{enemyChar.BaseStats.Mana}";
+                    if (label5.Text != manaText) label5.Text = manaText;
 
-                    // panel4 = HP (màu đỏ Firebrick)
-                    if (enemyChar.BaseStats.Hp > 0)
-                    {
-                        int hpWidth = (int)(maxHPWidth * enemyChar.Hp / (float)enemyChar.BaseStats.Hp);
-                        panel4.Width = Math.Max(0, hpWidth);
-                    }
-                    else
-                    {
-                        panel4.Width = 0;
-                    }
+                    int maxW = 301;
+                    int hpW = enemyChar.BaseStats.Hp > 0
+                        ? (int)(maxW * enemyChar.Hp / (float)enemyChar.BaseStats.Hp) : 0;
+                    int manaW = enemyChar.BaseStats.Mana > 0
+                        ? (int)(maxW * enemyChar.Mana / (float)enemyChar.BaseStats.Mana) : 0;
 
-                    // panel2 = Mana (màu xanh MidnightBlue)
-                    if (enemyChar.BaseStats.Mana > 0)
-                    {
-                        int manaWidth = (int)(maxManaWidth * enemyChar.Mana / (float)enemyChar.BaseStats.Mana);
-                        panel2.Width = Math.Max(0, manaWidth);
-                    }
-                    else
-                    {
-                        panel2.Width = 0;
-                    }
+                    if (panel4.Width != hpW) panel4.Width = Math.Max(0, hpW);
+                    if (panel2.Width != manaW) panel2.Width = Math.Max(0, manaW);
                 }
             }
-            catch
-            {
-                // Silently handle any errors during UI update
-            }
+            catch { }
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
-            InputManager.Clear();
             gameTimer.Stop();
             gameTimer.Dispose();
+            _backGraphics?.Dispose();
+            _backBuffer?.Dispose();
+            InputManager.Clear();
             base.OnFormClosed(e);
         }
 

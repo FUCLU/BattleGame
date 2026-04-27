@@ -142,7 +142,13 @@ namespace BattleGame.Client.Forms
                 return;
             }
 
-            GameForm gameForm = new GameForm(playerCharacterId);
+            if (string.IsNullOrWhiteSpace(currentMap))
+            {
+                MessageBox.Show("Vui lòng chọn bản đồ trước khi vào game.");
+                return;
+            }
+
+            GameForm gameForm = new GameForm(playerCharacterId, currentMap);
             gameForm.Show();
             this.Close();
         }

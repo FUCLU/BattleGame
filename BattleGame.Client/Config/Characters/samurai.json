@@ -1,6 +1,10 @@
 {
   "id": "samurai",
-
+  "selection": {
+    "displayName": "Samurai",
+    "previewImage": "Idle.png",
+    "skillLabel": "Multi Slash / Blade Wave"
+  },
   "stats": {
     "hp": 100,
     "def": 10,

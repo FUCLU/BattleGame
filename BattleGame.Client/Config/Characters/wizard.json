@@ -1,6 +1,10 @@
 {
   "id": "wizard",
-
+  "selection": {
+    "displayName": "Wizard",
+    "previewImage": "Idle.png",
+    "skillLabel": "Light Charge / Light Ball"
+  },
   "stats": {
     "hp": 100,
     "def": 10,

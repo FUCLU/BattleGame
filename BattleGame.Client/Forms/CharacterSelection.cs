@@ -10,20 +10,6 @@ namespace BattleGame.Client.Forms
 {
     public partial class CharacterSelection : Form
     {
-        private sealed class CharacterSlot
-        {
-            public CharacterSlot(Panel panel, Label nameLabel, PictureBox previewPicture)
-            {
-                Panel = panel;
-                NameLabel = nameLabel;
-                PreviewPicture = previewPicture;
-            }
-
-            public Panel Panel { get; }
-            public Label NameLabel { get; }
-            public PictureBox PreviewPicture { get; }
-        }
-
         private readonly Dictionary<Panel, CharacterSelectionItem> _panelCharacterMap = new();
         private readonly List<CharacterSelectionItem> _availableCharacters = new();
         private readonly List<Panel> _slotPanels = new();
@@ -36,7 +22,6 @@ namespace BattleGame.Client.Forms
         public CharacterSelection()
         {
             InitializeComponent();
-            StartPosition = FormStartPosition.CenterScreen;
             StartPosition = FormStartPosition.CenterScreen;
         }
 
@@ -58,27 +43,10 @@ namespace BattleGame.Client.Forms
             string configRoot = Path.Combine(
                 AppDomain.CurrentDomain.BaseDirectory,
                 "..", "..", "..");
-            string configCharactersDir = Path.Combine(configRoot, "Config", "Characters");
 
-            var configuredIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            if (Directory.Exists(configCharactersDir))
-            {
-                foreach (string configPath in Directory.EnumerateFiles(configCharactersDir, "*.json"))
-                {
-                    configuredIds.Add(Path.GetFileNameWithoutExtension(configPath));
-                }
-            }
-
+            // Load all characters from JSON config
             var catalogItems = CharacterCatalog.LoadSelectionItems(configRoot);
-            if (configuredIds.Count > 0)
-            {
-                _availableCharacters.AddRange(
-                    catalogItems.Where(item => configuredIds.Contains(item.Id)));
-            }
-            else
-            {
-                _availableCharacters.AddRange(catalogItems);
-            }
+            _availableCharacters.AddRange(catalogItems);
 
             if (_availableCharacters.Count == 0)
             {
@@ -95,50 +63,52 @@ namespace BattleGame.Client.Forms
             _panelCharacterMap.Clear();
             _slotPanels.Clear();
 
+            // Define hardcoded slots for 4 characters
             var slots = new[]
             {
-                new CharacterSlot(pnlGirlKnight, label1, pbSelGirlKnight),
-                new CharacterSlot(pnlKabold, label8, pbSelKabold),
-                new CharacterSlot(pnlWarrior, label3, pictureBox1),
-                new CharacterSlot(pnlSoldier, label4, pictureBox2)
+                new CharacterSlot(pnlWizard, lblWizardName, pbWizard),
+                new CharacterSlot(pnlSamurai, lblSamuraiName, pbSamurai),
+                new CharacterSlot(pnlKitsune, lblKitsuneName, pbKitsune),
+                new CharacterSlot(pnlLord, lblLordName, pbLord)
             };
 
-            for (int i = 0; i < slots.Length; i++)
+            // Bind characters to slots
+            for (int i = 0; i < slots.Length && i < _availableCharacters.Count; i++)
             {
-                CharacterSlot slot = slots[i];
-                _slotPanels.Add(slot.Panel);
-                AttachClickRecursive(slot.Panel);
-
-                if (i >= _availableCharacters.Count)
-                {
-                    ConfigureEmptySlot(slot);
-                    continue;
-                }
-
                 CharacterSelectionItem character = _availableCharacters[i];
+                CharacterSlot slot = slots[i];
+
+                // Update label and image
+                slot.Label.Text = character.DisplayName;
+                slot.Picture.Image = LoadImage(character.GetPreviewPath(AssetsRoot));
+
+                // Store mapping
                 _panelCharacterMap[slot.Panel] = character;
-                slot.NameLabel.Text = character.DisplayName;
-                slot.PreviewPicture.Image = LoadImage(character.GetPreviewPath(AssetsRoot));
-                slot.Panel.Enabled = true;
-                slot.Panel.BackColor = Color.FromArgb(44, 74, 110);
-                SetHandCursor(slot.Panel);
+                _slotPanels.Add(slot.Panel);
+
+                // Attach click event
+                AttachClickRecursive(slot.Panel);
             }
 
-            if (_availableCharacters.Count > 0)
+            // Select first character if available
+            if (_availableCharacters.Count > 0 && _slotPanels.Count > 0)
             {
-                var initialPanel = slots.FirstOrDefault(slot => _panelCharacterMap.ContainsKey(slot.Panel))?.Panel;
-                if (initialPanel != null)
-                    SelectByPanel(initialPanel);
+                SelectByPanel(_slotPanels[0]);
             }
         }
 
-        private static void ConfigureEmptySlot(CharacterSlot slot)
+        private struct CharacterSlot
         {
-            slot.NameLabel.Text = "Locked";
-            slot.PreviewPicture.Image = null;
-            slot.Panel.Enabled = false;
-            slot.Panel.Cursor = Cursors.Default;
-            slot.Panel.BackColor = Color.FromArgb(36, 58, 94);
+            public Panel Panel { get; }
+            public Label Label { get; }
+            public PictureBox Picture { get; }
+
+            public CharacterSlot(Panel panel, Label label, PictureBox picture)
+            {
+                Panel = panel;
+                Label = label;
+                Picture = picture;
+            }
         }
 
         private void AttachClickRecursive(Control control)
@@ -220,11 +190,15 @@ namespace BattleGame.Client.Forms
         private void btnSellect_Click(object sender, EventArgs e)
         {
             if (_selectedCharacter == null)
+            {
+                MessageBox.Show("Vui lòng chọn nhân vật!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
+            }
 
             SelectedCharacterId = _selectedCharacter.Id;
+            
             DialogResult = DialogResult.OK;
-            Close();
+            this.Close();
         }
 
         private void CharacterPanel_Click(object sender, EventArgs e)
@@ -243,13 +217,20 @@ namespace BattleGame.Client.Forms
             selected.BackColor = Color.FromArgb(63, 110, 165);
         }
 
-        private void SetHandCursor(Control ctrl)
+        private void panel4_Paint(object sender, PaintEventArgs e)
         {
-            ctrl.Cursor = Cursors.Hand;
-            foreach (Control child in ctrl.Controls)
-            {
-                SetHandCursor(child);
-            }
+
+        }
+
+        private void pnlKitsune_Paint(object sender, PaintEventArgs e)
+        {
+
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            DialogResult = DialogResult.Cancel;
+            this.Close();
         }
     }
 }

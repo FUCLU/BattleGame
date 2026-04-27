@@ -12,6 +12,10 @@ namespace BattleGame.Client.Forms
 {
     public partial class MapSelectionForm : Form
     {
+        private string _selectedMapId = "terrace";
+
+        public string SelectedMapId => _selectedMapId;
+
         public MapSelectionForm()
         {
             InitializeComponent();
@@ -27,14 +31,17 @@ namespace BattleGame.Client.Forms
             switch (comboBoxMap.SelectedIndex)
             {
                 case 0:
+                    _selectedMapId = "terrace";
                     pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "terrace.png"));
                     break;
 
                 case 1:
+                    _selectedMapId = "throneroom";
                     pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "throneroom.png"));
                     break;
 
                 case 2:
+                    _selectedMapId = "castle";
                     pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "castle.png"));
                     break;
             }
@@ -43,6 +50,7 @@ namespace BattleGame.Client.Forms
         private void MapSelectionForm_Load(object sender, EventArgs e)
         {
             comboBoxMap.SelectedIndex = 0;
+            _selectedMapId = "terrace";
             pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "terrace.png"));
         }
 
@@ -53,6 +61,7 @@ namespace BattleGame.Client.Forms
 
         private void buttonSelect_Click(object sender, EventArgs e)
         {
+            DialogResult = DialogResult.OK;
             this.Close();
         }
 

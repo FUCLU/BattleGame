@@ -1,6 +1,10 @@
 {
   "id": "kitsune",
-
+  "selection": {
+    "displayName": "Kitsune",
+    "previewImage": "Idle.png",
+    "skillLabel": "Barrier / Fire Burst"
+  },
   "stats": {
     "hp": 110,
     "def": 8,

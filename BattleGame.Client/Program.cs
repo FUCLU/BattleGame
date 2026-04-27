@@ -12,18 +12,21 @@ namespace BattleGame.Client
         static async Task Main()
         {
             ApplicationConfiguration.Initialize();
+            
             try
             {
                 await NetworkManager.Instance.ConnectAsync();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"Không thể kết nối Server!\n{ex.Message}",
-                    "Lỗi kết nối",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error);
-                return;
+                // Cho phép offline mode nếu không thể kết nối server
+                Console.WriteLine($"[Program] Server connection failed: {ex.Message}. Allowing offline mode.");
+                // MessageBox.Show(
+                //     $"Không thể kết nối Server!\n{ex.Message}",
+                //     "Lỗi kết nối",
+                //     MessageBoxButtons.OK,
+                //     MessageBoxIcon.Error);
+                // return;
             }
 
             Application.Run(new LoginForm());

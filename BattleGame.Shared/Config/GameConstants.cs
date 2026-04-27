@@ -5,7 +5,7 @@ namespace BattleGame.Shared.Config
 {
     public static class GameConstants
     {
-        public const int ServerPort = 9000;
+        public const int ServerPort = 9090;
         public const int TickRateMs = 50;
         public const int MaxPlayers = 100;
         public const int OtpExpireSeconds = 300;

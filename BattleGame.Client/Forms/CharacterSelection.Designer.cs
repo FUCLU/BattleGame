@@ -19,18 +19,18 @@
             panel4 = new Panel();
             label5 = new Label();
             panel2 = new Panel();
-            pnlSoldier = new Panel();
-            label4 = new Label();
-            pictureBox2 = new PictureBox();
-            pnlWarrior = new Panel();
-            label3 = new Label();
-            pictureBox1 = new PictureBox();
-            pnlKabold = new Panel();
-            label8 = new Label();
-            pbSelKabold = new PictureBox();
-            pnlGirlKnight = new Panel();
-            label1 = new Label();
-            pbSelGirlKnight = new PictureBox();
+            pnlWizard = new Panel();
+            pbWizard = new PictureBox();
+            lblWizardName = new Label();
+            pnlSamurai = new Panel();
+            pbSamurai = new PictureBox();
+            lblSamuraiName = new Label();
+            pnlKitsune = new Panel();
+            pbKitsune = new PictureBox();
+            lblKitsuneName = new Label();
+            pnlLord = new Panel();
+            pbLord = new PictureBox();
+            lblLordName = new Label();
             panel3 = new Panel();
             panel1 = new Panel();
             pbInfor = new PictureBox();
@@ -43,20 +43,25 @@
             btnSellect = new Button();
             button2 = new Button();
             label2 = new Label();
+            panel6 = new Panel();
+            pictureBox1 = new PictureBox();
+            label1 = new Label();
             panel4.SuspendLayout();
             panel2.SuspendLayout();
-            pnlSoldier.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
-            pnlWarrior.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
-            pnlKabold.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pbSelKabold).BeginInit();
-            pnlGirlKnight.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pbSelGirlKnight).BeginInit();
+            pnlWizard.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pbWizard).BeginInit();
+            pnlSamurai.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pbSamurai).BeginInit();
+            pnlKitsune.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pbKitsune).BeginInit();
+            pnlLord.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pbLord).BeginInit();
             panel3.SuspendLayout();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pbInfor).BeginInit();
             panel5.SuspendLayout();
+            panel6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
             // 
             // panel4
@@ -74,156 +79,165 @@
             // label5
             // 
             label5.AutoSize = true;
-            label5.Font = new Font("Britannic Bold", 19.8000011F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            label5.Font = new Font("Britannic Bold", 19.8F);
             label5.ForeColor = Color.PaleTurquoise;
             label5.Location = new Point(368, 2);
             label5.Name = "label5";
-            label5.Size = new Size(310, 37);
+            label5.Size = new Size(292, 37);
             label5.TabIndex = 3;
-            label5.Text = "🛡️Chọn nhân vật🛡️ ";
+            label5.Text = "🛡️Chọn nhân vật🛡️";
             // 
             // panel2
             // 
+            panel2.AutoScroll = true;
             panel2.BackColor = Color.FromArgb(36, 58, 94);
             panel2.BorderStyle = BorderStyle.Fixed3D;
-            panel2.Controls.Add(pnlSoldier);
-            panel2.Controls.Add(pnlWarrior);
-            panel2.Controls.Add(pnlKabold);
-            panel2.Controls.Add(pnlGirlKnight);
-            panel2.Location = new Point(26, 51);
+            panel2.Controls.Add(panel6);
+            panel2.Controls.Add(pnlWizard);
+            panel2.Controls.Add(pnlSamurai);
+            panel2.Controls.Add(pnlKitsune);
+            panel2.Controls.Add(pnlLord);
+            panel2.Location = new Point(15, 51);
             panel2.Name = "panel2";
-            panel2.Size = new Size(407, 447);
+            panel2.Size = new Size(421, 443);
             panel2.TabIndex = 2;
             // 
-            // pnlSoldier
+            // pnlWizard
             // 
-            pnlSoldier.BackColor = Color.FromArgb(44, 74, 110);
-            pnlSoldier.Controls.Add(label4);
-            pnlSoldier.Controls.Add(pictureBox2);
-            pnlSoldier.Location = new Point(10, 320);
-            pnlSoldier.Name = "pnlSoldier";
-            pnlSoldier.Size = new Size(379, 87);
-            pnlSoldier.TabIndex = 4;
-            pnlSoldier.Click += CharacterPanel_Click;
+            pnlWizard.BackColor = Color.FromArgb(44, 74, 110);
+            pnlWizard.Controls.Add(pbWizard);
+            pnlWizard.Controls.Add(lblWizardName);
+            pnlWizard.Location = new Point(10, 10);
+            pnlWizard.Name = "pnlWizard";
+            pnlWizard.Size = new Size(366, 68);
+            pnlWizard.TabIndex = 0;
+            pnlWizard.Click += CharacterPanel_Click;
             // 
-            // label4
+            // pbWizard
             // 
-            label4.AutoSize = true;
-            label4.Font = new Font("Book Antiqua", 19.8000011F, FontStyle.Bold | FontStyle.Italic);
-            label4.ForeColor = Color.FromArgb(208, 230, 255);
-            label4.Location = new Point(158, 21);
-            label4.Name = "label4";
-            label4.Size = new Size(124, 40);
-            label4.TabIndex = 1;
-            label4.Text = "Soldier";
+            pbWizard.BackColor = Color.Transparent;
+            pbWizard.Location = new Point(3, 3);
+            pbWizard.Name = "pbWizard";
+            pbWizard.Size = new Size(78, 57);
+            pbWizard.SizeMode = PictureBoxSizeMode.StretchImage;
+            pbWizard.TabIndex = 0;
+            pbWizard.TabStop = false;
+            pbWizard.Click += CharacterPanel_Click;
             // 
-            // pictureBox2
+            // lblWizardName
             // 
-            pictureBox2.BackColor = Color.Transparent;
-            pictureBox2.Image = (Image)resources.GetObject("pictureBox2.Image");
-            pictureBox2.Location = new Point(3, 3);
-            pictureBox2.Name = "pictureBox2";
-            pictureBox2.Size = new Size(102, 84);
-            pictureBox2.SizeMode = PictureBoxSizeMode.CenterImage;
-            pictureBox2.TabIndex = 0;
-            pictureBox2.TabStop = false;
+            lblWizardName.AutoSize = true;
+            lblWizardName.Font = new Font("Book Antiqua", 19.8F, FontStyle.Bold | FontStyle.Italic);
+            lblWizardName.ForeColor = Color.FromArgb(208, 230, 255);
+            lblWizardName.Location = new Point(110, 15);
+            lblWizardName.Name = "lblWizardName";
+            lblWizardName.Size = new Size(127, 39);
+            lblWizardName.TabIndex = 1;
+            lblWizardName.Text = "Wizard";
+            lblWizardName.Click += CharacterPanel_Click;
             // 
-            // pnlWarrior
+            // pnlSamurai
             // 
-            pnlWarrior.BackColor = Color.FromArgb(44, 74, 110);
-            pnlWarrior.Controls.Add(label3);
-            pnlWarrior.Controls.Add(pictureBox1);
-            pnlWarrior.Location = new Point(10, 218);
-            pnlWarrior.Name = "pnlWarrior";
-            pnlWarrior.Size = new Size(379, 84);
-            pnlWarrior.TabIndex = 3;
-            pnlWarrior.Click += CharacterPanel_Click;
+            pnlSamurai.BackColor = Color.FromArgb(44, 74, 110);
+            pnlSamurai.Controls.Add(pbSamurai);
+            pnlSamurai.Controls.Add(lblSamuraiName);
+            pnlSamurai.Location = new Point(10, 101);
+            pnlSamurai.Name = "pnlSamurai";
+            pnlSamurai.Size = new Size(366, 68);
+            pnlSamurai.TabIndex = 0;
+            pnlSamurai.Click += CharacterPanel_Click;
             // 
-            // label3
+            // pbSamurai
             // 
-            label3.AutoSize = true;
-            label3.Font = new Font("Book Antiqua", 19.8000011F, FontStyle.Bold | FontStyle.Italic);
-            label3.ForeColor = Color.FromArgb(208, 230, 255);
-            label3.Location = new Point(154, 16);
-            label3.Name = "label3";
-            label3.Size = new Size(139, 40);
-            label3.TabIndex = 1;
-            label3.Text = "Warrior";
+            pbSamurai.BackColor = Color.Transparent;
+            pbSamurai.Location = new Point(3, 3);
+            pbSamurai.Name = "pbSamurai";
+            pbSamurai.Size = new Size(78, 57);
+            pbSamurai.SizeMode = PictureBoxSizeMode.StretchImage;
+            pbSamurai.TabIndex = 0;
+            pbSamurai.TabStop = false;
+            pbSamurai.Click += CharacterPanel_Click;
             // 
-            // pictureBox1
+            // lblSamuraiName
             // 
-            pictureBox1.BackColor = Color.Transparent;
-            pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.Location = new Point(3, 3);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(102, 81);
-            pictureBox1.TabIndex = 0;
-            pictureBox1.TabStop = false;
+            lblSamuraiName.AutoSize = true;
+            lblSamuraiName.Font = new Font("Book Antiqua", 19.8F, FontStyle.Bold | FontStyle.Italic);
+            lblSamuraiName.ForeColor = Color.FromArgb(208, 230, 255);
+            lblSamuraiName.Location = new Point(110, 12);
+            lblSamuraiName.Name = "lblSamuraiName";
+            lblSamuraiName.Size = new Size(140, 39);
+            lblSamuraiName.TabIndex = 1;
+            lblSamuraiName.Text = "Samurai";
+            lblSamuraiName.Click += CharacterPanel_Click;
             // 
-            // pnlKabold
+            // pnlKitsune
             // 
-            pnlKabold.BackColor = Color.FromArgb(44, 74, 110);
-            pnlKabold.Controls.Add(label8);
-            pnlKabold.Controls.Add(pbSelKabold);
-            pnlKabold.Location = new Point(10, 112);
-            pnlKabold.Name = "pnlKabold";
-            pnlKabold.Size = new Size(379, 87);
-            pnlKabold.TabIndex = 2;
-            pnlKabold.Click += CharacterPanel_Click;
+            pnlKitsune.BackColor = Color.FromArgb(44, 74, 110);
+            pnlKitsune.Controls.Add(pbKitsune);
+            pnlKitsune.Controls.Add(lblKitsuneName);
+            pnlKitsune.Location = new Point(10, 193);
+            pnlKitsune.Name = "pnlKitsune";
+            pnlKitsune.Size = new Size(366, 68);
+            pnlKitsune.TabIndex = 0;
+            pnlKitsune.Click += CharacterPanel_Click;
+            pnlKitsune.Paint += pnlKitsune_Paint;
             // 
-            // label8
+            // pbKitsune
             // 
-            label8.AutoSize = true;
-            label8.Font = new Font("Book Antiqua", 19.8000011F, FontStyle.Bold | FontStyle.Italic);
-            label8.ForeColor = Color.FromArgb(208, 230, 255);
-            label8.Location = new Point(154, 27);
-            label8.Name = "label8";
-            label8.Size = new Size(128, 40);
-            label8.TabIndex = 1;
-            label8.Text = "Kabold";
+            pbKitsune.BackColor = Color.Transparent;
+            pbKitsune.Location = new Point(3, 3);
+            pbKitsune.Name = "pbKitsune";
+            pbKitsune.Size = new Size(78, 57);
+            pbKitsune.SizeMode = PictureBoxSizeMode.StretchImage;
+            pbKitsune.TabIndex = 0;
+            pbKitsune.TabStop = false;
+            pbKitsune.Click += CharacterPanel_Click;
             // 
-            // pbSelKabold
+            // lblKitsuneName
             // 
-            pbSelKabold.BackColor = Color.Transparent;
-            pbSelKabold.Image = (Image)resources.GetObject("pbSelKabold.Image");
-            pbSelKabold.Location = new Point(3, 3);
-            pbSelKabold.Name = "pbSelKabold";
-            pbSelKabold.Size = new Size(102, 84);
-            pbSelKabold.SizeMode = PictureBoxSizeMode.StretchImage;
-            pbSelKabold.TabIndex = 0;
-            pbSelKabold.TabStop = false;
+            lblKitsuneName.AutoSize = true;
+            lblKitsuneName.Font = new Font("Book Antiqua", 19.8F, FontStyle.Bold | FontStyle.Italic);
+            lblKitsuneName.ForeColor = Color.FromArgb(208, 230, 255);
+            lblKitsuneName.Location = new Point(110, 11);
+            lblKitsuneName.Name = "lblKitsuneName";
+            lblKitsuneName.Size = new Size(131, 39);
+            lblKitsuneName.TabIndex = 1;
+            lblKitsuneName.Text = "Kitsune";
+            lblKitsuneName.Click += CharacterPanel_Click;
             // 
-            // pnlGirlKnight
+            // pnlLord
             // 
-            pnlGirlKnight.BackColor = Color.FromArgb(44, 74, 110);
-            pnlGirlKnight.Controls.Add(label1);
-            pnlGirlKnight.Controls.Add(pbSelGirlKnight);
-            pnlGirlKnight.Location = new Point(10, 10);
-            pnlGirlKnight.Name = "pnlGirlKnight";
-            pnlGirlKnight.Size = new Size(379, 84);
-            pnlGirlKnight.TabIndex = 0;
-            pnlGirlKnight.Click += CharacterPanel_Click;
+            pnlLord.BackColor = Color.FromArgb(44, 74, 110);
+            pnlLord.Controls.Add(pbLord);
+            pnlLord.Controls.Add(lblLordName);
+            pnlLord.Location = new Point(11, 287);
+            pnlLord.Name = "pnlLord";
+            pnlLord.Size = new Size(366, 68);
+            pnlLord.TabIndex = 0;
+            pnlLord.Click += CharacterPanel_Click;
             // 
-            // label1
+            // pbLord
             // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Book Antiqua", 19.8000011F, FontStyle.Bold | FontStyle.Italic);
-            label1.ForeColor = Color.FromArgb(208, 230, 255);
-            label1.Location = new Point(141, 22);
-            label1.Name = "label1";
-            label1.Size = new Size(163, 40);
-            label1.TabIndex = 2;
-            label1.Text = "GirlKight";
+            pbLord.BackColor = Color.Transparent;
+            pbLord.Location = new Point(3, 3);
+            pbLord.Name = "pbLord";
+            pbLord.Size = new Size(78, 57);
+            pbLord.SizeMode = PictureBoxSizeMode.StretchImage;
+            pbLord.TabIndex = 0;
+            pbLord.TabStop = false;
+            pbLord.Click += CharacterPanel_Click;
             // 
-            // pbSelGirlKnight
+            // lblLordName
             // 
-            pbSelGirlKnight.BackColor = Color.Transparent;
-            pbSelGirlKnight.Image = (Image)resources.GetObject("pbSelGirlKnight.Image");
-            pbSelGirlKnight.Location = new Point(3, 3);
-            pbSelGirlKnight.Name = "pbSelGirlKnight";
-            pbSelGirlKnight.Size = new Size(102, 81);
-            pbSelGirlKnight.TabIndex = 0;
-            pbSelGirlKnight.TabStop = false;
+            lblLordName.AutoSize = true;
+            lblLordName.Font = new Font("Book Antiqua", 19.8F, FontStyle.Bold | FontStyle.Italic);
+            lblLordName.ForeColor = Color.FromArgb(208, 230, 255);
+            lblLordName.Location = new Point(110, 9);
+            lblLordName.Name = "lblLordName";
+            lblLordName.Size = new Size(86, 39);
+            lblLordName.TabIndex = 1;
+            lblLordName.Text = "Lord";
+            lblLordName.Click += CharacterPanel_Click;
             // 
             // panel3
             // 
@@ -345,6 +359,7 @@
             button2.Name = "button2";
             button2.Size = new Size(129, 43);
             button2.TabIndex = 0;
+            button2.Click += button2_Click;
             // 
             // label2
             // 
@@ -353,86 +368,108 @@
             label2.ForeColor = Color.FromArgb(208, 230, 255);
             label2.Location = new Point(167, 6);
             label2.Name = "label2";
-            label2.Size = new Size(224, 72);
-            label2.TabIndex = 2;
-            label2.Text = "Kabold";
+            label2.Size = new Size(229, 72);
+            label2.TabIndex = 3;
+            label2.Text = "Wizard";
+            // 
+            // panel6
+            // 
+            panel6.BackColor = Color.FromArgb(44, 74, 110);
+            panel6.Controls.Add(pictureBox1);
+            panel6.Controls.Add(label1);
+            panel6.Location = new Point(10, 380);
+            panel6.Name = "panel6";
+            panel6.Size = new Size(366, 68);
+            panel6.TabIndex = 2;
+            // 
+            // pictureBox1
+            // 
+            pictureBox1.BackColor = Color.Transparent;
+            pictureBox1.Location = new Point(3, 3);
+            pictureBox1.Name = "pictureBox1";
+            pictureBox1.Size = new Size(78, 57);
+            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
+            pictureBox1.TabIndex = 0;
+            pictureBox1.TabStop = false;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Book Antiqua", 19.8F, FontStyle.Bold | FontStyle.Italic);
+            label1.ForeColor = Color.FromArgb(208, 230, 255);
+            label1.Location = new Point(111, 10);
+            label1.Name = "label1";
+            label1.Size = new Size(86, 39);
+            label1.TabIndex = 1;
+            label1.Text = "Lord";
             // 
             // CharacterSelection
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
-            BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(1057, 579);
             Controls.Add(panel4);
-            DoubleBuffered = true;
             Name = "CharacterSelection";
-            Text = "CharacterSelection";
+            Text = "Character Selection";
             Load += CharacterSelection_Load;
             panel4.ResumeLayout(false);
             panel4.PerformLayout();
             panel2.ResumeLayout(false);
-            pnlSoldier.ResumeLayout(false);
-            pnlSoldier.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox2).EndInit();
-            pnlWarrior.ResumeLayout(false);
-            pnlWarrior.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
-            pnlKabold.ResumeLayout(false);
-            pnlKabold.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)pbSelKabold).EndInit();
-            pnlGirlKnight.ResumeLayout(false);
-            pnlGirlKnight.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)pbSelGirlKnight).EndInit();
+            pnlWizard.ResumeLayout(false);
+            pnlWizard.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pbWizard).EndInit();
+            pnlSamurai.ResumeLayout(false);
+            pnlSamurai.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pbSamurai).EndInit();
+            pnlKitsune.ResumeLayout(false);
+            pnlKitsune.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pbKitsune).EndInit();
+            pnlLord.ResumeLayout(false);
+            pnlLord.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pbLord).EndInit();
             panel3.ResumeLayout(false);
             panel3.PerformLayout();
             panel1.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pbInfor).EndInit();
             panel5.ResumeLayout(false);
             panel5.PerformLayout();
+            panel6.ResumeLayout(false);
+            panel6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
-        }
-
-        private void SetStatLabel(Label lbl, int x, int y, Font f, Color c, string text)
-        {
-            lbl.AutoSize = false;
-            lbl.Font = f;
-            lbl.ForeColor = c;
-            lbl.BackColor = Color.Transparent;
-            lbl.Location = new Point(x, y);
-            lbl.Size = new Size(440, 28);
-            lbl.Text = text;
         }
 
         #endregion
 
         private Panel panel4;
+        private Label label5;
         private Panel panel2;
-        private Button btnSellect;
+        private Panel pnlWizard;
+        private PictureBox pbWizard;
+        private Label lblWizardName;
+        private Panel pnlSamurai;
+        private PictureBox pbSamurai;
+        private Label lblSamuraiName;
+        private Panel pnlKitsune;
+        private PictureBox pbKitsune;
+        private Label lblKitsuneName;
+        private Panel pnlLord;
+        private PictureBox pbLord;
+        private Label lblLordName;
         private Panel panel3;
-       
-        private Button button2;
-        private Panel pnlGirlKnight;
-        private PictureBox pbSelGirlKnight;
-        private Panel panel5;
-        private Label label2;
+        private Panel panel1;
         private PictureBox pbInfor;
-        private Label lblHP;
+        private Panel panel5;
+        private Label lblDEF;
         private Label lblSkill;
         private Label lblSPD;
         private Label lblATK;
-        private Label lblDEF;
-        private Panel pnlKabold;
-        private Label label8;
-        private PictureBox pbSelKabold;
-        private Label label1;
-        private Panel pnlSoldier;
-        private Label label4;
-        private PictureBox pictureBox2;
-        private Panel pnlWarrior;
-        private Label label3;
+        private Label lblHP;
+        private Button btnSellect;
+        private Button button2;
+        private Label label2;
+        private Panel panel6;
         private PictureBox pictureBox1;
-        private Panel panel1;
-        private Label label5;
+        private Label label1;
     }
 }

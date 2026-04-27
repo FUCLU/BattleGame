@@ -11,8 +11,9 @@ namespace BattleGame.LoadBalancer
         public string Host { get; set; } = string.Empty;      
         public string PublicHost { get; set; } = string.Empty; 
         public int Port { get; set; }
+        public int PublicPort { get; set; }
 
-        public string ToPublicString() => $"{PublicHost}:{Port}";
+        public string ToPublicString() => $"{PublicHost}:{PublicPort}";
         public override string ToString() => $"{Host}:{Port}";
     }
     public class LoadBalancerConfig

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using BattleGame.Client.Game.Core;
 using BattleGame.Client.Game.Core.Components;
@@ -25,15 +26,30 @@ namespace BattleGame.Client.Game
         private CharacterRenderer _renderer = null!;
         private BarrierRenderer _barrierRenderer = null!;
         private PlayerController _controller = null!;
+        private Image? _mapBackground;
 
         private DateTime _lastTime;
-        private const float GroundY = 400f;
+        private float _groundY;
+        private float _mapWidth;
+        private int _formWidth;
+        private int _formHeight;
 
         public Entity Player => _player;
         public Entity Enemy => _enemy;
 
-        public GameEngine(string characterId)
+        public GameEngine(string characterId, string mapId, int formWidth, int formHeight)
         {
+            _formWidth = formWidth;
+            _formHeight = formHeight;
+            _groundY = formHeight - 120f;
+            _mapWidth = formWidth;
+
+            _moveSystem.MapLeft = 50f;
+            _moveSystem.MapRight = formWidth - 50f;
+
+            // Load map background directly
+            LoadMapBackground(mapId);
+
             // Load animations trước — ProjectileSystem cần để render
             var loader = new AnimationLoader("Assets");
             var animations = loader.Load(characterId);
@@ -48,7 +64,7 @@ namespace BattleGame.Client.Game
             _enemyCombatSystem = new CombatSystem(_projectileSystem);
 
             // Tạo nhân vật
-            _player = CharacterFactory.Create(characterId, 200f, GroundY, animKeys);
+            _player = CharacterFactory.Create(characterId, 200f, _groundY, animKeys);
 
             // Enemy luôn là Samurai (để test)
             var enemyLoader = new AnimationLoader("Assets");
@@ -56,7 +72,7 @@ namespace BattleGame.Client.Game
             var enemyAnimKeys = new Dictionary<string, object>();
             foreach (var kv in enemyAnimations)
                 enemyAnimKeys[kv.Key] = kv.Value;
-            _enemy = CharacterFactory.Create("samurai", 500f, GroundY, enemyAnimKeys);
+            _enemy = CharacterFactory.Create("samurai", 500f, _groundY, enemyAnimKeys);
 
             // Đăng ký target cho projectile collision
             _projectileSystem.RegisterTarget(_player);
@@ -82,11 +98,8 @@ namespace BattleGame.Client.Game
             return _playerCombatSystem.GetBarriers().Concat(_enemyCombatSystem.GetBarriers());
         }
 
-        public void Update()
+        public void Update(float dt)
         {
-            var now = DateTime.Now;
-            float dt = (float)(now - _lastTime).TotalSeconds;
-            _lastTime = now;
             dt = Math.Min(dt, 0.05f);
 
             _controller.Update();
@@ -120,6 +133,12 @@ namespace BattleGame.Client.Game
 
         public void Draw(Graphics g)
         {
+            // Draw map background first
+            if (_mapBackground != null)
+            {
+                g.DrawImage(_mapBackground, 0, 0, _formWidth, _formHeight);
+            }
+
             _renderer.Draw(g, _player);
             _renderer.Draw(g, _enemy);
             _projectileSystem.Draw(g);
@@ -132,6 +151,44 @@ namespace BattleGame.Client.Game
             foreach (var barrier in _enemyCombatSystem.GetBarriers())
             {
                 _barrierRenderer.Draw(g, barrier);
+            }
+        }
+
+        private void LoadMapBackground(string mapId)
+        {
+            _mapBackground?.Dispose();
+            _mapBackground = null;
+
+            var mapNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "terrace", "Background.png" },
+                { "castle", "castle.png" },
+                { "forest", "BackgroundForest.png" },
+                { "throneroom", "throneroom.png" }
+            };
+
+            if (!mapNames.TryGetValue(mapId, out var imageName))
+            {
+                imageName = mapNames["terrace"];
+            }
+
+            string imagePath = Path.Combine("Assets", "Background", imageName);
+
+            if (File.Exists(imagePath))
+            {
+                try
+                {
+                    _mapBackground = Image.FromFile(imagePath);
+                    Console.WriteLine($"[GameEngine] Loaded map background: {imagePath}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[GameEngine] Error loading map background: {ex.Message}");
+                }
+            }
+            else
+            {
+                Console.WriteLine($"[GameEngine] Map background not found: {imagePath}");
             }
         }
     }
