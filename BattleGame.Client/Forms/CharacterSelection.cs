@@ -17,7 +17,10 @@ namespace BattleGame.Client.Forms
 
         private static readonly string AssetsRoot = Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory,
-            "..", "..", "..", "Assets", "Characters");
+            "..", "..", "..", "Assets");
+
+        private static readonly string PortraitRoot = Path.Combine(AssetsRoot, "PotraitPic");
+        private static readonly string CharactersRoot = Path.Combine(AssetsRoot, "Characters");
 
         public CharacterSelection()
         {
@@ -78,9 +81,9 @@ namespace BattleGame.Client.Forms
                 CharacterSelectionItem character = _availableCharacters[i];
                 CharacterSlot slot = slots[i];
 
-                // Update label and image
+                // Update label and image - use portrait from PotraitPic
                 slot.Label.Text = character.DisplayName;
-                slot.Picture.Image = LoadImage(character.GetPreviewPath(AssetsRoot));
+                slot.Picture.Image = LoadImage(GetPortraitPath(character.Id));
 
                 // Store mapping
                 _panelCharacterMap[slot.Panel] = character;
@@ -161,7 +164,7 @@ namespace BattleGame.Client.Forms
             if (character == null)
                 return;
 
-            pbInfor.Image = LoadImage(character.GetPreviewPath(AssetsRoot));
+            pbInfor.Image = LoadImage(GetPortraitPath(character.Id));
 
             label2.Text = character.DisplayName;
             lblHP.Text = $"HP     : {character.Hp}";
@@ -169,6 +172,21 @@ namespace BattleGame.Client.Forms
             lblDEF.Text = $"DEF    : {character.Def}";
             lblSPD.Text = $"SPEED  : {character.Speed}";
             lblSkill.Text = $"SKILL  : {character.SkillLabel}";
+        }
+
+        private string GetPortraitPath(string characterId)
+        {
+            // Map character IDs to portrait filenames
+            string portraitFileName = characterId.ToLower() switch
+            {
+                "wizard" => "wizard.png",
+                "samurai" => "samurai.png",
+                "kitsune" => "kitsune.png",
+                "lord" => "lord.png",
+                _ => $"{characterId.ToLower()}.png"
+            };
+
+            return Path.Combine(PortraitRoot, portraitFileName);
         }
 
         private Image? LoadImage(string path)

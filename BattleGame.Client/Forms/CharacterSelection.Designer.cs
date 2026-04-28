@@ -92,7 +92,6 @@
             panel2.AutoScroll = true;
             panel2.BackColor = Color.FromArgb(36, 58, 94);
             panel2.BorderStyle = BorderStyle.Fixed3D;
-            panel2.Controls.Add(panel6);
             panel2.Controls.Add(pnlWizard);
             panel2.Controls.Add(pnlSamurai);
             panel2.Controls.Add(pnlKitsune);

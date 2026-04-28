@@ -238,6 +238,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Folder Include="Assets\PotraitPic\" />
 		<Folder Include="Assets\Sounds\BGM\" />
 		<Folder Include="Assets\Sounds\SFX\" />
 		<Folder Include="Config\Skills\" />
