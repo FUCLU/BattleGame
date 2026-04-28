@@ -28,8 +28,9 @@ namespace BattleGame.Server.Network
             var otpSvc = new OtpService(otpRepo, emailSvc);
             var authSvc = new AuthService(userRepo);
 
+            var matchRepo = new MatchRepository(_config.ConnectionString);
             var gameManager = new GameManager();
-            var matchmaking = new MatchmakingService();
+            var matchmaking = new MatchmakingService(matchRepo);
 
             Console.WriteLine("[INFO] Services initialized, waiting for connections...");
 
@@ -38,7 +39,7 @@ namespace BattleGame.Server.Network
                 try
                 {
                     TcpClient client = await listener.AcceptTcpClientAsync();
-                    var handler = new ClientHandler(client, authSvc, otpSvc, userRepo);
+                    var handler = new ClientHandler(client, authSvc, otpSvc, userRepo, matchRepo, matchmaking);
                     Console.WriteLine($"[INFO] Client connected: {client.Client.RemoteEndPoint}");
                     _ = Task.Run(() => handler.HandleAsync()); 
                 }

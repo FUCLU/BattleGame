@@ -68,5 +68,50 @@ namespace BattleGame.Client.Managers
             await SendAsync(packet);
             return (OtpPacket)await ReceiveAsync();
         }
+        public async Task<GetRoomResultPacket> GetRoomAsync(GetRoomPacket packet)
+        {
+            await SendAsync(packet);
+            return (GetRoomResultPacket)await ReceiveAsync();
+        }
+        public async Task<JoinRoomResultPacket> JoinRoomAsync(JoinRoomPacket packet)
+        {
+            await SendAsync(packet);
+            return (JoinRoomResultPacket)await ReceiveAsync();
+        }
+        public async Task<CreateRoomResultPacket> CreateRoomAsync(CreateRoomPacket packet)
+        {
+            await SendAsync(packet);
+            return (CreateRoomResultPacket)await ReceiveAsync();
+        }
+        public async Task<GetLeaderboardResultPacket> GetLeaderboardAsync(GetLeaderboardPacket packet)
+        {
+            await SendAsync(packet);
+            return (GetLeaderboardResultPacket)await ReceiveAsync();
+        }
+        public async Task SelectMapAsync(SelectMapPacket packet)
+        {
+            await SendAsync(packet);
+        }
+        public async Task SelectCharacterAsync(SelectionCharacterPacket packet)
+        {
+            await SendAsync(packet);
+        }
+        public async Task MoveAsync(MovePacket packet)
+        {
+            await SendAsync(packet);
+        }
+        public async Task AttackAsync(AttackPacket packet)
+        {
+            await SendAsync(packet);
+        }
+        public async Task DisconnectAsync(DisconnectPacket packet)
+        {
+            await SendAsync(packet);
+        }
+        public async Task<MatchFoundPacket> MatchRequestAsync(MatchRequestPacket packet)
+        {
+            await SendAsync(packet);
+            return (MatchFoundPacket)await ReceiveAsync();
+        }
     }
 }

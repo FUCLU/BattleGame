@@ -24,10 +24,12 @@ namespace BattleGame.Server.Network
             TcpClient tcpClient,
             AuthService authService,
             OtpService otpService,
-            UserRepository userRepo)
+            UserRepository userRepo,
+            MatchRepository matchRepo,
+            MatchmakingService matchmaking)
         {
             _socket = new ServerSocket(tcpClient);
-            _processor = new PacketProcessor(this, authService, otpService, userRepo);
+            _processor = new PacketProcessor(this, authService, otpService, userRepo, matchRepo, matchmaking);
         }
 
         public async Task HandleAsync()
