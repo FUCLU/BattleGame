@@ -4,11 +4,12 @@ using System.Text;
 
 namespace BattleGame.Shared.Packets
 {
-    internal class GameOverPacket : Packet
+    public class GameOverPacket : Packet
     {
+        public int WinnerPlayerId { get; set; }
+        public int Duration { get; set; }
         public GameOverPacket() : base(PacketType.GameOver)
         {
         }
-        public int WinnerPlayerId { get; set; }
     }
 }

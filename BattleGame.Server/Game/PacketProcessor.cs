@@ -11,6 +11,8 @@ namespace BattleGame.Server.Game
         private readonly AuthService _authService;
         private readonly OtpService _otpService;
         private readonly UserRepository _userRepo;
+        private readonly MatchRepository _matchRepo;
+        private readonly MatchmakingService _matchmaking;
 
         // Trạng thái OTP đang chờ của client này
         private string _pendingEmail = string.Empty;
@@ -24,12 +26,16 @@ namespace BattleGame.Server.Game
             ClientHandler client,
             AuthService authService,
             OtpService otpService,
-            UserRepository userRepo)
+            UserRepository userRepo,
+            MatchRepository matchRepo,
+            MatchmakingService matchmaking)
         {
             _client = client;
             _authService = authService;
             _otpService = otpService;
             _userRepo = userRepo;
+            _matchRepo = matchRepo;
+            _matchmaking = matchmaking;
         }
 
         public async Task ProcessAsync(Packet packet)
@@ -53,12 +59,38 @@ namespace BattleGame.Server.Game
                     break;
 
                 // Game packets — chỉ xử lý khi đã login
-                case PacketType.MatchRequest:
+                case PacketType.CreateRoom:
+                    if (!_client.IsAuthenticated) return;
+                    await HandleCreateRoomAsync((CreateRoomPacket)packet);
+                    break;
+                case PacketType.JoinRoom:
+                    if (!_client.IsAuthenticated) return;
+                    await HandleJoinRoomAsync((JoinRoomPacket)packet);
+                    break;
+                case PacketType.GetRoom:
+                    if (!_client.IsAuthenticated) return;
+                    await HandleGetRoomAsync((GetRoomPacket)packet);
+                    break;
+                case PacketType.SelectMap:
+                    if (!_client.IsAuthenticated) return;
+                    await HandleSelectMapAsync((SelectMapPacket)packet);
+                    break;
                 case PacketType.SelectCharacter:
+                    if (!_client.IsAuthenticated) return;
+                    await HandleSelectCharacterAsync((SelectionCharacterPacket)packet);
+                    break;
+                case PacketType.MatchRequest:
+                    if (!_client.IsAuthenticated) return;
+                    await HandleMatchRequestAsync((MatchRequestPacket)packet);
+                    break;
+                case PacketType.GetLeaderboard:
+                    if (!_client.IsAuthenticated) return;
+                    await HandleGetLeaderboardAsync((GetLeaderboardPacket)packet);
+                    break;
                 case PacketType.Move:
                 case PacketType.Attack:
                 case PacketType.Disconnect:
-                    if (!_client.IsAuthenticated) return; // bỏ qua nếu chưa login
+                    if (!_client.IsAuthenticated) return;
                     await HandleGamePacketAsync(packet);
                     break;
             }
@@ -220,9 +252,157 @@ namespace BattleGame.Server.Game
             }
         }
 
-        private Task HandleGamePacketAsync(Packet packet)
+        private async Task HandleCreateRoomAsync(CreateRoomPacket p)
         {
-            return Task.CompletedTask;
+            var (roomId, success) = _matchmaking.CreateRoom(
+                p.RoomName ?? "Room",
+                p.Password ?? "",
+                _client.UserId,
+                _client.Username,
+                _client);
+
+            _client.CurrentRoomId = roomId.ToString();
+
+            await _client.SendAsync(new CreateRoomResultPacket
+            {
+                RoomId = roomId
+            });
+        }
+
+        private async Task HandleJoinRoomAsync(JoinRoomPacket p)
+        {
+            bool success = _matchmaking.JoinRoom(p.RoomId, p.Password ?? "", _client.UserId, _client.Username, _client);
+
+            if (success)
+            {
+                _client.CurrentRoomId = p.RoomId.ToString();
+                var room = _matchmaking.GetRoom(p.RoomId);
+
+                if (room != null && room.Player1Handler != null && room.Player2Handler != null)
+                {
+                    var resultPacket = new JoinRoomResultPacket
+                    {
+                        Success = true,
+                        RoomId = p.RoomId,
+                        Player1Name = room.Player1Name,
+                        Player2Name = room.Player2Name
+                    };
+
+                    await room.Player1Handler.SendAsync(resultPacket);
+                    await room.Player2Handler.SendAsync(resultPacket);
+                }
+            }
+            else
+            {
+                await _client.SendAsync(new JoinRoomResultPacket
+                {
+                    Success = false,
+                    RoomId = p.RoomId
+                });
+            }
+        }
+
+        private async Task HandleGetRoomAsync(GetRoomPacket p)
+        {
+            var rooms = _matchmaking.GetRooms();
+
+            await _client.SendAsync(new GetRoomResultPacket
+            {
+                Rooms = rooms
+            });
+        }
+
+        private async Task HandleSelectMapAsync(SelectMapPacket p)
+        {
+            _matchmaking.SetMap(p.RoomId, p.MapId);
+            var room = _matchmaking.GetRoom(p.RoomId);
+
+            if (room != null && room.Player1Handler != null && room.Player2Handler != null)
+            {
+                await room.Player1Handler.SendAsync(p);
+                await room.Player2Handler.SendAsync(p);
+            }
+        }
+
+        private async Task HandleSelectCharacterAsync(SelectionCharacterPacket p)
+        {
+            if (!int.TryParse(_client.CurrentRoomId, out int roomId))
+                return;
+
+            _matchmaking.SetCharacter(roomId, _client.UserId, p.CharacterId);
+
+            if (_matchmaking.AreAllReady(roomId))
+            {
+                var room = _matchmaking.GetRoom(roomId);
+                await room.Player1Handler.SendAsync(new ReadyPacket());
+                await room.Player2Handler.SendAsync(new ReadyPacket());
+
+            }
+        }
+
+        private async Task HandleMatchRequestAsync(MatchRequestPacket p)
+        {
+            if (!int.TryParse(_client.CurrentRoomId, out int roomId))
+                return;
+
+            _matchmaking.StartMatch(roomId);
+            var matchFoundPacket = _matchmaking.BuildMatchFoundPacket(roomId);
+            var room = _matchmaking.GetRoom(roomId);
+
+            if (matchFoundPacket != null && room != null && room.Player1Handler != null && room.Player2Handler != null)
+            {
+                await room.Player1Handler.SendAsync(matchFoundPacket);
+                await room.Player2Handler.SendAsync(matchFoundPacket);
+            }
+        }
+
+        private async Task HandleGetLeaderboardAsync(GetLeaderboardPacket p)
+        {
+            var rankings = _matchRepo.GetLeaderboard(100);
+            var entries = new List<LeaderboardEntry>();
+
+            int rank = 1;
+            foreach (var (username, wins, losses) in rankings)
+            {
+                entries.Add(new LeaderboardEntry
+                {
+                    Rank = rank,
+                    Username = username,
+                    Wins = wins,
+                    Losses = losses
+                });
+                rank++;
+            }
+
+            await _client.SendAsync(new GetLeaderboardResultPacket
+            {
+                Entries = entries
+            });
+        }
+
+
+        private async Task HandleGamePacketAsync(Packet packet)
+        {
+            if (!int.TryParse(_client.CurrentRoomId, out int roomId))
+                return;
+            var room = _matchmaking.GetRoom(roomId);
+            if (room == null) return;
+            /*
+            if (GameOver)
+            {
+                _matchmaking.EndMatch(roomId, WinnerId);
+                await room.Player1Handler.SendAsync(new GameOverPacket
+                {
+                    WinnerPlayerId = WinnerId,
+                    Duration = Duration
+                });
+                await room.Player2Handler.SendAsync(new GameOverPacket
+                {
+                    WinnerPlayerId = WinnerId,
+                    Duration = Duration
+                });
+            }
+            */
         }
     }
 }

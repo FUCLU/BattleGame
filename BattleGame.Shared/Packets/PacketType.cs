@@ -17,6 +17,16 @@
         GameState = 13,
         HealthUpdate = 14,
         GameOver = 15,
-        Disconnect = 16
+        Disconnect = 16,
+        CreateRoom = 17,
+        CreateRoomResult = 18,
+        GetRoom = 19,
+        GetRoomResult = 20,
+        JoinRoom = 21,
+        JoinRoomResult = 22,
+        Ready = 23,
+        SelectMap = 24,
+        GetLeaderboard = 25,
+        GetLeaderboardResult = 26
     }
 }

@@ -31,6 +31,16 @@ namespace BattleGame.Shared.Network
                 PacketType.HealthUpdate => JsonSerializer.Serialize((HealthUpdatePacket)packet, options),
                 PacketType.GameOver => JsonSerializer.Serialize((GameOverPacket)packet, options),
                 PacketType.Disconnect => JsonSerializer.Serialize((DisconnectPacket)packet, options),
+                PacketType.CreateRoom => JsonSerializer.Serialize((CreateRoomPacket)packet, options),
+                PacketType.CreateRoomResult => JsonSerializer.Serialize((CreateRoomResultPacket)packet, options),
+                PacketType.GetRoom => JsonSerializer.Serialize((GetRoomPacket)packet, options),
+                PacketType.GetRoomResult => JsonSerializer.Serialize((GetRoomResultPacket)packet, options),
+                PacketType.JoinRoom => JsonSerializer.Serialize((JoinRoomPacket)packet, options),
+                PacketType.JoinRoomResult => JsonSerializer.Serialize((JoinRoomResultPacket)packet, options),
+                PacketType.Ready => JsonSerializer.Serialize((ReadyPacket)packet, options),
+                PacketType.SelectMap => JsonSerializer.Serialize((SelectMapPacket)packet, options),
+                PacketType.GetLeaderboard => JsonSerializer.Serialize((GetLeaderboardPacket)packet, options),
+                PacketType.GetLeaderboardResult => JsonSerializer.Serialize((GetLeaderboardResultPacket)packet, options),
                 _ => JsonSerializer.Serialize(packet, options)
             };
         }
@@ -59,6 +69,16 @@ namespace BattleGame.Shared.Network
                 PacketType.HealthUpdate => JsonSerializer.Deserialize<HealthUpdatePacket>(json, options)!,
                 PacketType.GameOver => JsonSerializer.Deserialize<GameOverPacket>(json, options)!,
                 PacketType.Disconnect => JsonSerializer.Deserialize<DisconnectPacket>(json, options)!,
+                PacketType.CreateRoom => JsonSerializer.Deserialize<CreateRoomPacket>(json, options)!,
+                PacketType.CreateRoomResult => JsonSerializer.Deserialize<CreateRoomResultPacket>(json, options)!,
+                PacketType.GetRoom => JsonSerializer.Deserialize<GetRoomPacket>(json, options)!,
+                PacketType.GetRoomResult => JsonSerializer.Deserialize<GetRoomResultPacket>(json, options)!,
+                PacketType.JoinRoom => JsonSerializer.Deserialize<JoinRoomPacket>(json, options)!,
+                PacketType.JoinRoomResult => JsonSerializer.Deserialize<JoinRoomResultPacket>(json, options)!,
+                PacketType.Ready => JsonSerializer.Deserialize<ReadyPacket>(json, options)!,
+                PacketType.SelectMap => JsonSerializer.Deserialize<SelectMapPacket>(json, options)!,
+                PacketType.GetLeaderboard => JsonSerializer.Deserialize<GetLeaderboardPacket>(json, options)!,
+                PacketType.GetLeaderboardResult => JsonSerializer.Deserialize<GetLeaderboardResultPacket>(json, options)!,
                 _ => throw new NotSupportedException($"Chưa hỗ trợ packet type: {type}")
             };
         }

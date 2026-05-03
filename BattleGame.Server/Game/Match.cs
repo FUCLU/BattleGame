@@ -1,10 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace BattleGame.Server.Game
 {
-    internal class Match
+    public class Match
     {
+        public string? WinnerName { get; set; }
+        public string? LoserName { get; set; }
+        public int Duration { get; set; } 
+        public DateTime PlayedAt { get; set; }
     }
 }
