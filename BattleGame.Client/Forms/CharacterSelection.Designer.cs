@@ -35,6 +35,14 @@
             panel1 = new Panel();
             pbInfor = new PictureBox();
             panel5 = new Panel();
+            panelSpdBack = new Panel();
+            panelSpdFill = new Panel();
+            panelDefBack = new Panel();
+            panelDefFill = new Panel();
+            panelAtkBack = new Panel();
+            panelAtkFill = new Panel();
+            panelHpBack = new Panel();
+            panelHpFill = new Panel();
             lblDEF = new Label();
             lblSkill = new Label();
             lblSPD = new Label();
@@ -60,6 +68,10 @@
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pbInfor).BeginInit();
             panel5.SuspendLayout();
+            panelSpdBack.SuspendLayout();
+            panelDefBack.SuspendLayout();
+            panelAtkBack.SuspendLayout();
+            panelHpBack.SuspendLayout();
             panel6.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
@@ -98,7 +110,7 @@
             panel2.Controls.Add(pnlLord);
             panel2.Location = new Point(15, 51);
             panel2.Name = "panel2";
-            panel2.Size = new Size(421, 443);
+            panel2.Size = new Size(403, 443);
             panel2.TabIndex = 2;
             // 
             // pnlWizard
@@ -247,9 +259,9 @@
             panel3.Controls.Add(btnSellect);
             panel3.Controls.Add(button2);
             panel3.Controls.Add(label2);
-            panel3.Location = new Point(451, 51);
+            panel3.Location = new Point(445, 51);
             panel3.Name = "panel3";
-            panel3.Size = new Size(555, 443);
+            panel3.Size = new Size(561, 443);
             panel3.TabIndex = 1;
             // 
             // panel1
@@ -275,6 +287,10 @@
             // panel5
             // 
             panel5.BackColor = Color.FromArgb(46, 76, 109);
+            panel5.Controls.Add(panelSpdBack);
+            panel5.Controls.Add(panelDefBack);
+            panel5.Controls.Add(panelAtkBack);
+            panel5.Controls.Add(panelHpBack);
             panel5.Controls.Add(lblDEF);
             panel5.Controls.Add(lblSkill);
             panel5.Controls.Add(lblSPD);
@@ -285,12 +301,88 @@
             panel5.Size = new Size(291, 215);
             panel5.TabIndex = 7;
             // 
+            // panelSpdBack
+            // 
+            panelSpdBack.BackColor = Color.FromArgb(30, 30, 30);
+            panelSpdBack.BorderStyle = BorderStyle.Fixed3D;
+            panelSpdBack.Controls.Add(panelSpdFill);
+            panelSpdBack.Location = new Point(80, 131);
+            panelSpdBack.Name = "panelSpdBack";
+            panelSpdBack.Size = new Size(190, 16);
+            panelSpdBack.TabIndex = 14;
+            // 
+            // panelSpdFill
+            // 
+            panelSpdFill.BackColor = Color.White;
+            panelSpdFill.Dock = DockStyle.Left;
+            panelSpdFill.Location = new Point(0, 0);
+            panelSpdFill.Name = "panelSpdFill";
+            panelSpdFill.Size = new Size(188, 12);
+            panelSpdFill.TabIndex = 0;
+            // 
+            // panelDefBack
+            // 
+            panelDefBack.BackColor = Color.FromArgb(30, 30, 30);
+            panelDefBack.BorderStyle = BorderStyle.Fixed3D;
+            panelDefBack.Controls.Add(panelDefFill);
+            panelDefBack.Location = new Point(80, 90);
+            panelDefBack.Name = "panelDefBack";
+            panelDefBack.Size = new Size(190, 16);
+            panelDefBack.TabIndex = 13;
+            // 
+            // panelDefFill
+            // 
+            panelDefFill.BackColor = Color.White;
+            panelDefFill.Dock = DockStyle.Left;
+            panelDefFill.Location = new Point(0, 0);
+            panelDefFill.Name = "panelDefFill";
+            panelDefFill.Size = new Size(188, 12);
+            panelDefFill.TabIndex = 0;
+            // 
+            // panelAtkBack
+            // 
+            panelAtkBack.BackColor = Color.FromArgb(30, 30, 30);
+            panelAtkBack.BorderStyle = BorderStyle.Fixed3D;
+            panelAtkBack.Controls.Add(panelAtkFill);
+            panelAtkBack.Location = new Point(80, 50);
+            panelAtkBack.Name = "panelAtkBack";
+            panelAtkBack.Size = new Size(190, 16);
+            panelAtkBack.TabIndex = 12;
+            // 
+            // panelAtkFill
+            // 
+            panelAtkFill.BackColor = Color.White;
+            panelAtkFill.Dock = DockStyle.Left;
+            panelAtkFill.Location = new Point(0, 0);
+            panelAtkFill.Name = "panelAtkFill";
+            panelAtkFill.Size = new Size(188, 12);
+            panelAtkFill.TabIndex = 0;
+            // 
+            // panelHpBack
+            // 
+            panelHpBack.BackColor = Color.FromArgb(30, 30, 30);
+            panelHpBack.BorderStyle = BorderStyle.Fixed3D;
+            panelHpBack.Controls.Add(panelHpFill);
+            panelHpBack.Location = new Point(80, 12);
+            panelHpBack.Name = "panelHpBack";
+            panelHpBack.Size = new Size(190, 16);
+            panelHpBack.TabIndex = 11;
+            // 
+            // panelHpFill
+            // 
+            panelHpFill.BackColor = Color.White;
+            panelHpFill.Dock = DockStyle.Left;
+            panelHpFill.Location = new Point(0, 0);
+            panelHpFill.Name = "panelHpFill";
+            panelHpFill.Size = new Size(188, 12);
+            panelHpFill.TabIndex = 0;
+            // 
             // lblDEF
             // 
             lblDEF.AutoSize = true;
             lblDEF.Font = new Font("Showcard Gothic", 10.8F, FontStyle.Italic);
             lblDEF.ForeColor = Color.DarkOrange;
-            lblDEF.Location = new Point(20, 89);
+            lblDEF.Location = new Point(20, 88);
             lblDEF.Name = "lblDEF";
             lblDEF.Size = new Size(43, 23);
             lblDEF.TabIndex = 10;
@@ -312,7 +404,7 @@
             lblSPD.AutoSize = true;
             lblSPD.Font = new Font("Showcard Gothic", 10.8F, FontStyle.Italic);
             lblSPD.ForeColor = Color.DarkOrange;
-            lblSPD.Location = new Point(19, 130);
+            lblSPD.Location = new Point(19, 129);
             lblSPD.Name = "lblSPD";
             lblSPD.Size = new Size(44, 23);
             lblSPD.TabIndex = 8;
@@ -323,7 +415,7 @@
             lblATK.AutoSize = true;
             lblATK.Font = new Font("Showcard Gothic", 10.8F, FontStyle.Italic);
             lblATK.ForeColor = Color.DarkOrange;
-            lblATK.Location = new Point(20, 48);
+            lblATK.Location = new Point(20, 46);
             lblATK.Name = "lblATK";
             lblATK.Size = new Size(45, 23);
             lblATK.TabIndex = 6;
@@ -334,7 +426,7 @@
             lblHP.AutoSize = true;
             lblHP.Font = new Font("Showcard Gothic", 10.8F, FontStyle.Italic);
             lblHP.ForeColor = Color.DarkOrange;
-            lblHP.Location = new Point(20, 10);
+            lblHP.Location = new Point(20, 8);
             lblHP.Name = "lblHP";
             lblHP.Size = new Size(36, 23);
             lblHP.TabIndex = 5;
@@ -432,6 +524,10 @@
             ((System.ComponentModel.ISupportInitialize)pbInfor).EndInit();
             panel5.ResumeLayout(false);
             panel5.PerformLayout();
+            panelSpdBack.ResumeLayout(false);
+            panelDefBack.ResumeLayout(false);
+            panelAtkBack.ResumeLayout(false);
+            panelHpBack.ResumeLayout(false);
             panel6.ResumeLayout(false);
             panel6.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
@@ -459,6 +555,14 @@
         private Panel panel1;
         private PictureBox pbInfor;
         private Panel panel5;
+        private Panel panelAtkBack;
+        private Panel panelAtkFill;
+        private Panel panelHpBack;
+        private Panel panelHpFill;
+        private Panel panelDefBack;
+        private Panel panelDefFill;
+        private Panel panelSpdBack;
+        private Panel panelSpdFill;
         private Label lblDEF;
         private Label lblSkill;
         private Label lblSPD;

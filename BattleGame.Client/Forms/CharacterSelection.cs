@@ -14,6 +14,10 @@ namespace BattleGame.Client.Forms
         private readonly List<CharacterSelectionItem> _availableCharacters = new();
         private readonly List<Panel> _slotPanels = new();
         private CharacterSelectionItem? _selectedCharacter;
+        private int _maxHp = 1;
+        private int _maxAtk = 1;
+        private int _maxDef = 1;
+        private int _maxSpd = 1;
 
         private static readonly string AssetsRoot = Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory,
@@ -50,6 +54,14 @@ namespace BattleGame.Client.Forms
             // Load all characters from JSON config
             var catalogItems = CharacterCatalog.LoadSelectionItems(configRoot);
             _availableCharacters.AddRange(catalogItems);
+
+            if (_availableCharacters.Count > 0)
+            {
+                _maxHp = Math.Max(1, _availableCharacters.Max(character => character.Hp));
+                _maxAtk = Math.Max(1, _availableCharacters.Max(character => character.Atk));
+                _maxDef = Math.Max(1, _availableCharacters.Max(character => character.Def));
+                _maxSpd = Math.Max(1, _availableCharacters.Max(character => character.Speed));
+            }
 
             if (_availableCharacters.Count == 0)
             {
@@ -167,11 +179,27 @@ namespace BattleGame.Client.Forms
             pbInfor.Image = LoadImage(GetPortraitPath(character.Id));
 
             label2.Text = character.DisplayName;
-            lblHP.Text = $"HP     : {character.Hp}";
-            lblATK.Text = $"ATK    : {character.Atk}";
-            lblDEF.Text = $"DEF    : {character.Def}";
-            lblSPD.Text = $"SPEED  : {character.Speed}";
+            lblHP.Text = "HP";
+            lblATK.Text = "ATK";
+            lblDEF.Text = "DEF";
+            lblSPD.Text = "SPD";
             lblSkill.Text = $"SKILL  : {character.SkillLabel}";
+
+            panelHpFill.Width = GetBarWidth(panelHpBack, character.Hp, _maxHp);
+            panelAtkFill.Width = GetBarWidth(panelAtkBack, character.Atk, _maxAtk);
+            panelDefFill.Width = GetBarWidth(panelDefBack, character.Def, _maxDef);
+            panelSpdFill.Width = GetBarWidth(panelSpdBack, character.Speed, _maxSpd);
+        }
+
+        private static int GetBarWidth(Panel backPanel, int value, int maxValue)
+        {
+            if (maxValue <= 0 || backPanel.Width <= 0)
+                return 0;
+
+            int clampedValue = Math.Clamp(value, 0, maxValue);
+            double ratio = clampedValue / (double)maxValue;
+            int width = (int)Math.Round(backPanel.Width * ratio);
+            return Math.Clamp(width, 0, backPanel.Width);
         }
 
         private string GetPortraitPath(string characterId)

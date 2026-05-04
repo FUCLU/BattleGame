@@ -17,7 +17,7 @@
   },
 
   "render": {
-    "scale": 1.0,
+    "scale": 1.35,
     "offsetY": 0.0,
     "protectionOverlayOffsetY": 0.0,
     "protectionUsesIdleBase": false,

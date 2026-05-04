@@ -9,13 +9,13 @@ namespace BattleGame.Client
     internal static class Program
     {
         [STAThread]
-        static async Task Main()
+        static void Main()
         {
             ApplicationConfiguration.Initialize();
-            
+
             try
             {
-                await NetworkManager.Instance.ConnectAsync();
+                NetworkManager.Instance.ConnectAsync().GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {
@@ -30,7 +30,6 @@ namespace BattleGame.Client
             }
 
             Application.Run(new LoginForm());
-
         }
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -25,24 +26,44 @@ namespace BattleGame.Client.Forms
            AppDomain.CurrentDomain.BaseDirectory,
            "..", "..", "..", "Assets", "Background");
 
+        private static string? GetMapImageFile(string mapId)
+        {
+            return mapId switch
+            {
+                "terrace" => "terrace.png",
+                "throneroom" => "throneroom.png",
+                "castle" => "castle.png",
+                _ => null
+            };
+        }
+
+        private void SetMap(string mapId)
+        {
+            _selectedMapId = mapId;
+            string? imageFile = GetMapImageFile(mapId);
+            if (string.IsNullOrWhiteSpace(imageFile))
+                return;
+
+            string imagePath = Path.Combine(AssetsRoot, imageFile);
+            if (File.Exists(imagePath))
+                pictureBoxMap.Image = Image.FromFile(imagePath);
+        }
+
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
 
             switch (comboBoxMap.SelectedIndex)
             {
                 case 0:
-                    _selectedMapId = "terrace";
-                    pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "terrace.png"));
+                    SetMap("terrace");
                     break;
 
                 case 1:
-                    _selectedMapId = "throneroom";
-                    pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "throneroom.png"));
+                    SetMap("throneroom");
                     break;
 
                 case 2:
-                    _selectedMapId = "castle";
-                    pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "castle.png"));
+                    SetMap("castle");
                     break;
             }
         }
@@ -50,8 +71,7 @@ namespace BattleGame.Client.Forms
         private void MapSelectionForm_Load(object sender, EventArgs e)
         {
             comboBoxMap.SelectedIndex = 0;
-            _selectedMapId = "terrace";
-            pictureBoxMap.Image = Image.FromFile(Path.Combine(AssetsRoot, "terrace.png"));
+            SetMap("terrace");
         }
 
         private void pictureBoxMap_Click(object sender, EventArgs e)

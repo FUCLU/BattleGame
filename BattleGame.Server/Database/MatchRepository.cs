@@ -18,7 +18,8 @@ namespace BattleGame.Server.Database
         {
             const string sql = @"
                 INSERT INTO matches (winner_name, loser_name, duration, played_at)
-                VALUES (@winner, @loser, @duration, @played_at)";
+                VALUES (@winner, @loser, @duration, @played_at)
+            ";
             
             using var conn = new NpgsqlConnection(_connectionString);
             conn.Open();

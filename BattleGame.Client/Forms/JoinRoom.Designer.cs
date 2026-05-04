@@ -30,6 +30,10 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(JoinRoom));
             panel1 = new Panel();
+            textBox1 = new TextBox();
+            button2 = new Button();
+            label5 = new Label();
+            label4 = new Label();
             btnRefresh = new Button();
             btnBack = new Button();
             btnCreateRoom = new Button();
@@ -56,6 +60,10 @@
             panel1.BackColor = Color.Transparent;
             panel1.BackgroundImage = (Image)resources.GetObject("panel1.BackgroundImage");
             panel1.BackgroundImageLayout = ImageLayout.Stretch;
+            panel1.Controls.Add(textBox1);
+            panel1.Controls.Add(button2);
+            panel1.Controls.Add(label5);
+            panel1.Controls.Add(label4);
             panel1.Controls.Add(btnRefresh);
             panel1.Controls.Add(btnBack);
             panel1.Controls.Add(btnCreateRoom);
@@ -69,12 +77,51 @@
             panel1.Size = new Size(359, 454);
             panel1.TabIndex = 0;
             // 
+            // textBox1
+            // 
+            textBox1.Location = new Point(147, 279);
+            textBox1.Name = "textBox1";
+            textBox1.Size = new Size(196, 27);
+            textBox1.TabIndex = 9;
+            // 
+            // button2
+            // 
+            button2.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button2.Location = new Point(19, 224);
+            button2.Name = "button2";
+            button2.Size = new Size(324, 35);
+            button2.TabIndex = 8;
+            button2.Text = "Choose map";
+            button2.UseVisualStyleBackColor = true;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Font = new Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label5.ForeColor = Color.Gold;
+            label5.Location = new Point(19, 280);
+            label5.Name = "label5";
+            label5.Size = new Size(93, 23);
+            label5.TabIndex = 7;
+            label5.Text = "Time Limit:";
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Font = new Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label4.ForeColor = Color.Gold;
+            label4.Location = new Point(16, 197);
+            label4.Name = "label4";
+            label4.Size = new Size(121, 23);
+            label4.TabIndex = 6;
+            label4.Text = "Map selection:";
+            // 
             // btnRefresh
             // 
             btnRefresh.BackgroundImage = (Image)resources.GetObject("btnRefresh.BackgroundImage");
             btnRefresh.BackgroundImageLayout = ImageLayout.Stretch;
             btnRefresh.FlatStyle = FlatStyle.Popup;
-            btnRefresh.Location = new Point(181, 266);
+            btnRefresh.Location = new Point(181, 327);
             btnRefresh.Name = "btnRefresh";
             btnRefresh.Size = new Size(162, 49);
             btnRefresh.TabIndex = 2;
@@ -87,9 +134,9 @@
             btnBack.BackgroundImage = (Image)resources.GetObject("btnBack.BackgroundImage");
             btnBack.BackgroundImageLayout = ImageLayout.Stretch;
             btnBack.FlatStyle = FlatStyle.Popup;
-            btnBack.Location = new Point(70, 356);
+            btnBack.Location = new Point(95, 386);
             btnBack.Name = "btnBack";
-            btnBack.Size = new Size(204, 68);
+            btnBack.Size = new Size(162, 54);
             btnBack.TabIndex = 2;
             btnBack.UseVisualStyleBackColor = false;
             btnBack.Click += btnBack_Click;
@@ -99,7 +146,7 @@
             btnCreateRoom.BackgroundImage = (Image)resources.GetObject("btnCreateRoom.BackgroundImage");
             btnCreateRoom.BackgroundImageLayout = ImageLayout.Stretch;
             btnCreateRoom.FlatStyle = FlatStyle.Popup;
-            btnCreateRoom.Location = new Point(16, 267);
+            btnCreateRoom.Location = new Point(16, 327);
             btnCreateRoom.Name = "btnCreateRoom";
             btnCreateRoom.Size = new Size(159, 48);
             btnCreateRoom.TabIndex = 5;
@@ -111,7 +158,7 @@
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label3.ForeColor = Color.Gold;
-            label3.Location = new Point(16, 179);
+            label3.Location = new Point(16, 127);
             label3.Name = "label3";
             label3.Size = new Size(86, 23);
             label3.TabIndex = 4;
@@ -119,7 +166,7 @@
             // 
             // txtPass
             // 
-            txtPass.Location = new Point(19, 205);
+            txtPass.Location = new Point(19, 157);
             txtPass.Name = "txtPass";
             txtPass.Size = new Size(324, 27);
             txtPass.TabIndex = 3;
@@ -130,7 +177,7 @@
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI Semibold", 10.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label2.ForeColor = Color.Gold;
-            label2.Location = new Point(16, 102);
+            label2.Location = new Point(16, 56);
             label2.Name = "label2";
             label2.Size = new Size(111, 23);
             label2.TabIndex = 2;
@@ -138,7 +185,7 @@
             // 
             // txtRoomName
             // 
-            txtRoomName.Location = new Point(19, 128);
+            txtRoomName.Location = new Point(19, 86);
             txtRoomName.Name = "txtRoomName";
             txtRoomName.Size = new Size(324, 27);
             txtRoomName.TabIndex = 1;
@@ -148,7 +195,7 @@
             label1.AutoSize = true;
             label1.Font = new Font("Bookman Old Style", 16.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label1.ForeColor = Color.PaleGreen;
-            label1.Location = new Point(66, 23);
+            label1.Location = new Point(66, 11);
             label1.Name = "label1";
             label1.Size = new Size(240, 32);
             label1.TabIndex = 0;
@@ -200,7 +247,7 @@
             btnJoin.Name = "btnJoin";
             btnJoin.Size = new Size(116, 46);
             btnJoin.TabIndex = 3;
-            btnJoin.Text = "Join";
+            btnJoin.Text = "JOIN";
             btnJoin.UseVisualStyleBackColor = false;
             btnJoin.Click += btnJoin_Click_1;
             // 
@@ -221,9 +268,9 @@
             lblRoomCode.ForeColor = Color.Yellow;
             lblRoomCode.Location = new Point(31, 35);
             lblRoomCode.Name = "lblRoomCode";
-            lblRoomCode.Size = new Size(44, 20);
+            lblRoomCode.Size = new Size(87, 20);
             lblRoomCode.TabIndex = 1;
-            lblRoomCode.Text = "Code";
+            lblRoomCode.Text = "Code: ------";
             // 
             // lblRoomName
             // 
@@ -232,16 +279,16 @@
             lblRoomName.ForeColor = Color.PeachPuff;
             lblRoomName.Location = new Point(32, 9);
             lblRoomName.Name = "lblRoomName";
-            lblRoomName.Size = new Size(102, 23);
+            lblRoomName.Size = new Size(104, 23);
             lblRoomName.TabIndex = 0;
-            lblRoomName.Text = "RoomName";
+            lblRoomName.Text = "Room name";
             // 
             // button1
             // 
             button1.BackgroundImage = (Image)resources.GetObject("button1.BackgroundImage");
             button1.BackgroundImageLayout = ImageLayout.Stretch;
             button1.FlatStyle = FlatStyle.Popup;
-            button1.Location = new Point(882, 543);
+            button1.Location = new Point(877, 540);
             button1.Name = "button1";
             button1.Size = new Size(194, 52);
             button1.TabIndex = 2;
@@ -255,8 +302,8 @@
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(1128, 616);
-            Controls.Add(button1);
             Controls.Add(panelRoomTemplate);
+            Controls.Add(button1);
             Controls.Add(flowLayoutPanelRooms);
             Controls.Add(panel1);
             DoubleBuffered = true;
@@ -290,5 +337,9 @@
         private PictureBox picLock;
         private Button btnRefresh;
         private Button button1;
+        private Label label5;
+        private Label label4;
+        private Button button2;
+        private TextBox textBox1;
     }
 }

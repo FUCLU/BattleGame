@@ -1,8 +1,11 @@
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using System.IO;
+using System.Linq;
 using System.Windows.Forms;
+using BattleGame.Client.Config;
 using BattleGame.Client.Managers;
 using BattleGame.Client.Game;
 using BattleGame.Client.Game.Core.Components;
@@ -13,6 +16,15 @@ namespace BattleGame.Client.Forms
     {
         private readonly GameEngine _engine;
         private System.Windows.Forms.Timer gameTimer;
+
+        private float _roundSecondsRemaining = 180f;
+        private int _currentRound = 1;
+
+        private static readonly string AssetsRoot = Path.Combine(
+            AppDomain.CurrentDomain.BaseDirectory,
+            "..", "..", "..", "Assets");
+
+        private static readonly string PortraitRoot = Path.Combine(AssetsRoot, "PotraitPic");
 
         private readonly Stopwatch _stopwatch = new();
         private float _frameAccumulator = 0f;
@@ -84,6 +96,10 @@ namespace BattleGame.Client.Forms
         private void GameForm_Load(object? sender, EventArgs e)
         {
             panelStatus.BackColor = Color.FromArgb(180, 0, 0, 0);
+            label1.ForeColor = Color.WhiteSmoke;
+            label2.ForeColor = Color.Gainsboro;
+            label1.Text = $"ROUND {_currentRound}";
+            label2.Text = FormatTime(_roundSecondsRemaining);
 
             foreach (Control c in new Control[]
                 { panelStatus, panelHPBack, panelManaBack,
@@ -91,6 +107,7 @@ namespace BattleGame.Client.Forms
                 c.BringToFront();
 
             UpdateUIBars();
+            UpdateCharacterHeaders();
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -98,6 +115,69 @@ namespace BattleGame.Client.Forms
             base.OnKeyDown(e);
             InputManager.SetKey(e.KeyCode, true);
             e.Handled = true;
+        }
+
+        private void UpdateCharacterHeaders()
+        {
+            var selectionItems = CharacterCatalog.LoadSelectionItems(
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", ".."));
+            var lookup = selectionItems
+                .GroupBy(item => item.Id, StringComparer.OrdinalIgnoreCase)
+                .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+
+            string? playerId = _engine.Player.Get<CharacterComponent>()?.CharacterId;
+            SetCharacterHeader(label3, pictureBox1, playerId, lookup);
+
+            string? enemyId = _engine.Enemy.Get<CharacterComponent>()?.CharacterId;
+            SetCharacterHeader(label4, pictureBox2, enemyId, lookup);
+        }
+
+        private void SetCharacterHeader(Label nameLabel, PictureBox portraitBox, string? characterId,
+            Dictionary<string, CharacterSelectionItem> lookup)
+        {
+            if (string.IsNullOrWhiteSpace(characterId))
+                return;
+
+            if (lookup.TryGetValue(characterId, out var selectionItem))
+            {
+                nameLabel.Text = selectionItem.DisplayName;
+            }
+            else
+            {
+                nameLabel.Text = characterId;
+            }
+
+            portraitBox.Image = LoadImage(GetPortraitPath(characterId));
+        }
+
+        private static string GetPortraitPath(string characterId)
+        {
+            string portraitFileName = characterId.ToLowerInvariant() switch
+            {
+                "wizard" => "wizard.png",
+                "samurai" => "samurai.png",
+                "kitsune" => "kitsune.png",
+                "lord" => "lord.png",
+                _ => $"{characterId.ToLowerInvariant()}.png"
+            };
+
+            return Path.Combine(PortraitRoot, portraitFileName);
+        }
+
+        private static Image? LoadImage(string path)
+        {
+            try
+            {
+                if (File.Exists(path))
+                {
+                    return Image.FromFile(path);
+                }
+            }
+            catch
+            {
+            }
+
+            return null;
         }
 
         protected override void OnKeyUp(KeyEventArgs e)
@@ -141,10 +221,34 @@ namespace BattleGame.Client.Forms
                 _engine.Draw(_backGraphics);
             }
 
+            UpdateRoundTimer(dt);
             UpdateUIBars();
 
             // Vẽ lên màn hình
             this.Invalidate(false);
+        }
+
+        private void UpdateRoundTimer(float deltaTime)
+        {
+            if (_roundSecondsRemaining <= 0f)
+            {
+                if (label2.Text != "00:00")
+                    label2.Text = "00:00";
+                return;
+            }
+
+            _roundSecondsRemaining = Math.Max(0f, _roundSecondsRemaining - deltaTime);
+            string timeText = FormatTime(_roundSecondsRemaining);
+            if (label2.Text != timeText)
+                label2.Text = timeText;
+        }
+
+        private static string FormatTime(float totalSeconds)
+        {
+            int seconds = (int)MathF.Ceiling(totalSeconds);
+            int minutes = Math.Clamp(seconds / 60, 0, 99);
+            int remainder = Math.Clamp(seconds % 60, 0, 59);
+            return $"{minutes:00}:{remainder:00}";
         }
         protected override void OnResize(EventArgs e)
         {

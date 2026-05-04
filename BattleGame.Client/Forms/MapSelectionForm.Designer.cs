@@ -28,6 +28,7 @@
             pictureBoxMap = new PictureBox();
             buttonSelect = new Button();
             buttonCancel = new Button();
+            button1 = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxMap).BeginInit();
             SuspendLayout();
             // 
@@ -69,12 +70,12 @@
             // 
             // buttonSelect
             // 
-            buttonSelect.BackColor = Color.BlanchedAlmond;
+            buttonSelect.BackColor = Color.LawnGreen;
             buttonSelect.FlatAppearance.BorderColor = Color.YellowGreen;
             buttonSelect.FlatAppearance.BorderSize = 2;
             buttonSelect.FlatStyle = FlatStyle.Flat;
             buttonSelect.Font = new Font("Book Antiqua", 13.8F, FontStyle.Bold);
-            buttonSelect.Location = new Point(48, 479);
+            buttonSelect.Location = new Point(48, 475);
             buttonSelect.Name = "buttonSelect";
             buttonSelect.Size = new Size(127, 39);
             buttonSelect.TabIndex = 3;
@@ -89,7 +90,7 @@
             buttonCancel.FlatAppearance.BorderSize = 2;
             buttonCancel.FlatStyle = FlatStyle.Flat;
             buttonCancel.Font = new Font("Book Antiqua", 13.8F, FontStyle.Bold);
-            buttonCancel.Location = new Point(574, 479);
+            buttonCancel.Location = new Point(574, 473);
             buttonCancel.Name = "buttonCancel";
             buttonCancel.Size = new Size(127, 39);
             buttonCancel.TabIndex = 4;
@@ -97,12 +98,27 @@
             buttonCancel.UseVisualStyleBackColor = false;
             buttonCancel.Click += buttonCancel_Click;
             // 
+            // button1
+            // 
+            button1.BackColor = Color.SeaShell;
+            button1.FlatAppearance.BorderColor = Color.YellowGreen;
+            button1.FlatAppearance.BorderSize = 2;
+            button1.FlatStyle = FlatStyle.Flat;
+            button1.Font = new Font("Book Antiqua", 13.8F, FontStyle.Bold);
+            button1.Location = new Point(304, 473);
+            button1.Name = "button1";
+            button1.Size = new Size(150, 39);
+            button1.TabIndex = 5;
+            button1.Text = "RANDOM";
+            button1.UseVisualStyleBackColor = false;
+            // 
             // MapSelectionForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            BackColor = Color.RoyalBlue;
+            BackColor = SystemColors.ActiveCaptionText;
             ClientSize = new Size(753, 538);
+            Controls.Add(button1);
             Controls.Add(buttonCancel);
             Controls.Add(buttonSelect);
             Controls.Add(pictureBoxMap);
@@ -123,5 +139,6 @@
         private PictureBox pictureBoxMap;
         private Button buttonSelect;
         private Button buttonCancel;
+        private Button button1;
     }
 }

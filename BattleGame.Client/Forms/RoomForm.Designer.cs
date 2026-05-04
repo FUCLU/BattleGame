@@ -37,21 +37,27 @@
             panel2 = new Panel();
             lblReady2 = new Label();
             lblReady1 = new Label();
-            label4 = new Label();
-            pictureBox1 = new PictureBox();
-            label2 = new Label();
-            label1 = new Label();
-            button1 = new Button();
             textBox2 = new TextBox();
             textBox1 = new TextBox();
             panel1 = new Panel();
             button4 = new Button();
             button3 = new Button();
             button2 = new Button();
+            panel4 = new Panel();
+            button5 = new Button();
+            textBox3 = new TextBox();
+            button1 = new Button();
+            label1 = new Label();
+            panel5 = new Panel();
+            label6 = new Label();
+            label5 = new Label();
+            label4 = new Label();
+            label2 = new Label();
             panel3.SuspendLayout();
             panel2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             panel1.SuspendLayout();
+            panel4.SuspendLayout();
+            panel5.SuspendLayout();
             SuspendLayout();
             // 
             // panel3
@@ -65,7 +71,7 @@
             panel3.Controls.Add(richtxtBoxMessage);
             panel3.Location = new Point(447, 28);
             panel3.Name = "panel3";
-            panel3.Size = new Size(528, 435);
+            panel3.Size = new Size(528, 437);
             panel3.TabIndex = 3;
             // 
             // btnSend
@@ -76,7 +82,7 @@
             btnSend.FlatAppearance.BorderColor = Color.LightBlue;
             btnSend.FlatStyle = FlatStyle.Flat;
             btnSend.Font = new Font("Book Antiqua", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            btnSend.Location = new Point(398, 383);
+            btnSend.Location = new Point(419, 383);
             btnSend.Name = "btnSend";
             btnSend.Size = new Size(89, 38);
             btnSend.TabIndex = 3;
@@ -116,7 +122,7 @@
             richtxtBoxMessage.Location = new Point(20, 33);
             richtxtBoxMessage.Name = "richtxtBoxMessage";
             richtxtBoxMessage.ReadOnly = true;
-            richtxtBoxMessage.Size = new Size(467, 342);
+            richtxtBoxMessage.Size = new Size(488, 342);
             richtxtBoxMessage.TabIndex = 0;
             richtxtBoxMessage.Text = "";
             // 
@@ -127,16 +133,11 @@
             panel2.BackgroundImageLayout = ImageLayout.Stretch;
             panel2.Controls.Add(lblReady2);
             panel2.Controls.Add(lblReady1);
-            panel2.Controls.Add(label4);
-            panel2.Controls.Add(pictureBox1);
-            panel2.Controls.Add(label2);
-            panel2.Controls.Add(label1);
-            panel2.Controls.Add(button1);
             panel2.Controls.Add(textBox2);
             panel2.Controls.Add(textBox1);
             panel2.Location = new Point(71, 28);
             panel2.Name = "panel2";
-            panel2.Size = new Size(351, 435);
+            panel2.Size = new Size(351, 138);
             panel2.TabIndex = 2;
             panel2.Paint += panel2_Paint;
             // 
@@ -145,111 +146,52 @@
             lblReady2.AutoSize = true;
             lblReady2.BackColor = Color.FromArgb(34, 124, 162);
             lblReady2.Font = new Font("Segoe UI", 10.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblReady2.ForeColor = Color.Chartreuse;
-            lblReady2.Location = new Point(249, 72);
+            lblReady2.ForeColor = Color.Ivory;
+            lblReady2.Location = new Point(214, 82);
             lblReady2.Name = "lblReady2";
-            lblReady2.Size = new Size(71, 25);
+            lblReady2.Size = new Size(102, 25);
             lblReady2.TabIndex = 10;
-            lblReady2.Text = "READY";
+            lblReady2.Text = "WAITING..";
+            lblReady2.Visible = false;
             // 
             // lblReady1
             // 
             lblReady1.AutoSize = true;
             lblReady1.BackColor = Color.FromArgb(34, 124, 162);
             lblReady1.Font = new Font("Segoe UI", 10.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            lblReady1.ForeColor = Color.Chartreuse;
-            lblReady1.Location = new Point(249, 25);
+            lblReady1.ForeColor = Color.White;
+            lblReady1.Location = new Point(213, 29);
             lblReady1.Name = "lblReady1";
-            lblReady1.Size = new Size(71, 25);
+            lblReady1.Size = new Size(102, 25);
             lblReady1.TabIndex = 9;
-            lblReady1.Text = "READY";
-            // 
-            // label4
-            // 
-            label4.AutoSize = true;
-            label4.BackColor = Color.Black;
-            label4.Font = new Font("Bookman Old Style", 16.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label4.ForeColor = SystemColors.ButtonHighlight;
-            label4.Location = new Point(115, 194);
-            label4.Name = "label4";
-            label4.Size = new Size(140, 32);
-            label4.TabIndex = 8;
-            label4.Text = "1010101";
-            // 
-            // pictureBox1
-            // 
-            pictureBox1.BackColor = Color.Black;
-            pictureBox1.Image = (Image)resources.GetObject("pictureBox1.Image");
-            pictureBox1.Location = new Point(30, 142);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(297, 109);
-            pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
-            pictureBox1.TabIndex = 7;
-            pictureBox1.TabStop = false;
-            // 
-            // label2
-            // 
-            label2.AutoSize = true;
-            label2.Font = new Font("Segoe UI Semibold", 10.8F, FontStyle.Bold | FontStyle.Italic);
-            label2.ForeColor = SystemColors.Info;
-            label2.Location = new Point(127, 374);
-            label2.Name = "label2";
-            label2.Size = new Size(94, 25);
-            label2.TabIndex = 6;
-            label2.Text = "Time: 3:00";
-            // 
-            // label1
-            // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI Semibold", 10.8F, FontStyle.Bold | FontStyle.Italic);
-            label1.ForeColor = SystemColors.Info;
-            label1.Location = new Point(144, 328);
-            label1.Name = "label1";
-            label1.Size = new Size(59, 25);
-            label1.TabIndex = 5;
-            label1.Text = "Map 1";
-            // 
-            // button1
-            // 
-            button1.BackColor = Color.Transparent;
-            button1.BackgroundImage = (Image)resources.GetObject("button1.BackgroundImage");
-            button1.BackgroundImageLayout = ImageLayout.Stretch;
-            button1.FlatAppearance.BorderColor = Color.DarkGreen;
-            button1.FlatStyle = FlatStyle.Flat;
-            button1.Font = new Font("Constantia", 10.8F, FontStyle.Italic, GraphicsUnit.Point, 0);
-            button1.ForeColor = Color.Black;
-            button1.Location = new Point(87, 265);
-            button1.Name = "button1";
-            button1.Size = new Size(185, 53);
-            button1.TabIndex = 4;
-            button1.UseVisualStyleBackColor = false;
-            button1.Click += button1_Click;
+            lblReady1.Text = "WAITING..";
+            lblReady1.Visible = false;
             // 
             // textBox2
             // 
             textBox2.BackColor = Color.FromArgb(34, 124, 162);
             textBox2.Font = new Font("Book Antiqua", 13.8F, FontStyle.Bold);
             textBox2.ForeColor = Color.Black;
-            textBox2.Location = new Point(32, 67);
+            textBox2.Location = new Point(32, 79);
             textBox2.Name = "textBox2";
             textBox2.ReadOnly = true;
-            textBox2.Size = new Size(290, 35);
+            textBox2.Size = new Size(301, 35);
             textBox2.TabIndex = 3;
             textBox2.TabStop = false;
-            textBox2.Text = "PLAYER 2";
+            textBox2.Text = "Player 2";
             // 
             // textBox1
             // 
             textBox1.BackColor = Color.FromArgb(34, 124, 162);
             textBox1.Font = new Font("Book Antiqua", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
             textBox1.ForeColor = SystemColors.ActiveCaptionText;
-            textBox1.Location = new Point(32, 20);
+            textBox1.Location = new Point(32, 25);
             textBox1.Name = "textBox1";
             textBox1.ReadOnly = true;
-            textBox1.Size = new Size(290, 35);
+            textBox1.Size = new Size(301, 35);
             textBox1.TabIndex = 2;
             textBox1.TabStop = false;
-            textBox1.Text = "PLAYER 1";
+            textBox1.Text = "Player 1";
             // 
             // panel1
             // 
@@ -278,6 +220,7 @@
             button4.Size = new Size(161, 43);
             button4.TabIndex = 9;
             button4.UseVisualStyleBackColor = false;
+            button4.Click += button4_Click_1;
             // 
             // button3
             // 
@@ -293,6 +236,7 @@
             button3.Size = new Size(161, 43);
             button3.TabIndex = 8;
             button3.UseVisualStyleBackColor = false;
+            button3.Click += button3_Click_1;
             // 
             // button2
             // 
@@ -309,6 +253,120 @@
             button2.TabIndex = 7;
             button2.UseVisualStyleBackColor = false;
             // 
+            // panel4
+            // 
+            panel4.BackColor = Color.Transparent;
+            panel4.BackgroundImage = (Image)resources.GetObject("panel4.BackgroundImage");
+            panel4.BackgroundImageLayout = ImageLayout.Stretch;
+            panel4.Controls.Add(button5);
+            panel4.Controls.Add(textBox3);
+            panel4.Controls.Add(button1);
+            panel4.Controls.Add(label1);
+            panel4.Location = new Point(71, 178);
+            panel4.Name = "panel4";
+            panel4.Size = new Size(351, 138);
+            panel4.TabIndex = 4;
+            // 
+            // button5
+            // 
+            button5.BackgroundImage = (Image)resources.GetObject("button5.BackgroundImage");
+            button5.BackgroundImageLayout = ImageLayout.Zoom;
+            button5.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button5.Location = new Point(294, 46);
+            button5.Name = "button5";
+            button5.Size = new Size(39, 35);
+            button5.TabIndex = 14;
+            button5.UseVisualStyleBackColor = true;
+            // 
+            // textBox3
+            // 
+            textBox3.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            textBox3.Location = new Point(22, 46);
+            textBox3.Name = "textBox3";
+            textBox3.ReadOnly = true;
+            textBox3.Size = new Size(266, 34);
+            textBox3.TabIndex = 13;
+            textBox3.TextAlign = HorizontalAlignment.Center;
+            // 
+            // button1
+            // 
+            button1.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button1.Location = new Point(21, 90);
+            button1.Name = "button1";
+            button1.Size = new Size(312, 37);
+            button1.TabIndex = 12;
+            button1.Text = "COPY CODE";
+            button1.UseVisualStyleBackColor = true;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label1.ForeColor = SystemColors.Control;
+            label1.Location = new Point(17, 9);
+            label1.Name = "label1";
+            label1.Size = new Size(133, 28);
+            label1.TabIndex = 11;
+            label1.Text = "ROOM CODE";
+            // 
+            // panel5
+            // 
+            panel5.BackColor = Color.Transparent;
+            panel5.BackgroundImage = (Image)resources.GetObject("panel5.BackgroundImage");
+            panel5.BackgroundImageLayout = ImageLayout.Stretch;
+            panel5.Controls.Add(label6);
+            panel5.Controls.Add(label5);
+            panel5.Controls.Add(label4);
+            panel5.Controls.Add(label2);
+            panel5.Location = new Point(71, 332);
+            panel5.Name = "panel5";
+            panel5.Size = new Size(351, 116);
+            panel5.TabIndex = 11;
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label6.ForeColor = SystemColors.Control;
+            label6.Location = new Point(238, 65);
+            label6.Name = "label6";
+            label6.Size = new Size(50, 28);
+            label6.TabIndex = 15;
+            label6.Text = "3:00";
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Font = new Font("Segoe UI Semibold", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label5.ForeColor = SystemColors.Control;
+            label5.Location = new Point(22, 65);
+            label5.Name = "label5";
+            label5.Size = new Size(78, 28);
+            label5.TabIndex = 14;
+            label5.Text = "Battle 1";
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label4.ForeColor = SystemColors.Control;
+            label4.Location = new Point(208, 18);
+            label4.Name = "label4";
+            label4.Size = new Size(119, 28);
+            label4.TabIndex = 13;
+            label4.Text = "TIME LIMIT";
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label2.ForeColor = SystemColors.Control;
+            label2.Location = new Point(20, 18);
+            label2.Name = "label2";
+            label2.Size = new Size(57, 28);
+            label2.TabIndex = 12;
+            label2.Text = "MAP";
+            // 
             // RoomForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -317,6 +375,8 @@
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(1057, 581);
+            Controls.Add(panel5);
+            Controls.Add(panel4);
             Controls.Add(panel1);
             Controls.Add(panel3);
             Controls.Add(panel2);
@@ -328,8 +388,11 @@
             panel3.PerformLayout();
             panel2.ResumeLayout(false);
             panel2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             panel1.ResumeLayout(false);
+            panel4.ResumeLayout(false);
+            panel4.PerformLayout();
+            panel5.ResumeLayout(false);
+            panel5.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -339,9 +402,6 @@
         private TextBox textBox2;
         private TextBox textBox1;
         private Panel panel1;
-        private Label label2;
-        private Label label1;
-        private Button button1;
         private Button button4;
         private Button button3;
         private Button button2;
@@ -349,9 +409,17 @@
         private TextBox txtBoxInp;
         private Label label3;
         private RichTextBox richtxtBoxMessage;
-        private Label label4;
-        private PictureBox pictureBox1;
         private Label lblReady2;
         private Label lblReady1;
+        private Panel panel4;
+        private Panel panel5;
+        private Label label1;
+        private Label label4;
+        private Label label2;
+        private Button button1;
+        private Label label6;
+        private Label label5;
+        private TextBox textBox3;
+        private Button button5;
     }
 }
