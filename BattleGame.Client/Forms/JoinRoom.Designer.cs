@@ -50,6 +50,7 @@
             lblRoomCode = new Label();
             lblRoomName = new Label();
             button1 = new Button();
+            button3 = new Button();
             panel1.SuspendLayout();
             panelRoomTemplate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)picLock).BeginInit();
@@ -219,6 +220,7 @@
             // panelRoomTemplate
             // 
             panelRoomTemplate.BackColor = Color.SteelBlue;
+            panelRoomTemplate.Controls.Add(button3);
             panelRoomTemplate.Controls.Add(picLock);
             panelRoomTemplate.Controls.Add(btnJoin);
             panelRoomTemplate.Controls.Add(lblSlot);
@@ -233,7 +235,7 @@
             // picLock
             // 
             picLock.Image = (Image)resources.GetObject("picLock.Image");
-            picLock.Location = new Point(412, 9);
+            picLock.Location = new Point(269, 12);
             picLock.Name = "picLock";
             picLock.Size = new Size(43, 40);
             picLock.SizeMode = PictureBoxSizeMode.StretchImage;
@@ -243,7 +245,7 @@
             // btnJoin
             // 
             btnJoin.BackColor = Color.DarkKhaki;
-            btnJoin.Location = new Point(483, 9);
+            btnJoin.Location = new Point(337, 9);
             btnJoin.Name = "btnJoin";
             btnJoin.Size = new Size(116, 46);
             btnJoin.TabIndex = 3;
@@ -256,7 +258,7 @@
             lblSlot.AutoSize = true;
             lblSlot.Font = new Font("Yu Gothic UI", 10.2F, FontStyle.Bold);
             lblSlot.ForeColor = Color.PeachPuff;
-            lblSlot.Location = new Point(287, 20);
+            lblSlot.Location = new Point(192, 20);
             lblSlot.Name = "lblSlot";
             lblSlot.Size = new Size(35, 23);
             lblSlot.TabIndex = 2;
@@ -294,6 +296,16 @@
             button1.TabIndex = 2;
             button1.UseVisualStyleBackColor = true;
             button1.Click += button1_Click;
+            // 
+            // button3
+            // 
+            button3.BackColor = Color.Crimson;
+            button3.Location = new Point(474, 9);
+            button3.Name = "button3";
+            button3.Size = new Size(116, 46);
+            button3.TabIndex = 5;
+            button3.Text = "REMOVE";
+            button3.UseVisualStyleBackColor = false;
             // 
             // JoinRoom
             // 
@@ -341,5 +353,6 @@
         private Label label4;
         private Button button2;
         private TextBox textBox1;
+        private Button button3;
     }
 }

@@ -67,5 +67,16 @@ namespace BattleGame.Client.Network
             string json = await ReceiveAsync();
             return PacketSerializer.Deserialize(json);
         }
+
+        public async Task<Packet> ReceivePacketAsync(CancellationToken token)
+        {
+            string json = await ReceiveAsync(token);
+            return PacketSerializer.Deserialize(json);
+        }
+
+        public bool HasDataAvailable()
+        {
+            return _stream != null && _stream.DataAvailable;
+        }
     }
 }

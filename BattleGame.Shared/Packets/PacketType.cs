@@ -27,6 +27,9 @@
         Ready = 23,
         SelectMap = 24,
         GetLeaderboard = 25,
-        GetLeaderboardResult = 26
+        GetLeaderboardResult = 26,
+        RemoveRoom = 27,
+        RemoveRoomResult = 28,
+        LeaveRoom = 29
     }
 }

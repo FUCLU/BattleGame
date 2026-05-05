@@ -14,5 +14,7 @@ namespace BattleGame.Shared.Packets
         public int RoomId { get; set; }
         public string? RoomName { get; set; }
         public int CurrentPlayers { get; set; }
+        public bool HasPassword { get; set; }
+        public bool IsOwner { get; set; }
     }
 }

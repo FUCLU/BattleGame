@@ -67,6 +67,14 @@ namespace BattleGame.Server.Game
                     if (!_client.IsAuthenticated) return;
                     await HandleJoinRoomAsync((JoinRoomPacket)packet);
                     break;
+                case PacketType.LeaveRoom:
+                    if (!_client.IsAuthenticated) return;
+                    HandleLeaveRoom((LeaveRoomPacket)packet);
+                    break;
+                case PacketType.RemoveRoom:
+                    if (!_client.IsAuthenticated) return;
+                    await HandleRemoveRoomAsync((RemoveRoomPacket)packet);
+                    break;
                 case PacketType.GetRoom:
                     if (!_client.IsAuthenticated) return;
                     await HandleGetRoomAsync((GetRoomPacket)packet);
@@ -89,10 +97,20 @@ namespace BattleGame.Server.Game
                     break;
                 case PacketType.Move:
                 case PacketType.Attack:
+                case PacketType.GameState:
                 case PacketType.Disconnect:
                     if (!_client.IsAuthenticated) return;
                     await HandleGamePacketAsync(packet);
                     break;
+            }
+        }
+
+        private void HandleLeaveRoom(LeaveRoomPacket p)
+        {
+            _matchmaking.LeaveRoom(p.RoomId, _client.UserId, _client);
+            if (_client.CurrentRoomId == p.RoomId.ToString())
+            {
+                _client.CurrentRoomId = string.Empty;
             }
         }
 
@@ -261,8 +279,6 @@ namespace BattleGame.Server.Game
                 _client.Username,
                 _client);
 
-            _client.CurrentRoomId = roomId.ToString();
-
             await _client.SendAsync(new CreateRoomResultPacket
             {
                 RoomId = roomId
@@ -271,25 +287,56 @@ namespace BattleGame.Server.Game
 
         private async Task HandleJoinRoomAsync(JoinRoomPacket p)
         {
-            bool success = _matchmaking.JoinRoom(p.RoomId, p.Password ?? "", _client.UserId, _client.Username, _client);
+            bool success = _matchmaking.JoinRoom(
+                p.RoomId,
+                p.Password ?? "",
+                _client.UserId,
+                _client.Username,
+                _client,
+                out string message);
 
             if (success)
             {
                 _client.CurrentRoomId = p.RoomId.ToString();
                 var room = _matchmaking.GetRoom(p.RoomId);
-
-                if (room != null && room.Player1Handler != null && room.Player2Handler != null)
+                var resultPacket = new JoinRoomResultPacket
                 {
-                    var resultPacket = new JoinRoomResultPacket
+                    Success = true,
+                    RoomId = p.RoomId,
+                    Player1Name = room?.Player1Name ?? string.Empty,
+                    Player2Name = room?.Player2Name ?? string.Empty,
+                    IsOwner = room != null && room.OwnerId == _client.UserId,
+                    Message = "Join room thành công."
+                };
+
+                await _client.SendAsync(resultPacket);
+
+                if (room?.Player1Handler != null && room.Player1Handler != _client)
+                {
+                    await room.Player1Handler.SendAsync(new JoinRoomResultPacket
                     {
                         Success = true,
                         RoomId = p.RoomId,
                         Player1Name = room.Player1Name,
-                        Player2Name = room.Player2Name
+                        Player2Name = room.Player2Name,
+                        IsOwner = true,
+                        Message = "Người chơi đã vào phòng."
+                    });
+                }
+
+                if (room != null)
+                {
+                    var readySnapshot = new ReadyPacket
+                    {
+                        Player1Ready = room.Player1CharId != -1,
+                        Player2Ready = room.Player2CharId != -1
                     };
 
-                    await room.Player1Handler.SendAsync(resultPacket);
-                    await room.Player2Handler.SendAsync(resultPacket);
+                    if (room.Player1Handler != null)
+                        await room.Player1Handler.SendAsync(readySnapshot);
+
+                    if (room.Player2Handler != null)
+                        await room.Player2Handler.SendAsync(readySnapshot);
                 }
             }
             else
@@ -297,18 +344,36 @@ namespace BattleGame.Server.Game
                 await _client.SendAsync(new JoinRoomResultPacket
                 {
                     Success = false,
-                    RoomId = p.RoomId
+                    RoomId = p.RoomId,
+                    Message = message
                 });
             }
         }
 
+        public void HandleClientDisconnect()
+        {
+            _matchmaking.HandleDisconnect(_client.UserId, _client);
+        }
+
         private async Task HandleGetRoomAsync(GetRoomPacket p)
         {
-            var rooms = _matchmaking.GetRooms();
+            var rooms = _matchmaking.GetRooms(_client.UserId);
 
             await _client.SendAsync(new GetRoomResultPacket
             {
                 Rooms = rooms
+            });
+        }
+
+        private async Task HandleRemoveRoomAsync(RemoveRoomPacket p)
+        {
+            bool success = _matchmaking.RemoveRoom(p.RoomId, _client.UserId, _client);
+            string message = success ? "" : "Không thể xóa phòng.";
+
+            await _client.SendAsync(new RemoveRoomResultPacket
+            {
+                Success = success,
+                Message = message
             });
         }
 
@@ -331,13 +396,21 @@ namespace BattleGame.Server.Game
 
             _matchmaking.SetCharacter(roomId, _client.UserId, p.CharacterId);
 
-            if (_matchmaking.AreAllReady(roomId))
-            {
-                var room = _matchmaking.GetRoom(roomId);
-                await room.Player1Handler.SendAsync(new ReadyPacket());
-                await room.Player2Handler.SendAsync(new ReadyPacket());
+            var room = _matchmaking.GetRoom(roomId);
+            if (room == null)
+                return;
 
-            }
+            var readyPacket = new ReadyPacket
+            {
+                Player1Ready = room.Player1CharId != -1,
+                Player2Ready = room.Player2CharId != -1
+            };
+
+            if (room.Player1Handler != null)
+                await room.Player1Handler.SendAsync(readyPacket);
+
+            if (room.Player2Handler != null)
+                await room.Player2Handler.SendAsync(readyPacket);
         }
 
         private async Task HandleMatchRequestAsync(MatchRequestPacket p)
@@ -345,11 +418,22 @@ namespace BattleGame.Server.Game
             if (!int.TryParse(_client.CurrentRoomId, out int roomId))
                 return;
 
+            var room = _matchmaking.GetRoom(roomId);
+            if (room == null)
+                return;
+
+            // Chỉ chủ phòng được quyền start.
+            if (room.OwnerId != _client.UserId)
+                return;
+
+            // Chỉ start khi cả 2 người đã chọn character + map.
+            if (!_matchmaking.AreAllReady(roomId))
+                return;
+
             _matchmaking.StartMatch(roomId);
             var matchFoundPacket = _matchmaking.BuildMatchFoundPacket(roomId);
-            var room = _matchmaking.GetRoom(roomId);
 
-            if (matchFoundPacket != null && room != null && room.Player1Handler != null && room.Player2Handler != null)
+            if (matchFoundPacket != null && room.Player1Handler != null && room.Player2Handler != null)
             {
                 await room.Player1Handler.SendAsync(matchFoundPacket);
                 await room.Player2Handler.SendAsync(matchFoundPacket);
@@ -385,24 +469,27 @@ namespace BattleGame.Server.Game
         {
             if (!int.TryParse(_client.CurrentRoomId, out int roomId))
                 return;
+
             var room = _matchmaking.GetRoom(roomId);
-            if (room == null) return;
-            /*
-            if (GameOver)
+            if (room == null)
+                return;
+
+            ClientHandler? opponent = room.Player1Handler == _client
+                ? room.Player2Handler
+                : room.Player1Handler;
+
+            if (opponent == null)
+                return;
+
+            switch (packet.Type)
             {
-                _matchmaking.EndMatch(roomId, WinnerId);
-                await room.Player1Handler.SendAsync(new GameOverPacket
-                {
-                    WinnerPlayerId = WinnerId,
-                    Duration = Duration
-                });
-                await room.Player2Handler.SendAsync(new GameOverPacket
-                {
-                    WinnerPlayerId = WinnerId,
-                    Duration = Duration
-                });
+                case PacketType.Move:
+                case PacketType.Attack:
+                case PacketType.GameState:
+                case PacketType.Disconnect:
+                    await opponent.SendAsync(packet);
+                    break;
             }
-            */
         }
     }
 }

@@ -47,12 +47,25 @@ namespace BattleGame.Client.Forms
             {
                 button1.Enabled = false;
 
+                bool connected = await NetworkManager.Instance.EnsureConnectedAsync();
+                if (!connected)
+                {
+                    MessageBox.Show(
+                        "Không thể kết nối server.\nHãy chạy server/load balancer trước (ví dụ: docker compose up --build).",
+                        "Lỗi kết nối",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
+                    return;
+                }
+
                 var result = await NetworkManager.Instance.LoginAsync(
                     new LoginPacket { Username = username, Password = password }
                 );
 
                 if (result.Success)
                 {
+                    JoinRoom.ResetOwnedRoomState();
                     new MenuForm().Show();
                     this.Hide();
                 }
@@ -66,7 +79,7 @@ namespace BattleGame.Client.Forms
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Đã có lỗi xảy ra: " + ex.Message,
+                MessageBox.Show("Đăng nhập lỗi: " + ex.Message,
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally

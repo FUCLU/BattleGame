@@ -41,6 +41,9 @@ namespace BattleGame.Shared.Network
                 PacketType.SelectMap => JsonSerializer.Serialize((SelectMapPacket)packet, options),
                 PacketType.GetLeaderboard => JsonSerializer.Serialize((GetLeaderboardPacket)packet, options),
                 PacketType.GetLeaderboardResult => JsonSerializer.Serialize((GetLeaderboardResultPacket)packet, options),
+                PacketType.RemoveRoom => JsonSerializer.Serialize((RemoveRoomPacket)packet, options),
+                PacketType.RemoveRoomResult => JsonSerializer.Serialize((RemoveRoomResultPacket)packet, options),
+                PacketType.LeaveRoom => JsonSerializer.Serialize((LeaveRoomPacket)packet, options),
                 _ => JsonSerializer.Serialize(packet, options)
             };
         }
@@ -79,6 +82,9 @@ namespace BattleGame.Shared.Network
                 PacketType.SelectMap => JsonSerializer.Deserialize<SelectMapPacket>(json, options)!,
                 PacketType.GetLeaderboard => JsonSerializer.Deserialize<GetLeaderboardPacket>(json, options)!,
                 PacketType.GetLeaderboardResult => JsonSerializer.Deserialize<GetLeaderboardResultPacket>(json, options)!,
+                PacketType.RemoveRoom => JsonSerializer.Deserialize<RemoveRoomPacket>(json, options)!,
+                PacketType.RemoveRoomResult => JsonSerializer.Deserialize<RemoveRoomResultPacket>(json, options)!,
+                PacketType.LeaveRoom => JsonSerializer.Deserialize<LeaveRoomPacket>(json, options)!,
                 _ => throw new NotSupportedException($"Chưa hỗ trợ packet type: {type}")
             };
         }

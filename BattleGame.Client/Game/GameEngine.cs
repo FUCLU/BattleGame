@@ -37,7 +37,7 @@ namespace BattleGame.Client.Game
         public Entity Player => _player;
         public Entity Enemy => _enemy;
 
-        public GameEngine(string characterId, string mapId, int formWidth, int formHeight)
+        public GameEngine(string characterId, string mapId, int formWidth, int formHeight, string? enemyCharacterId = null)
         {
             _formWidth = formWidth;
             _formHeight = formHeight;
@@ -66,13 +66,17 @@ namespace BattleGame.Client.Game
             // Tạo nhân vật
             _player = CharacterFactory.Create(characterId, 200f, _groundY, animKeys);
 
-            // Enemy luôn là Samurai (để test)
+            // Enemy theo character đối thủ đã chọn từ RoomForm/MatchFound.
+            string resolvedEnemyCharacterId = string.IsNullOrWhiteSpace(enemyCharacterId)
+                ? "samurai"
+                : enemyCharacterId.Trim().ToLowerInvariant();
+
             var enemyLoader = new AnimationLoader("Assets");
-            var enemyAnimations = enemyLoader.Load("samurai");
+            var enemyAnimations = enemyLoader.Load(resolvedEnemyCharacterId);
             var enemyAnimKeys = new Dictionary<string, object>();
             foreach (var kv in enemyAnimations)
                 enemyAnimKeys[kv.Key] = kv.Value;
-            _enemy = CharacterFactory.Create("samurai", 500f, _groundY, enemyAnimKeys);
+            _enemy = CharacterFactory.Create(resolvedEnemyCharacterId, 500f, _groundY, enemyAnimKeys);
 
             // Đăng ký target cho projectile collision
             _projectileSystem.RegisterTarget(_player);

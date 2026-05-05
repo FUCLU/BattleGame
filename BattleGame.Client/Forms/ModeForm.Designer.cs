@@ -67,9 +67,9 @@
             button3.BackgroundImage = (Image)resources.GetObject("button3.BackgroundImage");
             button3.BackgroundImageLayout = ImageLayout.Stretch;
             button3.FlatStyle = FlatStyle.Flat;
-            button3.Location = new Point(92, 505);
+            button3.Location = new Point(92, 484);
             button3.Name = "button3";
-            button3.Size = new Size(120, 56);
+            button3.Size = new Size(145, 65);
             button3.TabIndex = 3;
             button3.UseVisualStyleBackColor = true;
             button3.Click += button3_Click;

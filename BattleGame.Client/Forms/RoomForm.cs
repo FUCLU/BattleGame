@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -17,6 +18,7 @@ namespace BattleGame.Client.Forms
     public partial class RoomForm : Form
     {
         private const int MaxPlayers = 2;
+        private const int PacketListenPollMs = 250;
         private readonly string _roomCode;
         private readonly bool _isHost;
         private readonly int _localPlayerIndex;
@@ -27,6 +29,8 @@ namespace BattleGame.Client.Forms
         private string _selectedCharacterId = "lord";
         private string _selectedMapId = "terrace";
         private CancellationTokenSource? _listenCts;
+        private Task? _listenTask;
+        private bool _leaveSent;
 
         public RoomForm(string roomCode, bool isHost, int playerCount, string mapId, int timeLimitMinutes)
         {
@@ -41,12 +45,43 @@ namespace BattleGame.Client.Forms
             button1.Click += button1_Click;
             button5.Click += button1_Click;
             button2.Click += button2_Click;
-            button4.Click += button4_Click;
             textBox3.Text = _roomCode;
             if (_isHost && _playerCount == 0)
             {
                 _playerCount = 1;
             }
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            _listenCts?.Cancel();
+            _listenCts?.Dispose();
+            _listenCts = null;
+            base.OnFormClosing(e);
+        }
+
+        protected override async void OnFormClosed(FormClosedEventArgs e)
+        {
+            if (TryParseRoomId(out int roomId))
+            {
+                JoinRoom.MarkOwnedRoomLeft(roomId);
+            }
+
+            if (!_leaveSent && NetworkManager.Instance.IsConnected && TryParseRoomId(out roomId))
+            {
+                try
+                {
+                    await NetworkManager.Instance.LeaveRoomAsync(new LeaveRoomPacket
+                    {
+                        RoomId = roomId
+                    });
+                }
+                catch
+                {
+                }
+            }
+
+            base.OnFormClosed(e);
         }
 
         private void RoomForm_Load(object sender, EventArgs e)
@@ -59,7 +94,7 @@ namespace BattleGame.Client.Forms
             if (NetworkManager.Instance.IsConnected)
             {
                 _listenCts = new CancellationTokenSource();
-                _ = ListenForPacketsAsync(_listenCts.Token);
+                _listenTask = ListenForPacketsAsync(_listenCts.Token);
 
                 if (_isHost && TryParseRoomId(out int roomId))
                 {
@@ -119,10 +154,58 @@ namespace BattleGame.Client.Forms
             AddMessage("", "Đã copy room code.");
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private async void button2_Click(object sender, EventArgs e)
         {
+            button2.Enabled = false;
+
+            if (_listenCts != null)
+            {
+                _listenCts.Cancel();
+                if (_listenTask != null)
+                {
+                    try
+                    {
+                        await _listenTask;
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
+
+            bool hasRoomId = TryParseRoomId(out int roomId);
+            if (hasRoomId)
+            {
+                JoinRoom.MarkOwnedRoomLeft(roomId);
+            }
+
+            if (NetworkManager.Instance.IsConnected && hasRoomId)
+            {
+                try
+                {
+                    await NetworkManager.Instance.LeaveRoomAsync(new LeaveRoomPacket
+                    {
+                        RoomId = roomId
+                    });
+                    _leaveSent = true;
+                }
+                catch
+                {
+                }
+            }
+
             JoinRoom joinRoom = new JoinRoom();
             joinRoom.Show();
+            if (NetworkManager.Instance.IsConnected)
+            {
+                try
+                {
+                    await joinRoom.RefreshRoomsFromServerAsync();
+                }
+                catch
+                {
+                }
+            }
             Close();
         }
 
@@ -152,6 +235,12 @@ namespace BattleGame.Client.Forms
 
         private void button4_Click(object sender, EventArgs e)
         {
+            if (!_isHost)
+            {
+                MessageBox.Show("Chỉ chủ phòng mới có thể bắt đầu trận.", "Room", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
             if (_playerCount < MaxPlayers)
             {
                 MessageBox.Show("Chưa đủ người chơi.", "Room", MessageBoxButtons.OK, MessageBoxIcon.Information);
@@ -192,11 +281,11 @@ namespace BattleGame.Client.Forms
             if (_localPlayerIndex == 1)
             {
                 UpdateReadyLabel(lblReady1, hasPlayer1, _isReady);
-                UpdateReadyLabel(lblReady2, hasPlayer2, isReady: false);
+                UpdateReadyLabel(lblReady2, hasPlayer2, _remoteReady);
             }
             else
             {
-                UpdateReadyLabel(lblReady1, hasPlayer1, isReady: false);
+                UpdateReadyLabel(lblReady1, hasPlayer1, _remoteReady);
                 UpdateReadyLabel(lblReady2, hasPlayer2, _isReady);
             }
         }
@@ -281,12 +370,27 @@ namespace BattleGame.Client.Forms
             {
                 while (!token.IsCancellationRequested)
                 {
-                    Packet packet = await NetworkManager.Instance.ReceiveAsync();
+                    Packet? packet = await NetworkManager.Instance.TryReceiveAsync(
+                        PacketListenPollMs,
+                        token,
+                        p => IsRoomRealtimePacket(p.Type));
+                    if (packet == null)
+                    {
+                        await Task.Delay(25, token);
+                        continue;
+                    }
+
                     if (token.IsCancellationRequested)
                         return;
 
                     BeginInvoke(new Action(() => HandlePacket(packet)));
                 }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+            catch (IOException)
+            {
             }
             catch
             {
@@ -307,7 +411,17 @@ namespace BattleGame.Client.Forms
                     }
                     break;
                 case PacketType.Ready:
-                    _remoteReady = true;
+                    var readyPacket = (ReadyPacket)packet;
+                    if (_isHost)
+                    {
+                        _isReady = readyPacket.Player1Ready;
+                        _remoteReady = readyPacket.Player2Ready;
+                    }
+                    else
+                    {
+                        _isReady = readyPacket.Player2Ready;
+                        _remoteReady = readyPacket.Player1Ready;
+                    }
                     UpdateReadyState();
                     break;
                 case PacketType.SelectMap:
@@ -322,6 +436,14 @@ namespace BattleGame.Client.Forms
             }
         }
 
+        private static bool IsRoomRealtimePacket(PacketType type)
+        {
+            return type == PacketType.JoinRoomResult
+                || type == PacketType.Ready
+                || type == PacketType.SelectMap
+                || type == PacketType.MatchFound;
+        }
+
         private async Task StartOnlineMatchAsync()
         {
             await NetworkManager.Instance.SendAsync(new MatchRequestPacket());
@@ -330,11 +452,15 @@ namespace BattleGame.Client.Forms
         private void OpenMatch(MatchFoundPacket matchFound)
         {
             string mapId = MapIdFromNetwork(matchFound.MapId);
-            string characterId = _isHost
+            string localCharacterId = _isHost
                 ? CharacterIdFromNetwork(matchFound.Player1CharacterId)
                 : CharacterIdFromNetwork(matchFound.Player2CharacterId);
+            string enemyCharacterId = _isHost
+                ? CharacterIdFromNetwork(matchFound.Player2CharacterId)
+                : CharacterIdFromNetwork(matchFound.Player1CharacterId);
 
-            GameForm gameForm = new GameForm(characterId, mapId);
+            _leaveSent = true;
+            GameForm gameForm = new GameForm(localCharacterId, mapId, enemyCharacterId);
             gameForm.Show();
             Close();
         }
@@ -390,9 +516,5 @@ namespace BattleGame.Client.Forms
             };
         }
 
-        private void button4_Click_1(object sender, EventArgs e)
-        {
-
-        }
     }
 }

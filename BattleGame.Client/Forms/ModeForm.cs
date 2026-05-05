@@ -21,14 +21,14 @@ namespace BattleGame.Client.Forms
         private void button2_Click(object sender, EventArgs e)
         {
             OfflineModeSelection offlineModeSelection = new OfflineModeSelection();
-            offlineModeSelection.ShowDialog();
+            offlineModeSelection.Show();
             this.Close();
         }
 
         private void button4_Click(object sender, EventArgs e)
         {
             JoinRoom joinRoom = new JoinRoom();
-            joinRoom.ShowDialog();
+            joinRoom.Show();
             this.Close();
         }
 

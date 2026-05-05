@@ -220,7 +220,7 @@
             button4.Size = new Size(161, 43);
             button4.TabIndex = 9;
             button4.UseVisualStyleBackColor = false;
-            button4.Click += button4_Click_1;
+            button4.Click += button4_Click;
             // 
             // button3
             // 

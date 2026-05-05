@@ -46,7 +46,12 @@ namespace BattleGame.Server.Network
                     }
                     catch (IOException ex)
                     {
-                        Console.WriteLine($"[ERROR] IOException: {ex.Message}");
+                        // Load balancer health-check opens/closes short-lived sockets without sending packets.
+                        // Avoid noisy error logs for unauthenticated transient disconnects.
+                        if (IsAuthenticated)
+                            Console.WriteLine($"[ERROR] IOException: {ex.Message}");
+                        else
+                            Console.WriteLine($"[DEBUG] Client closed before auth: {ex.Message}");
                         break;
                     }
                     catch (JsonException ex)
@@ -63,6 +68,7 @@ namespace BattleGame.Server.Network
             }
             finally
             {
+                _processor.HandleClientDisconnect();
                 Console.WriteLine($"[INFO] Client disconnected");
                 _socket.Close();
             }
