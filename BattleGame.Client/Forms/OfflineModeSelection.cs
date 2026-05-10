@@ -145,7 +145,7 @@ namespace BattleGame.Client.Forms
         {
             if (string.IsNullOrWhiteSpace(playerCharacterId))
             {
-                MessageBox.Show("Vui long chon nhan vat truoc khi vao game.");
+                MessageBox.Show("Vui lòng chọn nhân vật trước khi vào game.");
                 return;
             }
 

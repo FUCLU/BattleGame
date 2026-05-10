@@ -12,6 +12,10 @@ using BattleGame.Client.Managers;
 using BattleGame.Client.Game;
 using BattleGame.Client.Game.Core.Components;
 using BattleGame.Shared.Packets;
+using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.Drawing.Text;
+
 
 namespace BattleGame.Client.Forms
 {
@@ -24,7 +28,6 @@ namespace BattleGame.Client.Forms
         private const int StatusPanelWidth = 304;
 
         private readonly GameEngine _engine;
-        private System.Windows.Forms.Timer gameTimer;
 
         private float _roundSecondsRemaining = 180f;
         private int _currentRound = 1;
@@ -41,12 +44,20 @@ namespace BattleGame.Client.Forms
         private float _networkSyncAccumulator = 0f;
         private const float NetworkSyncIntervalSeconds = 1f / 15f; // 15 updates/s
         private int _sendingNetworkState;
+        private bool _isRunning;
+        private long _lastTicks;
+        private const float MaxFrameDt = 0.05f;
+        private float _uiAccumulator = 0f;
+        private const float UiUpdateInterval = 0.1f;
 
         private CancellationTokenSource? _networkCts;
         private Task? _networkListenTask;
+        private bool _navigatingAway;
+        private bool _remoteDisconnected;
 
         private Bitmap? _backBuffer;
         private Graphics? _backGraphics;
+        private readonly Dictionary<string, Image> _imageCache = new(StringComparer.OrdinalIgnoreCase);
 
         public GameForm(string characterId, string mapId = "terrace", string? enemyCharacterId = null)
         {
@@ -79,12 +90,10 @@ namespace BattleGame.Client.Forms
 
                 Load += GameForm_Load;
 
-                gameTimer = new System.Windows.Forms.Timer();
-                gameTimer.Interval = 16; // ~60fps
-                gameTimer.Tick += gameTimer_Tick;
-                gameTimer.Start();
-
                 _stopwatch.Start();
+                _lastTicks = _stopwatch.ElapsedTicks;
+                _isRunning = true;
+                Application.Idle += OnApplicationIdle;
 
                 this.Visible = true;
                 this.BringToFront();
@@ -123,12 +132,18 @@ namespace BattleGame.Client.Forms
             label1.ForeColor = Color.WhiteSmoke;
             label2.ForeColor = Color.Gainsboro;
             label1.Text = $"ROUND {_currentRound}";
-            label2.Text = FormatTime(_roundSecondsRemaining);
+            label2.Text = FormatTime((int)MathF.Ceiling(_roundSecondsRemaining));
 
             foreach (Control c in new Control[]
                 { panelStatus, panelHPBack, panelManaBack,
                   panel3, panel1, label3, label4, pictureBox1, pictureBox2 })
                 c.BringToFront();
+
+            // Round/time are rendered directly into backbuffer to avoid WinForms control flicker.
+            panelStatus.Visible = false;
+            btnExit.Parent = this;
+            btnExit.Visible = true;
+            btnExit.BringToFront();
 
             UpdateUIBars();
             UpdateCharacterHeaders();
@@ -177,10 +192,10 @@ namespace BattleGame.Client.Forms
                 nameLabel.Text = characterId;
             }
 
-            Image? portrait = LoadImage(GetPortraitPath(characterId));
+            Image? portrait = LoadImageCached(GetPortraitPath(characterId));
             if (portrait == null && lookup.TryGetValue(characterId, out var selectionItemForPortrait))
             {
-                portrait = LoadImage(selectionItemForPortrait.GetPreviewPath(Path.Combine(AssetsRoot, "Characters")));
+                portrait = LoadImageCached(selectionItemForPortrait.GetPreviewPath(Path.Combine(AssetsRoot, "Characters")));
             }
 
             portraitBox.Image = portrait;
@@ -200,17 +215,25 @@ namespace BattleGame.Client.Forms
             return Path.Combine(PortraitRoot, portraitFileName);
         }
 
-        private static Image? LoadImage(string path)
+        private Image? LoadImageCached(string path)
         {
             try
             {
-                if (File.Exists(path))
-                {
-                    return Image.FromFile(path);
-                }
+                if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+                    return null;
+
+                if (_imageCache.TryGetValue(path, out var cached))
+                    return cached;
+
+                using var fs = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                using var temp = Image.FromStream(fs);
+                var clone = new Bitmap(temp);
+                _imageCache[path] = clone;
+                return clone;
             }
-            catch
+            catch (Exception ex)
             {
+                Debug.WriteLine($"[LoadImageCached] {path}: {ex}");
             }
 
             return null;
@@ -231,38 +254,85 @@ namespace BattleGame.Client.Forms
 
         protected override void OnPaintBackground(PaintEventArgs e) { }
 
-        private void gameTimer_Tick(object? sender, EventArgs e)
+        [StructLayout(LayoutKind.Sequential)]
+        private struct NativeMessage
         {
-            // Tính delta time từ Stopwatch
-            float dt = (float)_stopwatch.Elapsed.TotalSeconds;
-            _stopwatch.Restart();
-            
-            // Giới hạn frame time để tránh simulation lag
-            dt = Math.Min(dt, FixedTimestep * 2);
+            public IntPtr handle;
+            public uint msg;
+            public IntPtr wParam;
+            public IntPtr lParam;
+            public uint time;
+            public Point p;
+        }
 
-            // Accumulate delta time
-            _frameAccumulator += dt;
+        [DllImport("user32.dll")]
+        private static extern bool PeekMessage(out NativeMessage lpMsg, IntPtr hWnd, uint min, uint max, uint remove);
 
-            // Update với fixed timestep
-            while (_frameAccumulator >= FixedTimestep)
+        private static bool IsApplicationIdle() => !PeekMessage(out _, IntPtr.Zero, 0, 0, 0);
+
+        private void DrawFrame()
+        {
+            if (_backGraphics == null) return;
+            _backGraphics.Clear(Color.Black);
+            _engine.Draw(_backGraphics);
+            DrawRoundOverlay(_backGraphics);
+        }
+
+        private void DrawRoundOverlay(Graphics g)
+        {
+            Rectangle rect = panelStatus.Bounds;
+            using var bg = new SolidBrush(Color.Black);
+            g.FillRectangle(bg, rect);
+
+            g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+            using var titleFont = new Font("Book Antiqua", 16.2f, FontStyle.Bold, GraphicsUnit.Point);
+            using var timeFont = new Font("Book Antiqua", 13.8f, FontStyle.Regular, GraphicsUnit.Point);
+            using var textBrush = new SolidBrush(Color.WhiteSmoke);
+            using var sf = new StringFormat
             {
-                _engine.Update(FixedTimestep);
-                _frameAccumulator -= FixedTimestep;
-            }
+                Alignment = StringAlignment.Center,
+                LineAlignment = StringAlignment.Center
+            };
 
-            // Vẽ frame
-            if (_backGraphics != null)
-            {
-                _backGraphics.Clear(Color.Black);
-                _engine.Draw(_backGraphics);
-            }
+            string roundText = $"ROUND {_currentRound}";
+            string timeText = FormatTime((int)MathF.Ceiling(_roundSecondsRemaining));
 
-            UpdateRoundTimer(dt);
+            var roundRect = new Rectangle(rect.X, rect.Y + 10, rect.Width, 36);
+            var timeRect = new Rectangle(rect.X, rect.Y + 52, rect.Width, 32);
+            g.DrawString(roundText, titleFont, textBrush, roundRect, sf);
+            g.DrawString(timeText, timeFont, textBrush, timeRect, sf);
+        }
+
+        private void UpdateUIBarsThrottled(float dt)
+        {
+            _uiAccumulator += dt;
+            if (_uiAccumulator < UiUpdateInterval) return;
+            _uiAccumulator = 0f;
             UpdateUIBars();
-            TrySendRealtimeState(dt);
+        }
 
-            // Vẽ lên màn hình
-            this.Invalidate(false);
+        private void OnApplicationIdle(object? sender, EventArgs e)
+        {
+            while (_isRunning && IsApplicationIdle())
+            {
+                long now = _stopwatch.ElapsedTicks;
+                float dt = (now - _lastTicks) / (float)Stopwatch.Frequency;
+                _lastTicks = now;
+                dt = Math.Min(dt, MaxFrameDt);
+
+                _frameAccumulator += dt;
+                while (_frameAccumulator >= FixedTimestep)
+                {
+                    _engine.Update(FixedTimestep);
+                    TrySendRealtimeState(FixedTimestep);
+                    _frameAccumulator -= FixedTimestep;
+                }
+
+                UpdateRoundTimer(dt);
+                DrawFrame();
+                UpdateUIBarsThrottled(dt);
+                Invalidate(false);
+            }
         }
 
         private void TrySendRealtimeState(float dt)
@@ -314,8 +384,9 @@ namespace BattleGame.Client.Forms
                     CurrentFrame = sp.CurrentFrame
                 });
             }
-            catch
+            catch (Exception ex)
             {
+                Debug.WriteLine($"[SendLocalStateAsync] {ex}");
             }
             finally
             {
@@ -352,11 +423,13 @@ namespace BattleGame.Client.Forms
             catch (OperationCanceledException)
             {
             }
-            catch (IOException)
+            catch (IOException ex)
             {
+                Debug.WriteLine($"[ListenForRealtimePacketsAsync/IO] {ex}");
             }
-            catch
+            catch (Exception ex)
             {
+                Debug.WriteLine($"[ListenForRealtimePacketsAsync] {ex}");
             }
         }
 
@@ -368,8 +441,28 @@ namespace BattleGame.Client.Forms
                     ApplyRemoteState((GameStatePacket)packet);
                     break;
                 case PacketType.Disconnect:
+                    HandleOpponentDisconnected();
                     break;
             }
+        }
+
+        private void HandleOpponentDisconnected()
+        {
+            if (_navigatingAway || IsDisposed)
+                return;
+
+            _remoteDisconnected = true;
+            _navigatingAway = true;
+
+            MessageBox.Show(
+                "Đối thủ đã thoát trận. Bạn sẽ quay lại danh sách phòng.",
+                "Match Ended",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+
+            var joinRoom = new JoinRoom();
+            joinRoom.Show();
+            Close();
         }
 
         private void ApplyRemoteState(GameStatePacket remote)
@@ -405,24 +498,13 @@ namespace BattleGame.Client.Forms
 
         private void UpdateRoundTimer(float deltaTime)
         {
-            if (_roundSecondsRemaining <= 0f)
-            {
-                if (label2.Text != "00:00")
-                    label2.Text = "00:00";
-                return;
-            }
-
             _roundSecondsRemaining = Math.Max(0f, _roundSecondsRemaining - deltaTime);
-            string timeText = FormatTime(_roundSecondsRemaining);
-            if (label2.Text != timeText)
-                label2.Text = timeText;
         }
 
-        private static string FormatTime(float totalSeconds)
+        private static string FormatTime(int totalSeconds)
         {
-            int seconds = (int)MathF.Ceiling(totalSeconds);
-            int minutes = Math.Clamp(seconds / 60, 0, 99);
-            int remainder = Math.Clamp(seconds % 60, 0, 59);
+            int minutes = Math.Clamp(totalSeconds / 60, 0, 99);
+            int remainder = Math.Clamp(totalSeconds % 60, 0, 59);
             return $"{minutes:00}:{remainder:00}";
         }
         protected override void OnResize(EventArgs e)
@@ -456,6 +538,12 @@ namespace BattleGame.Client.Forms
             panelStatus.Location = new Point(
                 Math.Max(HudMargin, (ClientSize.Width - StatusPanelWidth) / 2),
                 28);
+
+            // Keep EXIT button inside round frame, below timer text.
+            btnExit.Location = new Point(
+                panelStatus.Left + (panelStatus.Width - btnExit.Width) / 2,
+                panelStatus.Top + 88);
+            btnExit.BringToFront();
         }
 
         private void UpdateUIBars()
@@ -500,21 +588,57 @@ namespace BattleGame.Client.Forms
                     if (panel2.Width != manaW) panel2.Width = Math.Max(0, manaW);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[UpdateUIBars] {ex}");
+            }
         }
 
         protected override void OnFormClosed(FormClosedEventArgs e)
         {
+            _isRunning = false;
+            Application.Idle -= OnApplicationIdle;
+
             _networkCts?.Cancel();
             _networkCts?.Dispose();
             _networkCts = null;
 
-            gameTimer.Stop();
-            gameTimer.Dispose();
+            pictureBox1.Image = null;
+            pictureBox2.Image = null;
+
+            foreach (var img in _imageCache.Values) img.Dispose();
+            _imageCache.Clear();
+
             _backGraphics?.Dispose();
             _backBuffer?.Dispose();
+
             InputManager.Clear();
             base.OnFormClosed(e);
+
+        }
+
+        private async void btnExit_Click(object sender, EventArgs e)
+        {
+            if (_navigatingAway || IsDisposed)
+                return;
+
+            _navigatingAway = true;
+
+            try
+            {
+                if (NetworkManager.Instance.IsConnected && !_remoteDisconnected)
+                {
+                    await NetworkManager.Instance.DisconnectAsync(new DisconnectPacket());
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[btnExit_Click] {ex}");
+            }
+
+            var modeForm = new ModeForm();
+            modeForm.Show();
+            Close();
         }
 
         protected override void OnDeactivate(EventArgs e)

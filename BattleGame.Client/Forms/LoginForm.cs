@@ -12,6 +12,8 @@ namespace BattleGame.Client.Forms
         {
             InitializeComponent();
             this.StartPosition = FormStartPosition.CenterScreen;
+            this.AcceptButton = button1;
+            this.ActiveControl = textBox1;
         }
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -30,6 +32,24 @@ namespace BattleGame.Client.Forms
         private void LoginForm_Load(object sender, EventArgs e)
         {
             SoundManager.PlayBGM("montagem_hiraki.mp3");
+            BeginInvoke(new Action(() =>
+            {
+                if (!IsDisposed && IsHandleCreated)
+                {
+                    textBox1.Focus();
+                    textBox1.SelectionStart = textBox1.TextLength;
+                }
+            }));
+        }
+
+        protected override void OnActivated(EventArgs e)
+        {
+            base.OnActivated(e);
+            if (ActiveControl == null || ActiveControl == this)
+            {
+                textBox1.Focus();
+                textBox1.SelectionStart = textBox1.TextLength;
+            }
         }
 
         private async void button1_Click(object sender, EventArgs e)

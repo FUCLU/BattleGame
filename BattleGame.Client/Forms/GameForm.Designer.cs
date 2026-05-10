@@ -46,6 +46,7 @@
             panelHPFill = new Panel();
             lblHP = new Label();
             panelStatus = new Panel();
+            btnExit = new Button();
             label2 = new Label();
             label1 = new Label();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
@@ -67,7 +68,7 @@
             label4.BackColor = Color.Transparent;
             label4.Font = new Font("Book Antiqua", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label4.ForeColor = Color.LawnGreen;
-            label4.Location = new Point(874, 42);
+            label4.Location = new Point(858, 42);
             label4.Name = "label4";
             label4.Size = new Size(98, 28);
             label4.TabIndex = 17;
@@ -75,7 +76,7 @@
             // 
             // pictureBox2
             // 
-            pictureBox2.Location = new Point(978, 10);
+            pictureBox2.Location = new Point(962, 10);
             pictureBox2.Name = "pictureBox2";
             pictureBox2.Size = new Size(93, 77);
             pictureBox2.SizeMode = PictureBoxSizeMode.Zoom;
@@ -87,7 +88,7 @@
             panel1.BackColor = Color.RosyBrown;
             panel1.BorderStyle = BorderStyle.Fixed3D;
             panel1.Controls.Add(panel2);
-            panel1.Location = new Point(790, 132);
+            panel1.Location = new Point(774, 132);
             panel1.Name = "panel1";
             panel1.Size = new Size(281, 23);
             panel1.TabIndex = 15;
@@ -119,7 +120,7 @@
             panel3.BackColor = Color.RosyBrown;
             panel3.BorderStyle = BorderStyle.Fixed3D;
             panel3.Controls.Add(panel4);
-            panel3.Location = new Point(790, 94);
+            panel3.Location = new Point(774, 94);
             panel3.Name = "panel3";
             panel3.Size = new Size(281, 23);
             panel3.TabIndex = 14;
@@ -152,7 +153,7 @@
             label3.BackColor = Color.Transparent;
             label3.Font = new Font("Book Antiqua", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label3.ForeColor = Color.LawnGreen;
-            label3.Location = new Point(132, 38);
+            label3.Location = new Point(148, 38);
             label3.Name = "label3";
             label3.Size = new Size(98, 28);
             label3.TabIndex = 13;
@@ -160,7 +161,7 @@
             // 
             // pictureBox1
             // 
-            pictureBox1.Location = new Point(32, 12);
+            pictureBox1.Location = new Point(48, 12);
             pictureBox1.Name = "pictureBox1";
             pictureBox1.Size = new Size(94, 77);
             pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
@@ -172,7 +173,7 @@
             panelManaBack.BackColor = Color.RosyBrown;
             panelManaBack.BorderStyle = BorderStyle.Fixed3D;
             panelManaBack.Controls.Add(panelManaFill);
-            panelManaBack.Location = new Point(31, 132);
+            panelManaBack.Location = new Point(47, 132);
             panelManaBack.Name = "panelManaBack";
             panelManaBack.Size = new Size(281, 22);
             panelManaBack.TabIndex = 11;
@@ -203,7 +204,7 @@
             panelHPBack.BackColor = Color.RosyBrown;
             panelHPBack.BorderStyle = BorderStyle.Fixed3D;
             panelHPBack.Controls.Add(panelHPFill);
-            panelHPBack.Location = new Point(31, 95);
+            panelHPBack.Location = new Point(47, 95);
             panelHPBack.Name = "panelHPBack";
             panelHPBack.Size = new Size(281, 22);
             panelHPBack.TabIndex = 10;
@@ -233,6 +234,7 @@
             // panelStatus
             // 
             panelStatus.BackColor = Color.Silver;
+            panelStatus.Controls.Add(btnExit);
             panelStatus.Controls.Add(label2);
             panelStatus.Controls.Add(label1);
             panelStatus.Location = new Point(403, 28);
@@ -240,12 +242,26 @@
             panelStatus.Size = new Size(304, 127);
             panelStatus.TabIndex = 9;
             // 
+            // btnExit
+            // 
+            btnExit.BackColor = Color.Gray;
+            btnExit.FlatStyle = FlatStyle.Popup;
+            btnExit.Font = new Font("Book Antiqua", 10.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnExit.ForeColor = Color.WhiteSmoke;
+            btnExit.Location = new Point(102, 87);
+            btnExit.Name = "btnExit";
+            btnExit.Size = new Size(92, 30);
+            btnExit.TabIndex = 18;
+            btnExit.Text = "EXIT";
+            btnExit.UseVisualStyleBackColor = false;
+            btnExit.Click += btnExit_Click;
+            // 
             // label2
             // 
             label2.AutoSize = true;
             label2.BackColor = Color.Transparent;
             label2.Font = new Font("Book Antiqua", 13.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label2.Location = new Point(111, 56);
+            label2.Location = new Point(116, 49);
             label2.Name = "label2";
             label2.Size = new Size(66, 28);
             label2.TabIndex = 1;
@@ -323,5 +339,6 @@
         private Panel panelStatus;
         private Label label2;
         private Label label1;
+        private Button btnExit;
     }
 }
