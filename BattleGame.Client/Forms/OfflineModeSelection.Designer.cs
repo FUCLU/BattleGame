@@ -182,7 +182,7 @@
             comboBoxMap.DropDownStyle = ComboBoxStyle.DropDownList;
             comboBoxMap.ForeColor = Color.SandyBrown;
             comboBoxMap.FormattingEnabled = true;
-            comboBoxMap.Items.AddRange(new object[] { "Map 1", "Map 2", "Map 3", "Forest" });
+            comboBoxMap.Items.AddRange(new object[] { "Map 1", "Map 2", "Map 3", "Forest", "Cave 8000px" });
             comboBoxMap.Location = new Point(106, 169);
             comboBoxMap.Name = "comboBoxMap";
             comboBoxMap.Size = new Size(250, 28);

@@ -19,7 +19,7 @@ namespace BattleGame.Client.Forms
 
         private static readonly string AssetsRoot = Path.Combine(
            AppDomain.CurrentDomain.BaseDirectory,
-           "..", "..", "..", "Assets", "Background");
+           "..", "..", "..", "Assets");
 
 
         private string currentMap = "";
@@ -55,6 +55,7 @@ namespace BattleGame.Client.Forms
                 "throneroom" => "throneroom.png",
                 "castle" => "castle.png",
                 "forest" => "BackgroundForest.png",
+                "cave" => Path.Combine("dungeon", "map1", "0.png"),
                 _ => null
             };
         }
@@ -66,7 +67,9 @@ namespace BattleGame.Client.Forms
             if (string.IsNullOrWhiteSpace(imageFile))
                 return;
 
-            string imagePath = Path.Combine(AssetsRoot, imageFile);
+            string imagePath = imageFile.Contains(Path.DirectorySeparatorChar)
+                ? Path.Combine(AssetsRoot, imageFile)
+                : Path.Combine(AssetsRoot, "Background", imageFile);
             if (File.Exists(imagePath))
                 pictureBoxMap.Image = Image.FromFile(imagePath);
         }
@@ -90,6 +93,10 @@ namespace BattleGame.Client.Forms
 
                 case 3:
                     SetMap("forest");
+                    break;
+
+                case 4:
+                    SetMap("cave");
                     break;
             }
         }

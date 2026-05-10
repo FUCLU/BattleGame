@@ -296,6 +296,9 @@
 		<None Update="Assets\Background\castle.png">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="Assets\dungeon\map1\*.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="Assets\Background\Close.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

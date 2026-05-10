@@ -134,7 +134,9 @@ namespace BattleGame.Client.Config
                 Id = el.GetProperty("id").GetString() ?? "",
                 ManaCost = el.GetProperty("manaCost").GetInt32(),
                 Cooldown = el.GetProperty("cooldown").GetSingle(),
-                Animation = el.TryGetProperty("animation", out var anim) ? anim.GetString() ?? "" : ""
+                Animation = el.TryGetProperty("animation", out var anim) ? anim.GetString() ?? "" : "",
+                InvulnerableWhileCasting = el.TryGetProperty("invulnerableWhileCasting", out var invulnerableWhileCasting)
+                    && invulnerableWhileCasting.GetBoolean()
             };
 
             if (el.TryGetProperty("effects", out var effects))

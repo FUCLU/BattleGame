@@ -30,6 +30,7 @@
     "skill1": {
       "id": "judgement_slash",
       "animation": "Skill1",
+      "invulnerableWhileCasting": true,
       "manaCost": 0,
       "cooldown": 0.0,
 

@@ -84,6 +84,7 @@ namespace BattleGame.Client.Game.Systems
                         var mv = target.Get<MovementComponent>();
                         var ch = target.Get<CharacterComponent>();
                         if (ch.IsDead) continue;
+                        if (ch.IsInvulnerable) continue;
 
                         if (CheckHit(p, mv))
                         {
@@ -215,6 +216,7 @@ namespace BattleGame.Client.Game.Systems
         private void ApplyDamage(Entity target, ProjectileComponent p)
         {
             var ch = target.Get<CharacterComponent>();
+            if (ch.IsDead || ch.IsInvulnerable) return;
 
             int dmg = Math.Max(0, p.Damage - ch.BaseStats.Def);
             ch.Hp = Math.Max(0, ch.Hp - dmg);
