@@ -107,7 +107,6 @@
             Controls.Add(btnStage1);
             Controls.Add(btnBack);
             Name = "DungeonMode";
-            Text = "DungeonMode";
             ResumeLayout(false);
             PerformLayout();
         }
