@@ -1,0 +1,140 @@
+{
+  "id": "haladin",
+  "selection": {
+    "displayName": "Haladin",
+    "previewImage": "Idle.png",
+    "skillLabel": "Judgement Slash / Holy Wrath",
+    "assetFolder": "Haladin"
+  },
+  "stats": {
+    "hp": 120,
+    "def": 12,
+    "mana": 120,
+    "atk": 24,
+    "speed": 240,
+    "atkSpeed": 1.4,
+    "stunDuration": 0.0,
+    "attackRange": 80
+  },
+
+  "render": {
+    "scale": 1.25,
+    "offsetY": 24,
+    "useSpriteSize": true,
+    "protectionOverlayOffsetY": 0.0,
+    "protectionUsesIdleBase": false,
+    "protectionBlocksAllDirections": false
+  },
+
+  "skills": {
+    "skill1": {
+      "id": "judgement_slash",
+      "animation": "Skill1",
+      "manaCost": 0,
+      "cooldown": 0.0,
+
+      "effects": [
+        {
+          "type": "melee",
+          "trigger": "onFrames",
+          "frames": [ 10, 11, 12, 18, 19, 20 ],
+          "damage": 6,
+          "stun": 0.0,
+          "range": 100
+        }
+      ]
+    },
+
+    "skill2": {
+      "id": "holy_wrath",
+      "animation": "Skill2",
+      "manaCost": 0,
+      "cooldown": 0.0,
+
+      "effects": [
+        {
+          "type": "melee",
+          "trigger": "onFrames",
+          "frames": [ 14, 15, 16, 24, 25, 26 ],
+          "damage": 6,
+          "stun": 0.4,
+          "range": 170
+        }
+      ]
+    }
+  },
+
+  "animations": {
+    "Idle": {
+      "frameCount": 8,
+      "fps": 8,
+      "loop": true
+    },
+    "Run": {
+      "frameCount": 8,
+      "fps": 12,
+      "loop": true
+    },
+    "Walk": {
+      "file": "Run.png",
+      "frameCount": 8,
+      "fps": 8,
+      "loop": true
+    },
+
+    "Attack_1": {
+      "frameCount": 8,
+      "fps": 12,
+      "loop": false
+    },
+    "Attack_2": {
+      "frameCount": 18,
+      "fps": 14,
+      "loop": false
+    },
+
+    "Protection": {
+      "frameCount": 8,
+      "fps": 12,
+      "loop": true
+    },
+    "Hurt": {
+      "frameCount": 6,
+      "fps": 10,
+      "loop": false
+    },
+    "Dead": {
+      "frameCount": 19,
+      "fps": 10,
+      "loop": false
+    },
+    "Jump": {
+      "file": "j_up.png",
+      "frameCount": 3,
+      "fps": 10,
+      "loop": false
+    },
+    "Fall": {
+      "file": "j_down.png",
+      "frameCount": 3,
+      "fps": 10,
+      "loop": false
+    },
+    "Dash": {
+      "frameCount": 6,
+      "fps": 14,
+      "loop": false
+    },
+
+    "Skill1": {
+      "frameCount": 26,
+      "fps": 14,
+      "loop": false
+    },
+    "Skill2": {
+      "frameCount": 30,
+      "fps": 14,
+      "loop": false
+    }
+  }
+}

@@ -34,6 +34,10 @@ public class AnimationSystem
         {
             target = ch.CurrentAttackAnim;
         }
+        else if (ch.IsDashing)
+        {
+            target = "Dash";
+        }
         else if (ch.IsProtecting)
         {
             target = "Protection";

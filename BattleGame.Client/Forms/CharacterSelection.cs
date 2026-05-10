@@ -78,8 +78,7 @@ namespace BattleGame.Client.Forms
             _panelCharacterMap.Clear();
             _slotPanels.Clear();
 
-            // Define hardcoded slots for 4 characters
-            var slots = new[]
+            var slots = new List<CharacterSlot>
             {
                 new CharacterSlot(pnlWizard, lblWizardName, pbWizard),
                 new CharacterSlot(pnlSamurai, lblSamuraiName, pbSamurai),
@@ -87,15 +86,21 @@ namespace BattleGame.Client.Forms
                 new CharacterSlot(pnlLord, lblLordName, pbLord)
             };
 
+            while (slots.Count < _availableCharacters.Count)
+            {
+                slots.Add(CreateCharacterSlot(slots.Count));
+            }
+
             // Bind characters to slots
-            for (int i = 0; i < slots.Length && i < _availableCharacters.Count; i++)
+            for (int i = 0; i < slots.Count && i < _availableCharacters.Count; i++)
             {
                 CharacterSelectionItem character = _availableCharacters[i];
                 CharacterSlot slot = slots[i];
 
                 // Update label and image - use portrait from PotraitPic
                 slot.Label.Text = character.DisplayName;
-                slot.Picture.Image = LoadImage(GetPortraitPath(character.Id));
+                slot.Picture.Image = LoadImage(GetPortraitPath(character.Id))
+                    ?? LoadImage(character.GetPreviewPath(CharactersRoot));
 
                 // Store mapping
                 _panelCharacterMap[slot.Panel] = character;
@@ -110,6 +115,40 @@ namespace BattleGame.Client.Forms
             {
                 SelectByPanel(_slotPanels[0]);
             }
+        }
+
+        private CharacterSlot CreateCharacterSlot(int index)
+        {
+            var panel = new Panel
+            {
+                BackColor = Color.FromArgb(44, 74, 110),
+                Location = new Point(10, 10 + index * 91),
+                Size = new Size(366, 68),
+                TabIndex = 0
+            };
+
+            var picture = new PictureBox
+            {
+                BackColor = Color.Transparent,
+                Location = new Point(3, 3),
+                Size = new Size(78, 57),
+                SizeMode = PictureBoxSizeMode.StretchImage,
+                TabStop = false
+            };
+
+            var label = new Label
+            {
+                AutoSize = true,
+                Font = new Font("Book Antiqua", 19.8F, FontStyle.Bold | FontStyle.Italic),
+                ForeColor = Color.FromArgb(208, 230, 255),
+                Location = new Point(110, 12)
+            };
+
+            panel.Controls.Add(picture);
+            panel.Controls.Add(label);
+            panel2.Controls.Add(panel);
+
+            return new CharacterSlot(panel, label, picture);
         }
 
         private struct CharacterSlot
@@ -176,7 +215,8 @@ namespace BattleGame.Client.Forms
             if (character == null)
                 return;
 
-            pbInfor.Image = LoadImage(GetPortraitPath(character.Id));
+            pbInfor.Image = LoadImage(GetPortraitPath(character.Id))
+                ?? LoadImage(character.GetPreviewPath(CharactersRoot));
 
             label2.Text = character.DisplayName;
             lblHP.Text = "HP";

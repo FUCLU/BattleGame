@@ -29,6 +29,7 @@ namespace BattleGame.Client.Game.Core.Components
         public bool IsProtecting { get; set; }
         public bool IsAttacking { get; set; }
         public bool IsUsingSkill { get; set; }
+        public bool IsDashing { get; set; }
         public bool IsHurt { get; set; }
         public bool IsStunned { get; set; }
         public bool IsDead { get; set; }
@@ -42,6 +43,10 @@ namespace BattleGame.Client.Game.Core.Components
 
         public float StunTimer { get; set; }
 
+        public float DashTimer { get; set; }
+        public float DashDuration { get; set; } = 0.22f;
+        public float DashSpeedMultiplier { get; set; } = 3.0f;
+
         // ===== ATTACK =====
         public int AttackHitFrame { get; set; } = 2;
         public bool AttackHitDone { get; set; } = false;
@@ -50,7 +55,7 @@ namespace BattleGame.Client.Game.Core.Components
         public List<EffectData> AttackEffects { get; set; } = new();
 
         // ===== STATE LOCK =====
-        public bool IsBusy => IsAttacking || IsUsingSkill || IsStunned || IsDead;
+        public bool IsBusy => IsAttacking || IsUsingSkill || IsDashing || IsStunned || IsDead;
 
         // ===== SKILL SYSTEM =====
         public int CurrentSkillSlot { get; set; }

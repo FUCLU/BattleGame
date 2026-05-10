@@ -40,8 +40,13 @@ namespace BattleGame.Client.Game.Rendering
                 var frameCount = anim.Value.GetProperty("frameCount").GetInt32();
                 var fps = anim.Value.GetProperty("fps").GetSingle();
                 var loop = anim.Value.GetProperty("loop").GetBoolean();
+                var fileName = anim.Value.TryGetProperty("file", out var file)
+                    ? file.GetString()
+                    : null;
+                var offsetX = anim.Value.TryGetProperty("offsetX", out var ox) ? ox.GetSingle() : 0f;
+                var offsetY = anim.Value.TryGetProperty("offsetY", out var oy) ? oy.GetSingle() : 0f;
 
-                var sheet = LoadSheet(characterId, name);
+                var sheet = LoadSheet(characterId, name, fileName);
                 if (sheet == null)
                 {
                     System.Diagnostics.Debug.WriteLine($"[AnimationLoader] Animation {characterId}/{name} NOT found (file missing)");
@@ -55,7 +60,9 @@ namespace BattleGame.Client.Game.Rendering
                     Name = name,
                     Frames = frames,
                     Fps = fps,
-                    Loop = loop
+                    Loop = loop,
+                    OffsetX = offsetX,
+                    OffsetY = offsetY
                 };
 
                 System.Diagnostics.Debug.WriteLine($"[AnimationLoader] Animation {characterId}/{name} loaded successfully");
@@ -67,13 +74,14 @@ namespace BattleGame.Client.Game.Rendering
             return result;
         }
 
-        private Bitmap? LoadSheet(string characterId, string animName)
+        private Bitmap? LoadSheet(string characterId, string animName, string? fileName = null)
         {
             if (string.IsNullOrWhiteSpace(characterId))
                 return null;
 
             string folder = char.ToUpper(characterId[0]) + characterId[1..];
-            string path = Path.Combine(_assetRoot, "Characters", folder, $"{animName}.png");
+            string spriteFileName = string.IsNullOrWhiteSpace(fileName) ? $"{animName}.png" : fileName;
+            string path = Path.Combine(_assetRoot, "Characters", folder, spriteFileName);
             if (!File.Exists(path) && animName.StartsWith("Attack_", StringComparison.OrdinalIgnoreCase))
             {
                 string legacyAttackName = "Attack" + animName[7..];

@@ -39,7 +39,7 @@
             comboBoxMap.Font = new Font("Showcard Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
             comboBoxMap.ForeColor = Color.SandyBrown;
             comboBoxMap.FormattingEnabled = true;
-            comboBoxMap.Items.AddRange(new object[] { "Map 1", "Map 2", "Map 3" });
+            comboBoxMap.Items.AddRange(new object[] { "Map 1", "Map 2", "Map 3", "Forest" });
             comboBoxMap.Location = new Point(48, 93);
             comboBoxMap.Name = "comboBoxMap";
             comboBoxMap.Size = new Size(653, 34);

@@ -17,6 +17,12 @@ namespace BattleGame.Client.Forms
 {
     public partial class GameForm : Form
     {
+        private static readonly Size DefaultGameClientSize = new(1280, 720);
+        private const int HudMargin = 31;
+        private const int HudPanelWidth = 281;
+        private const int HudPortraitWidth = 93;
+        private const int StatusPanelWidth = 304;
+
         private readonly GameEngine _engine;
         private System.Windows.Forms.Timer gameTimer;
 
@@ -49,8 +55,15 @@ namespace BattleGame.Client.Forms
                 InitializeComponent();
 
                 this.AutoScaleMode = AutoScaleMode.None;
+                this.StartPosition = FormStartPosition.CenterScreen;
+                this.ClientSize = DefaultGameClientSize;
+                this.MinimumSize = SizeFromClientSize(DefaultGameClientSize);
+                this.MaximumSize = SizeFromClientSize(DefaultGameClientSize);
+                this.FormBorderStyle = FormBorderStyle.FixedSingle;
+                this.MaximizeBox = false;
                 this.DoubleBuffered = true;
                 this.KeyPreview = true;
+                LayoutHud();
 
                 SetStyle(
                     ControlStyles.AllPaintingInWmPaint |
@@ -104,6 +117,8 @@ namespace BattleGame.Client.Forms
 
         private void GameForm_Load(object? sender, EventArgs e)
         {
+            LayoutHud();
+
             panelStatus.BackColor = Color.FromArgb(180, 0, 0, 0);
             label1.ForeColor = Color.WhiteSmoke;
             label2.ForeColor = Color.Gainsboro;
@@ -162,7 +177,13 @@ namespace BattleGame.Client.Forms
                 nameLabel.Text = characterId;
             }
 
-            portraitBox.Image = LoadImage(GetPortraitPath(characterId));
+            Image? portrait = LoadImage(GetPortraitPath(characterId));
+            if (portrait == null && lookup.TryGetValue(characterId, out var selectionItemForPortrait))
+            {
+                portrait = LoadImage(selectionItemForPortrait.GetPreviewPath(Path.Combine(AssetsRoot, "Characters")));
+            }
+
+            portraitBox.Image = portrait;
         }
 
         private static string GetPortraitPath(string characterId)
@@ -407,7 +428,34 @@ namespace BattleGame.Client.Forms
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
+            LayoutHud();
+            if (_engine != null)
+            {
+                _engine.Resize(ClientSize.Width, ClientSize.Height);
+            }
             CreateBackBuffer();
+        }
+
+        private void LayoutHud()
+        {
+            if (panelStatus == null)
+                return;
+
+            int rightHudX = Math.Max(HudMargin, ClientSize.Width - HudMargin - HudPanelWidth);
+
+            pictureBox1.Location = new Point(HudMargin, 12);
+            label3.Location = new Point(pictureBox1.Right + 6, 38);
+            panelHPBack.Location = new Point(HudMargin, 95);
+            panelManaBack.Location = new Point(HudMargin, 132);
+
+            pictureBox2.Location = new Point(ClientSize.Width - HudMargin - HudPortraitWidth, 10);
+            label4.Location = new Point(Math.Max(HudMargin, pictureBox2.Left - label4.Width - 6), 42);
+            panel3.Location = new Point(rightHudX, 94);
+            panel1.Location = new Point(rightHudX, 132);
+
+            panelStatus.Location = new Point(
+                Math.Max(HudMargin, (ClientSize.Width - StatusPanelWidth) / 2),
+                28);
         }
 
         private void UpdateUIBars()

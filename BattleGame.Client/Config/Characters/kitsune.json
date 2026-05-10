@@ -28,9 +28,9 @@
       "speed": 600,
       "range": 40,
       "render": {
-        "scale": 1.0,
+        "scale": 3,
         "offsetX": -50,
-        "offsetY": 0.0,
+        "offsetY": 0,
         "useSpriteSize": true,
         "alignY": "center"
       }
@@ -38,8 +38,8 @@
   ],
 
   "render": {
-    "scale": 1.35,
-    "offsetY": 0.0,
+    "scale": 1.5625,
+    "offsetY": 24,
     "protectionOverlayOffsetY": 0.0,
     "protectionUsesIdleBase": false,
     "protectionBlocksAllDirections": false
@@ -69,9 +69,9 @@
           "blockEnemyProjectile": true,
           "blockEnemySkill": true,
           "render": {
-            "scale": 1.0,
+            "scale": 1.5625,
             "offsetX": 0.0,
-            "offsetY": 0.0,
+            "offsetY": 0,
             "useSpriteSize": true,
             "alignY": "center"
           }
@@ -95,9 +95,9 @@
           "speed": 500,
           "range": 70,
           "render": {
-            "scale": 1.0,
+            "scale": 2,
             "offsetX": 0.0,
-            "offsetY": 0.0,
+            "offsetY": 0,
             "useSpriteSize": true,
             "alignY": "center"
           }

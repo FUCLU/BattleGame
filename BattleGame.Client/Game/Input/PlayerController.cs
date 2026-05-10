@@ -13,7 +13,7 @@ namespace BattleGame.Client.Game.Input
         private readonly Entity _target;
 
         // Theo dõi phím trigger một lần (attack, skill)
-        private bool _prevJ, _prevU, _prevI;
+        private bool _prevJ, _prevU, _prevI, _prevK;
 
         public PlayerController(Entity entity, Entity target, CombatSystem combat)
         {
@@ -53,6 +53,7 @@ namespace BattleGame.Client.Game.Input
             bool curJ = InputManager.IsKeyDown(Keys.J);
             bool curU = InputManager.IsKeyDown(Keys.U);
             bool curI = InputManager.IsKeyDown(Keys.I);
+            bool curK = InputManager.IsKeyDown(Keys.K);
 
             // ===== ATTACK =====
             if (curJ && !_prevJ && !ch.IsBusy)
@@ -72,9 +73,24 @@ namespace BattleGame.Client.Game.Input
                 _combat.UseSkill(_entity, 2);
             }
 
+            // ===== DASH =====
+            if (curK && !_prevK && !ch.IsBusy && !ch.IsProtecting)
+            {
+                ch.IsDashing = true;
+                ch.DashTimer = ch.DashDuration;
+                mv.VelocityX = (mv.FacingRight ? 1 : -1) * mv.Speed * ch.DashSpeedMultiplier;
+
+                var sp = _entity.Get<SpriteComponent>();
+                sp.CurrentAnimation = "Dash";
+                sp.CurrentFrame = 0;
+                sp.FrameTimer = 0f;
+                sp.AnimationFinished = false;
+            }
+
             _prevJ = curJ;
             _prevU = curU;
             _prevI = curI;
+            _prevK = curK;
         }
     }
 }

@@ -6,7 +6,8 @@ public class SpriteAnimation
     public Bitmap[] Frames { get; init; } = [];
     public float Fps { get; init; } = 10f;
     public bool Loop { get; init; } = true;
-    public int OffsetY { get; init; } = 0;
+    public float OffsetX { get; init; } = 0f;
+    public float OffsetY { get; init; } = 0f;
 
     public float FrameDuration => 1f / Fps;
 }

@@ -11,6 +11,7 @@ namespace BattleGame.Client.Config
     {
         public float Scale { get; init; } = 1f;
         public float OffsetY { get; init; } = 0f;
+        public bool UseSpriteSize { get; init; } = false;
         public float ProtectionOverlayOffsetY { get; init; } = 0f;
         public bool ProtectionUsesIdleBase { get; init; } = true;
         public bool ProtectionBlocksAllDirections { get; init; } = false;
@@ -88,6 +89,9 @@ namespace BattleGame.Client.Config
             {
                 Scale = render.TryGetProperty("scale", out var scale) ? scale.GetSingle() : 1f,
                 OffsetY = render.TryGetProperty("offsetY", out var offsetY) ? offsetY.GetSingle() : 0f,
+                UseSpriteSize = render.TryGetProperty("useSpriteSize", out var useSpriteSize)
+                    ? useSpriteSize.GetBoolean()
+                    : false,
                 ProtectionOverlayOffsetY = render.TryGetProperty("protectionOverlayOffsetY", out var protectionOffsetY)
                     ? protectionOffsetY.GetSingle()
                     : 0f,

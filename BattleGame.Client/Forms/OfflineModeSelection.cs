@@ -29,7 +29,7 @@ namespace BattleGame.Client.Forms
         private string CreateRandomBotId()
         {
             Random rnd = new Random();
-            string[] ids = { "lord", "samurai", "kitsune", "wizard" };
+            string[] ids = { "lord", "samurai", "kitsune", "wizard", "haladin", "heavycrystal" };
             return ids[rnd.Next(ids.Length)];
         }
 
@@ -41,6 +41,8 @@ namespace BattleGame.Client.Forms
                 "samurai" => "Samurai",
                 "kitsune" => "Kitsune",
                 "wizard" => "Wizard",
+                "haladin" => "Haladin",
+                "heavycrystal" => "HeavyCrystal",
                 _ => characterId
             };
         }
@@ -52,6 +54,7 @@ namespace BattleGame.Client.Forms
                 "terrace" => "terrace.png",
                 "throneroom" => "throneroom.png",
                 "castle" => "castle.png",
+                "forest" => "BackgroundForest.png",
                 _ => null
             };
         }
@@ -83,6 +86,10 @@ namespace BattleGame.Client.Forms
 
                 case 2:
                     SetMap("castle");
+                    break;
+
+                case 3:
+                    SetMap("forest");
                     break;
             }
         }

@@ -500,6 +500,8 @@ namespace BattleGame.Client.Forms
                 "samurai" => 1,
                 "kitsune" => 2,
                 "wizard" => 3,
+                "haladin" => 4,
+                "heavycrystal" => 5,
                 _ => 0
             };
         }
@@ -512,6 +514,8 @@ namespace BattleGame.Client.Forms
                 1 => "samurai",
                 2 => "kitsune",
                 3 => "wizard",
+                4 => "haladin",
+                5 => "heavycrystal",
                 _ => "lord"
             };
         }

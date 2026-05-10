@@ -791,6 +791,7 @@ namespace BattleGame.Client.Forms
                 "terrace" => "Battle 1",
                 "throneroom" => "Battle 2",
                 "castle" => "Battle 3",
+                "forest" => "Forest",
                 _ => mapId
             };
         }

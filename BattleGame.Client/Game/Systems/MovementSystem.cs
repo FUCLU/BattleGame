@@ -14,7 +14,19 @@ public class MovementSystem
         var mv = entity.Get<MovementComponent>();
         var ch = entity.Get<CharacterComponent>();
 
-        if (ch.IsHurt || ch.IsStunned || ch.IsDead || ch.IsBusy)
+        if (ch.IsDashing)
+        {
+            ch.DashTimer -= deltaTime;
+            mv.VelocityX = (mv.FacingRight ? 1 : -1) * mv.Speed * ch.DashSpeedMultiplier;
+
+            if (ch.DashTimer <= 0f)
+            {
+                ch.IsDashing = false;
+                mv.VelocityX = 0f;
+            }
+        }
+
+        if (ch.IsHurt || ch.IsStunned || ch.IsDead || (ch.IsBusy && !ch.IsDashing))
             mv.VelocityX = 0;
 
         if (!mv.IsGrounded)

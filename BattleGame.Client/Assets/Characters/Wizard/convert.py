@@ -3,6 +3,9 @@ import sys
 from PIL import Image, ImageOps
 
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+
 def clean_png(path: str):
     with Image.open(path) as img:
         img = img.convert("RGBA")
@@ -37,8 +40,5 @@ def process_folder(folder: str):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python png_cleaner.py <folder_path>")
-        sys.exit(1)
-
-    process_folder(sys.argv[1])
+    folder = sys.argv[1] if len(sys.argv) >= 2 else BASE_DIR
+    process_folder(folder)

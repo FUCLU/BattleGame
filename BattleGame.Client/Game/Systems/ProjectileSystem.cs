@@ -1,5 +1,6 @@
 ﻿using BattleGame.Client.Game.Core;
 using BattleGame.Client.Game.Core.Components;
+using BattleGame.Client.Game.Gameplay;
 using BattleGame.Client.Game.Rendering;
 using BattleGame.Shared.Models;
 using System;
@@ -203,10 +204,7 @@ namespace BattleGame.Client.Game.Systems
         private bool CheckHit(ProjectileComponent p, MovementComponent mv)
         {
             var collisionPoint = GetCollisionPoint(p);
-            float dx = Math.Abs(collisionPoint.X - mv.X);
-            float dy = Math.Abs(collisionPoint.Y - mv.Y);
-            // Dùng range từ effect config thay vì hardcode
-            return dx < p.Range && dy < p.Range * 1.6f;
+            return CharacterHitbox.ContainsPoint(mv, collisionPoint.X, collisionPoint.Y);
         }
 
         private static (float X, float Y) GetCollisionPoint(ProjectileComponent p)

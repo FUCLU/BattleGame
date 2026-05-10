@@ -14,6 +14,8 @@ namespace BattleGame.Client.Game
 {
     public class GameEngine
     {
+        private const float GroundBottomMargin = 140f;
+
         private Entity _player = null!;
         private Entity _enemy = null!;
 
@@ -41,7 +43,7 @@ namespace BattleGame.Client.Game
         {
             _formWidth = formWidth;
             _formHeight = formHeight;
-            _groundY = formHeight - 120f;
+            _groundY = formHeight - GroundBottomMargin;
             _mapWidth = formWidth;
 
             _moveSystem.MapLeft = 50f;
@@ -95,6 +97,37 @@ namespace BattleGame.Client.Game
             _barrierRenderer = new BarrierRenderer(animations);
             _controller = new PlayerController(_player, _enemy, _playerCombatSystem);
             _lastTime = DateTime.Now;
+        }
+
+        public void Resize(int formWidth, int formHeight)
+        {
+            int width = Math.Max(1, formWidth);
+            int height = Math.Max(1, formHeight);
+
+            float oldGroundY = _groundY;
+            _formWidth = width;
+            _formHeight = height;
+            _groundY = height - GroundBottomMargin;
+            _mapWidth = width;
+
+            _moveSystem.MapLeft = 50f;
+            _moveSystem.MapRight = width - 50f;
+
+            ResizeEntity(_player, oldGroundY, _groundY);
+            ResizeEntity(_enemy, oldGroundY, _groundY);
+        }
+
+        private void ResizeEntity(Entity entity, float oldGroundY, float newGroundY)
+        {
+            var mv = entity.Get<MovementComponent>();
+            float groundDelta = newGroundY - oldGroundY;
+
+            mv.GroundY = newGroundY;
+            mv.Y = mv.IsGrounded || mv.Y >= oldGroundY - 1f
+                ? newGroundY
+                : mv.Y + groundDelta;
+
+            mv.X = Math.Clamp(mv.X, _moveSystem.MapLeft, _moveSystem.MapRight);
         }
 
         private IEnumerable<Entity> GetAllBarriers()

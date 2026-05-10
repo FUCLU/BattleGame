@@ -11,8 +11,6 @@ namespace BattleGame.Client.Game.Systems
     public class CombatSystem
     {
         private static readonly Random _rng = new();
-        private const float CharacterCollisionWidth = 128f;
-        private const float CharacterCollisionHeight = 128f;
 
         private readonly ProjectileSystem _projectileSystem;
         private Entity? _target;
@@ -31,13 +29,15 @@ namespace BattleGame.Client.Game.Systems
         private static bool IntersectsBarrier(Entity target, BarrierComponent bc)
         {
             var targetMv = target.Get<MovementComponent>();
-            float barrierHalfW = bc.CollisionWidth / 2f;
-            float barrierHalfH = bc.CollisionHeight / 2f;
-            float targetHalfW = CharacterCollisionWidth / 2f;
-            float targetHalfH = CharacterCollisionHeight / 2f;
+            return CharacterHitbox.IntersectsRectangle(targetMv, bc.X, bc.Y, bc.CollisionWidth, bc.CollisionHeight);
+        }
 
-            return Math.Abs(targetMv.X - bc.X) <= barrierHalfW + targetHalfW &&
-                   Math.Abs(targetMv.Y - bc.Y) <= barrierHalfH + targetHalfH;
+        private static float GetHorizontalGap(Entity a, Entity b)
+        {
+            var aMv = a.Get<MovementComponent>();
+            var bMv = b.Get<MovementComponent>();
+
+            return CharacterHitbox.GetHorizontalGap(aMv, bMv);
         }
 
         private bool IsBlockedByBarrier(Entity attacker, Entity target, string effectType)
@@ -110,11 +110,8 @@ namespace BattleGame.Client.Game.Systems
                 {
                     if (_target != null)
                     {
-                        var attMv = entity.Get<MovementComponent>();
-                        var tgtMv = _target.Get<MovementComponent>();
-
                         // Chỉ gây damage nếu còn trong phạm vi và không bị barrier chặn
-                        if (Math.Abs(attMv.X - tgtMv.X) < ch.BaseStats.AttackRange
+                        if (GetHorizontalGap(entity, _target) < ch.BaseStats.AttackRange
                             && !IsBlockedByBarrier(entity, _target, "melee")
                             && !IsBlockedByProtection(entity, _target))
                             TakeDamage(_target, ch.BaseStats.Atk);
@@ -385,10 +382,12 @@ namespace BattleGame.Client.Game.Systems
                         var casterMv = caster.Get<MovementComponent>();
                         var targetMv = _target.Get<MovementComponent>();
 
-                        System.Diagnostics.Debug.WriteLine($"[ExecuteEffect] Melee effect triggered. Caster at X={casterMv.X}, Target at X={targetMv.X}, Range={e.Range}, Distance={Math.Abs(casterMv.X - targetMv.X)}");
+                        float horizontalGap = GetHorizontalGap(caster, _target);
+
+                        System.Diagnostics.Debug.WriteLine($"[ExecuteEffect] Melee effect triggered. Caster at X={casterMv.X}, Target at X={targetMv.X}, Range={e.Range}, Gap={horizontalGap}");
 
                         // Chỉ gây damage nếu còn trong phạm vi
-                        if (Math.Abs(casterMv.X - targetMv.X) < e.Range)
+                        if (horizontalGap < e.Range)
                         {
                             System.Diagnostics.Debug.WriteLine($"[ExecuteEffect] Damage applied: {e.Damage}");
                             TakeDamage(_target, e.Damage, e.Stun);

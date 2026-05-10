@@ -17,8 +17,8 @@
   },
 
   "render": {
-    "scale": 1.35,
-    "offsetY": 0.0,
+    "scale": 1.75,
+    "offsetY": 24,
     "protectionOverlayOffsetY": 0.0,
     "protectionUsesIdleBase": false,
     "protectionBlocksAllDirections": false
@@ -38,7 +38,7 @@
           "frames": [5, 6, 7, 8,9,10,11,12,13],
           "damage": 12,
           "stun": 0.0,
-          "range": 150
+          "range": 130
         }
       ]
     },
@@ -59,9 +59,9 @@
           "speed": 600,
           "range": 50,
           "render": {
-            "scale": 2.0,
+            "scale": 2,
             "offsetX": -50,
-            "offsetY": 8,
+            "offsetY": 0,
             "useSpriteSize": true,
             "alignY": "center"
           }
@@ -99,7 +99,7 @@
     },
     "Protection": {
       "frameCount": 5,
-      "fps": 12,
+      "fps": 15,
       "loop": false
     },
     "Hurt": {
