@@ -485,7 +485,7 @@ namespace BattleGame.Client.Game.Systems
         public void TakeDamage(Entity target, int rawDamage, float stun = 0f)
         {
             var ch = target.Get<CharacterComponent>();
-            if (ch.IsDead) return;
+            if (ch.IsDead || ch.IsInvulnerable) return;
 
             int damage = Math.Max(0, rawDamage - ch.BaseStats.Def);
             ch.Hp = Math.Max(0, ch.Hp - damage);

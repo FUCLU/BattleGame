@@ -4,6 +4,7 @@ using BattleGame.Client.Game.Core.Components;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 
 namespace BattleGame.Client.Game.Gameplay
 {
@@ -12,8 +13,7 @@ namespace BattleGame.Client.Game.Gameplay
         public static Entity Create(string characterId, float startX, float groundY,
                                     Dictionary<string, object> availableAnimations)
         {
-            string projectDir = Path.GetFullPath(
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", ".."));
+            string projectDir = ResolveClientRoot();
 
             string path = Path.Combine(projectDir, "Config", "Characters", $"{characterId}.json");
             System.Diagnostics.Debug.WriteLine($"[CharacterFactory] Loading character from: {path}");
@@ -58,6 +58,29 @@ namespace BattleGame.Client.Game.Gameplay
             entity.Add(new SpriteComponent());
 
             return entity;
+        }
+
+        private static string ResolveClientRoot()
+        {
+            string current = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+                ?? AppDomain.CurrentDomain.BaseDirectory;
+
+            while (!string.IsNullOrWhiteSpace(current))
+            {
+                if (Directory.Exists(Path.Combine(current, "Assets")) &&
+                    Directory.Exists(Path.Combine(current, "Config")))
+                {
+                    return current;
+                }
+
+                var parent = Directory.GetParent(current);
+                if (parent == null)
+                    break;
+
+                current = parent.FullName;
+            }
+
+            return Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", ".."));
         }
     }
 }

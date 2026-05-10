@@ -18,6 +18,7 @@ namespace BattleGame.Shared.Models
         public int ManaCost { get; set; }
         public float Cooldown { get; set; }
         public string Animation { get; set; } = "";
+        public bool InvulnerableWhileCasting { get; set; } = false;
         public List<EffectData> Effects { get; set; } = new();
     }
 

@@ -17,9 +17,30 @@ namespace BattleGame.Client.Game.Rendering
         public AnimationLoader(string assetFolder)
         {
             string assemblyDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? "";
-            string projectDir = Path.GetFullPath(Path.Combine(assemblyDir, "..", "..", ".."));
+            string projectDir = ResolveClientRoot(assemblyDir);
             _assetRoot = Path.Combine(projectDir, assetFolder);
             _configRoot = Path.Combine(projectDir, "Config");
+        }
+
+        private static string ResolveClientRoot(string startDirectory)
+        {
+            string current = startDirectory;
+            while (!string.IsNullOrWhiteSpace(current))
+            {
+                if (Directory.Exists(Path.Combine(current, "Assets")) &&
+                    Directory.Exists(Path.Combine(current, "Config")))
+                {
+                    return current;
+                }
+
+                var parent = Directory.GetParent(current);
+                if (parent == null)
+                    break;
+
+                current = parent.FullName;
+            }
+
+            return Path.GetFullPath(Path.Combine(startDirectory, "..", "..", ".."));
         }
 
         public Dictionary<string, SpriteAnimation> Load(string characterId)

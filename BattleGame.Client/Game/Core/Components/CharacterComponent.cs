@@ -56,6 +56,9 @@ namespace BattleGame.Client.Game.Core.Components
 
         // ===== STATE LOCK =====
         public bool IsBusy => IsAttacking || IsUsingSkill || IsDashing || IsStunned || IsDead;
+        public bool IsInvulnerable => IsUsingSkill
+            && ((CurrentSkillSlot == 1 && Skill1?.InvulnerableWhileCasting == true)
+                || (CurrentSkillSlot == 2 && Skill2?.InvulnerableWhileCasting == true));
 
         // ===== SKILL SYSTEM =====
         public int CurrentSkillSlot { get; set; }
