@@ -19,7 +19,10 @@ namespace BattleGame.Client.Game
     {
         private const float GroundBottomMargin = 140f;
         private const string CaveMapId = "cave";
-        private const float CaveWorldWidth = 8000f;
+        private const string Stage2MapId = "stage2";
+        private const float DungeonWorldWidth = 8000f;
+        private const float DungeonGroundOffsetY = 30f;
+        private const float CameraDeadZoneWidthRatio = 0.40f;
 
         private Entity _player = null!;
         private Entity _enemy = null!;
@@ -60,7 +63,7 @@ namespace BattleGame.Client.Game
             _clientRoot = ResolveClientRoot();
             _formWidth = formWidth;
             _formHeight = formHeight;
-            _groundY = formHeight - GroundBottomMargin;
+            _groundY = GetGroundY(mapId, formHeight);
             _mapWidth = GetWorldWidth(mapId, formWidth);
 
             _moveSystem.MapLeft = 50f;
@@ -96,7 +99,7 @@ namespace BattleGame.Client.Game
             var enemyAnimKeys = new Dictionary<string, object>();
             foreach (var kv in enemyAnimations)
                 enemyAnimKeys[kv.Key] = kv.Value;
-            float enemyStartX = IsCaveMap ? Math.Min(_mapWidth - 300f, 7600f) : 500f;
+            float enemyStartX = IsDungeonParallaxMap ? Math.Min(_mapWidth - 300f, 7600f) : 500f;
             _enemy = CharacterFactory.Create(resolvedEnemyCharacterId, enemyStartX, _groundY, enemyAnimKeys);
 
             // Đăng ký target cho projectile collision
@@ -162,11 +165,21 @@ namespace BattleGame.Client.Game
         }
 
         private bool IsCaveMap => string.Equals(_mapId, CaveMapId, StringComparison.OrdinalIgnoreCase);
+        private bool IsStage2Map => string.Equals(_mapId, Stage2MapId, StringComparison.OrdinalIgnoreCase);
+        private bool IsDungeonParallaxMap => IsCaveMap || IsStage2Map;
 
         private static float GetWorldWidth(string mapId, int formWidth)
-            => string.Equals(mapId, CaveMapId, StringComparison.OrdinalIgnoreCase)
-                ? CaveWorldWidth
+            => IsDungeonParallaxMapId(mapId)
+                ? DungeonWorldWidth
                 : formWidth;
+
+        private static float GetGroundY(string mapId, int formHeight)
+            => formHeight - GroundBottomMargin +
+               (IsDungeonParallaxMapId(mapId) ? DungeonGroundOffsetY : 0f);
+
+        private static bool IsDungeonParallaxMapId(string mapId)
+            => string.Equals(mapId, CaveMapId, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(mapId, Stage2MapId, StringComparison.OrdinalIgnoreCase);
 
         private static string ResolveClientRoot()
         {
@@ -199,7 +212,7 @@ namespace BattleGame.Client.Game
             float oldGroundY = _groundY;
             _formWidth = width;
             _formHeight = height;
-            _groundY = height - GroundBottomMargin;
+            _groundY = GetGroundY(_mapId, height);
             _mapWidth = GetWorldWidth(_mapId, width);
 
             _moveSystem.MapLeft = 50f;
@@ -266,7 +279,7 @@ namespace BattleGame.Client.Game
         public void Draw(Graphics g)
         {
             // Draw map background first
-            if (IsCaveMap && _parallaxLayers.Count > 0)
+            if (IsDungeonParallaxMap && _parallaxLayers.Count > 0)
             {
                 DrawParallaxBackground(g);
             }
@@ -296,7 +309,7 @@ namespace BattleGame.Client.Game
 
             g.Restore(state);
 
-            if (IsCaveMap && _foregroundLayer != null)
+            if (IsDungeonParallaxMap && _foregroundLayer != null)
             {
                 DrawParallaxLayer(g, _foregroundLayer);
             }
@@ -455,9 +468,28 @@ namespace BattleGame.Client.Game
         private void UpdateCamera()
         {
             var playerMovement = _player.Get<MovementComponent>();
-            float idealCameraX = playerMovement.X - _formWidth / 2f;
             float maxCameraX = Math.Max(0f, _mapWidth - _formWidth);
-            _cameraX = Math.Clamp(idealCameraX, 0f, maxCameraX);
+            if (maxCameraX <= 0f)
+            {
+                _cameraX = 0f;
+                return;
+            }
+
+            float deadZoneWidth = _formWidth * CameraDeadZoneWidthRatio;
+            float deadZoneLeft = (_formWidth - deadZoneWidth) / 2f;
+            float deadZoneRight = deadZoneLeft + deadZoneWidth;
+            float playerScreenX = playerMovement.X - _cameraX;
+
+            if (playerScreenX < deadZoneLeft)
+            {
+                _cameraX -= deadZoneLeft - playerScreenX;
+            }
+            else if (playerScreenX > deadZoneRight)
+            {
+                _cameraX += playerScreenX - deadZoneRight;
+            }
+
+            _cameraX = Math.Clamp(_cameraX, 0f, maxCameraX);
         }
 
         private void DrawParallaxBackground(Graphics g)
@@ -502,6 +534,12 @@ namespace BattleGame.Client.Game
                 return;
             }
 
+            if (string.Equals(mapId, Stage2MapId, StringComparison.OrdinalIgnoreCase))
+            {
+                LoadStage2Parallax();
+                return;
+            }
+
             var mapNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
                 { "terrace", "Background.png" },
@@ -537,8 +575,45 @@ namespace BattleGame.Client.Game
 
         private void LoadCaveParallax()
         {
-            string cavePath = Path.Combine(_clientRoot, "Assets", "dungeon", "map1");
-            string previewPath = Path.Combine(cavePath, "0.png");
+            LoadDungeonParallax(
+                folderName: "map1",
+                mapLabel: "cave",
+                previewFileName: "0.png",
+                layers: new (string FileName, float Speed)[]
+                {
+                    ("7.png", 0.00f),
+                    ("6.png", 0.12f),
+                    ("5.png", 0.22f),
+                    ("4.png", 0.36f),
+                    ("3.png", 0.52f),
+                    ("2.png", 1.00f)
+                },
+                foregroundFileName: "1.png");
+        }
+
+        private void LoadStage2Parallax()
+        {
+            LoadDungeonParallax(
+                folderName: "map2",
+                mapLabel: "stage2",
+                previewFileName: "preview.png",
+                layers: new (string FileName, float Speed)[]
+                {
+                    ("back.png", 0.00f),
+                    ("middle.png", 0.35f)
+                },
+                foregroundFileName: "front.png");
+        }
+
+        private void LoadDungeonParallax(
+            string folderName,
+            string mapLabel,
+            string previewFileName,
+            IReadOnlyList<(string FileName, float Speed)> layers,
+            string? foregroundFileName)
+        {
+            string mapPath = Path.Combine(_clientRoot, "Assets", "dungeon", folderName);
+            string previewPath = Path.Combine(mapPath, previewFileName);
             if (File.Exists(previewPath))
             {
                 try
@@ -547,48 +622,31 @@ namespace BattleGame.Client.Game
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[GameEngine] Error loading cave preview {previewPath}: {ex.Message}");
+                    Console.WriteLine($"[GameEngine] Error loading {mapLabel} preview {previewPath}: {ex.Message}");
                 }
             }
-
-            var layers = new (string FileName, float Speed)[]
-            {
-                ("7.png", 0.00f),
-                ("6.png", 0.12f),
-                ("5.png", 0.22f),
-                ("4.png", 0.36f),
-                ("3.png", 0.52f),
-                ("2.png", 1.00f)
-            };
 
             foreach (var layer in layers)
             {
-                string imagePath = Path.Combine(cavePath, layer.FileName);
-                if (!File.Exists(imagePath))
-                    continue;
-
-                try
-                {
-                    var image = Image.FromFile(imagePath);
-                    float scale = Math.Max(
-                        _formHeight / (float)image.Height,
-                        _formWidth / (float)image.Width);
-                    _parallaxLayers.Add(new ParallaxLayer(image, layer.Speed, scale));
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"[GameEngine] Error loading cave layer {imagePath}: {ex.Message}");
-                }
+                LoadParallaxLayer(mapPath, mapLabel, layer.FileName, layer.Speed, _parallaxLayers);
             }
 
-            LoadCaveForeground(cavePath);
+            if (!string.IsNullOrWhiteSpace(foregroundFileName))
+            {
+                LoadParallaxLayer(mapPath, mapLabel, foregroundFileName, 1.00f, null);
+            }
 
-            Console.WriteLine($"[GameEngine] Loaded cave parallax layers: {_parallaxLayers.Count} from {cavePath}");
+            Console.WriteLine($"[GameEngine] Loaded {mapLabel} parallax layers: {_parallaxLayers.Count} from {mapPath}");
         }
 
-        private void LoadCaveForeground(string cavePath)
+        private void LoadParallaxLayer(
+            string mapPath,
+            string mapLabel,
+            string fileName,
+            float speed,
+            List<ParallaxLayer>? targetLayers)
         {
-            string imagePath = Path.Combine(cavePath, "1.png");
+            string imagePath = Path.Combine(mapPath, fileName);
             if (!File.Exists(imagePath))
                 return;
 
@@ -598,11 +656,15 @@ namespace BattleGame.Client.Game
                 float scale = Math.Max(
                     _formHeight / (float)image.Height,
                     _formWidth / (float)image.Width);
-                _foregroundLayer = new ParallaxLayer(image, 1.00f, scale);
+                var parallaxLayer = new ParallaxLayer(image, speed, scale);
+                if (targetLayers == null)
+                    _foregroundLayer = parallaxLayer;
+                else
+                    targetLayers.Add(parallaxLayer);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[GameEngine] Error loading cave foreground {imagePath}: {ex.Message}");
+                Console.WriteLine($"[GameEngine] Error loading {mapLabel} layer {imagePath}: {ex.Message}");
             }
         }
 

@@ -20,8 +20,8 @@ namespace BattleGame.Client.Forms
 
         private void button2_Click(object sender, EventArgs e)
         {
-            OfflineModeSelection offlineModeSelection = new OfflineModeSelection();
-            offlineModeSelection.Show();
+            OfflineMode offlineMode = new OfflineMode();
+            offlineMode.Show();
             this.Close();
         }
 

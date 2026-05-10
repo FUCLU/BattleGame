@@ -9,11 +9,12 @@ using BattleGame.Client.Config;
 
 namespace BattleGame.Client.Forms
 {
-    public partial class OfflineModeSelection : Form
+    public partial class OfflineMode_CPU : Form
     {
-        public OfflineModeSelection()
+        public OfflineMode_CPU()
         {
             InitializeComponent();
+            ApplyOfflineBackground();
             this.StartPosition = FormStartPosition.CenterScreen;
         }
 
@@ -25,6 +26,16 @@ namespace BattleGame.Client.Forms
         private string currentMap = "";
         private string currentMode = "easy";
         private string playerCharacterId = string.Empty;
+
+        private void ApplyOfflineBackground()
+        {
+            string backgroundPath = Path.Combine(AssetsRoot, "Background", "offlinemode.png");
+            if (File.Exists(backgroundPath))
+            {
+                BackgroundImage = Image.FromFile(backgroundPath);
+                BackgroundImageLayout = ImageLayout.Stretch;
+            }
+        }
 
         private string CreateRandomBotId()
         {
@@ -55,7 +66,6 @@ namespace BattleGame.Client.Forms
                 "throneroom" => "throneroom.png",
                 "castle" => "castle.png",
                 "forest" => "BackgroundForest.png",
-                "cave" => Path.Combine("dungeon", "map1", "0.png"),
                 _ => null
             };
         }
@@ -95,9 +105,6 @@ namespace BattleGame.Client.Forms
                     SetMap("forest");
                     break;
 
-                case 4:
-                    SetMap("cave");
-                    break;
             }
         }
 
@@ -186,8 +193,8 @@ namespace BattleGame.Client.Forms
 
         private void button2_Click(object sender, EventArgs e)
         {
-            MenuForm menuForm = new MenuForm();
-            menuForm.Show();
+            OfflineMode offlineMode = new OfflineMode();
+            offlineMode.Show();
             this.Close();
         }
 
