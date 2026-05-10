@@ -44,6 +44,9 @@ namespace BattleGame.Shared.Network
                 PacketType.RemoveRoom => JsonSerializer.Serialize((RemoveRoomPacket)packet, options),
                 PacketType.RemoveRoomResult => JsonSerializer.Serialize((RemoveRoomResultPacket)packet, options),
                 PacketType.LeaveRoom => JsonSerializer.Serialize((LeaveRoomPacket)packet, options),
+                PacketType.Input => JsonSerializer.Serialize((InputPacket)packet, options),
+                PacketType.WorldState => JsonSerializer.Serialize((WorldStatePacket)packet, options),
+                PacketType.HitEvent => JsonSerializer.Serialize((HitEventPacket)packet, options),
                 _ => JsonSerializer.Serialize(packet, options)
             };
         }
@@ -85,6 +88,9 @@ namespace BattleGame.Shared.Network
                 PacketType.RemoveRoom => JsonSerializer.Deserialize<RemoveRoomPacket>(json, options)!,
                 PacketType.RemoveRoomResult => JsonSerializer.Deserialize<RemoveRoomResultPacket>(json, options)!,
                 PacketType.LeaveRoom => JsonSerializer.Deserialize<LeaveRoomPacket>(json, options)!,
+                PacketType.Input => JsonSerializer.Deserialize<InputPacket>(json, options)!,
+                PacketType.WorldState => JsonSerializer.Deserialize<WorldStatePacket>(json, options)!,
+                PacketType.HitEvent => JsonSerializer.Deserialize<HitEventPacket>(json, options)!,
                 _ => throw new NotSupportedException($"Chưa hỗ trợ packet type: {type}")
             };
         }

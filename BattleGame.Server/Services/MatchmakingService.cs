@@ -1,11 +1,14 @@
 ﻿using BattleGame.Server.Database;
 using BattleGame.Server.Network;
 using BattleGame.Shared.Packets;
+using BattleGame.Shared.Simulation;
 
 namespace BattleGame.Server.Services
 {
     public class MatchmakingService
     {
+        private const float MatchTickSeconds = 1f / 60f;
+        private const int BroadcastEveryTicks = 2;
         private readonly MatchRepository _matchRepo;
         private readonly Dictionary<int, RoomData> _rooms = new();
         private readonly object _roomsLock = new();
@@ -32,6 +35,8 @@ namespace BattleGame.Server.Services
             public string Player2Name { get; set; } = string.Empty;
             public ClientHandler? Player2Handler { get; set; }
             public int Player2CharId { get; set; } = -1;
+            public BattleSimulation? Simulation { get; set; }
+            public CancellationTokenSource? SimulationCts { get; set; }
         }
 
         public MatchmakingService(MatchRepository matchRepo)
@@ -277,9 +282,214 @@ namespace BattleGame.Server.Services
         {
             lock (_roomsLock)
             {
-                if (_rooms.ContainsKey(roomId))
-                    _rooms[roomId].MatchStartTime = DateTime.UtcNow;
+                if (!_rooms.TryGetValue(roomId, out var room))
+                    return;
+
+                room.MatchStartTime = DateTime.UtcNow;
+                room.SimulationCts?.Cancel();
+                room.SimulationCts?.Dispose();
+                room.SimulationCts = new CancellationTokenSource();
+                room.Simulation = BattleSimulation.Create(
+                    room.Player1Id,
+                    BattleCharacterCatalog.FromNetworkId(room.Player1CharId),
+                    room.Player2Id,
+                    BattleCharacterCatalog.FromNetworkId(room.Player2CharId),
+                    ResolveConfigRoot());
+
+                _ = Task.Run(() => RunSimulationLoopAsync(roomId, room.SimulationCts.Token));
             }
+        }
+
+        public void ApplyInput(int roomId, BattleInput input)
+        {
+            lock (_roomsLock)
+            {
+                if (_rooms.TryGetValue(roomId, out var room))
+                    room.Simulation?.ApplyInput(input);
+            }
+        }
+
+        private async Task RunSimulationLoopAsync(int roomId, CancellationToken token)
+        {
+            int broadcastCounter = 0;
+
+            try
+            {
+                using var timer = new PeriodicTimer(TimeSpan.FromSeconds(MatchTickSeconds));
+                while (await timer.WaitForNextTickAsync(token))
+                {
+                    WorldStatePacket? packet = null;
+                    GameOverPacket? gameOver = null;
+                    ClientHandler? player1Handler = null;
+                    ClientHandler? player2Handler = null;
+                    int winnerId = -1;
+
+                    lock (_roomsLock)
+                    {
+                        if (!_rooms.TryGetValue(roomId, out var room) || room.Simulation == null)
+                            return;
+
+                        room.Simulation.Update(MatchTickSeconds);
+                        player1Handler = room.Player1Handler;
+                        player2Handler = room.Player2Handler;
+
+                        broadcastCounter++;
+                        if (broadcastCounter >= BroadcastEveryTicks || room.Simulation.State.IsGameOver)
+                        {
+                            broadcastCounter = 0;
+                            packet = new WorldStatePacket { State = CopyState(room.Simulation.State) };
+                        }
+
+                        if (room.Simulation.State.IsGameOver)
+                        {
+                            winnerId = room.Simulation.State.WinnerPlayerId;
+                            gameOver = new GameOverPacket
+                            {
+                                WinnerPlayerId = winnerId,
+                                Duration = room.MatchStartTime.HasValue
+                                    ? (int)(DateTime.UtcNow - room.MatchStartTime.Value).TotalSeconds
+                                    : 0
+                            };
+                        }
+                    }
+
+                    if (packet != null)
+                    {
+                        if (player1Handler != null)
+                            await player1Handler.SendAsync(packet);
+                        if (player2Handler != null)
+                            await player2Handler.SendAsync(packet);
+                    }
+
+                    if (gameOver != null)
+                    {
+                        if (player1Handler != null)
+                            await player1Handler.SendAsync(gameOver);
+                        if (player2Handler != null)
+                            await player2Handler.SendAsync(gameOver);
+
+                        EndMatch(roomId, winnerId);
+                        return;
+                    }
+                }
+            }
+            catch (OperationCanceledException)
+            {
+            }
+        }
+
+        private static BattleState CopyState(BattleState state)
+        {
+            return new BattleState
+            {
+                ServerTick = state.ServerTick,
+                Player1 = CopyPlayer(state.Player1),
+                Player2 = CopyPlayer(state.Player2),
+                Projectiles = state.Projectiles.Select(p => new ProjectileState
+                {
+                    ProjectileId = p.ProjectileId,
+                    OwnerPlayerId = p.OwnerPlayerId,
+                    X = p.X,
+                    Y = p.Y,
+                    VelocityX = p.VelocityX,
+                    VelocityY = p.VelocityY,
+                    Damage = p.Damage,
+                    Stun = p.Stun,
+                    Range = p.Range,
+                    Lifetime = p.Lifetime,
+                    Timer = p.Timer,
+                    AnimationKey = p.AnimationKey,
+                    CurrentFrame = p.CurrentFrame,
+                    FacingRight = p.FacingRight,
+                    RenderOffsetX = p.RenderOffsetX,
+                    RenderOffsetY = p.RenderOffsetY,
+                    Render = p.Render
+                }).ToList(),
+                Effects = state.Effects.Select(e => new EffectState
+                {
+                    EffectId = e.EffectId,
+                    OwnerPlayerId = e.OwnerPlayerId,
+                    EffectType = e.EffectType,
+                    AnimationKey = e.AnimationKey,
+                    X = e.X,
+                    Y = e.Y,
+                    Damage = e.Damage,
+                    Stun = e.Stun,
+                    CollisionWidth = e.CollisionWidth,
+                    CollisionHeight = e.CollisionHeight,
+                    BlockEnemyAttack = e.BlockEnemyAttack,
+                    BlockEnemyProjectile = e.BlockEnemyProjectile,
+                    BlockEnemySkill = e.BlockEnemySkill,
+                    CurrentFrame = e.CurrentFrame,
+                    RemainingTime = e.RemainingTime,
+                    FacingRight = e.FacingRight,
+                    LastDamageTick = e.LastDamageTick,
+                    Render = e.Render
+                }).ToList(),
+                IsGameOver = state.IsGameOver,
+                WinnerPlayerId = state.WinnerPlayerId
+            };
+        }
+
+        private static PlayerBattleState CopyPlayer(PlayerBattleState player)
+        {
+            return new PlayerBattleState
+            {
+                PlayerId = player.PlayerId,
+                CharacterId = player.CharacterId,
+                Stats = player.Stats,
+                X = player.X,
+                Y = player.Y,
+                VelocityX = player.VelocityX,
+                VelocityY = player.VelocityY,
+                FacingRight = player.FacingRight,
+                IsGrounded = player.IsGrounded,
+                Hp = player.Hp,
+                Mana = player.Mana,
+                IsProtecting = player.IsProtecting,
+                IsAttacking = player.IsAttacking,
+                IsUsingSkill = player.IsUsingSkill,
+                IsDashing = player.IsDashing,
+                IsHurt = player.IsHurt,
+                IsStunned = player.IsStunned,
+                IsDead = player.IsDead,
+                ActionTimer = player.ActionTimer,
+                ActionDuration = player.ActionDuration,
+                ActionHitDone = player.ActionHitDone,
+                CurrentSkillSlot = player.CurrentSkillSlot,
+                CurrentSkillAnimation = player.CurrentSkillAnimation,
+                HurtTimer = player.HurtTimer,
+                StunTimer = player.StunTimer,
+                DashTimer = player.DashTimer,
+                Skill1Cooldown = player.Skill1Cooldown,
+                Skill2Cooldown = player.Skill2Cooldown,
+                CurrentAnimation = player.CurrentAnimation,
+                CurrentFrame = player.CurrentFrame,
+                CurrentActionId = player.CurrentActionId,
+                CurrentActionTick = player.CurrentActionTick
+            };
+        }
+
+        private static string? ResolveConfigRoot()
+        {
+            string current = AppContext.BaseDirectory;
+            while (!string.IsNullOrWhiteSpace(current))
+            {
+                if (Directory.Exists(Path.Combine(current, "Config", "Characters")))
+                    return current;
+
+                string siblingClient = Path.Combine(current, "BattleGame.Client");
+                if (Directory.Exists(Path.Combine(siblingClient, "Config", "Characters")))
+                    return siblingClient;
+
+                var parent = Directory.GetParent(current);
+                if (parent == null)
+                    break;
+
+                current = parent.FullName;
+            }
+
+            return null;
         }
 
         public void EndMatch(int roomId, int winnerId)
@@ -301,6 +511,8 @@ namespace BattleGame.Server.Services
                     Duration = duration,
                     PlayedAt = room.MatchStartTime ?? DateTime.UtcNow
                 };
+                room.SimulationCts?.Cancel();
+                room.SimulationCts?.Dispose();
                 _matchRepo.Save(match);
                 _rooms.Remove(roomId);
             }

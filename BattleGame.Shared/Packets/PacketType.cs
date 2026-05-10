@@ -30,6 +30,9 @@
         GetLeaderboardResult = 26,
         RemoveRoom = 27,
         RemoveRoomResult = 28,
-        LeaveRoom = 29
+        LeaveRoom = 29,
+        Input = 30,
+        WorldState = 31,
+        HitEvent = 32
     }
 }

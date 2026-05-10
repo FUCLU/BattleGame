@@ -460,7 +460,8 @@ namespace BattleGame.Client.Forms
                 : CharacterIdFromNetwork(matchFound.Player1CharacterId);
 
             _leaveSent = true;
-            GameForm gameForm = new GameForm(localCharacterId, mapId, enemyCharacterId);
+            int localPlayerId = _isHost ? matchFound.Player1Id : matchFound.Player2Id;
+            GameForm gameForm = new GameForm(localCharacterId, mapId, enemyCharacterId, isOnline: true, localPlayerId: localPlayerId);
             gameForm.Show();
             Close();
         }

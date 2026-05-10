@@ -221,6 +221,11 @@ namespace BattleGame.Client.Managers
             await SendAsync(packet);
         }
 
+        public async Task SendInputAsync(InputPacket packet)
+        {
+            await SendAsync(packet);
+        }
+
         public async Task DisconnectAsync(DisconnectPacket packet)
         {
             await SendAsync(packet);

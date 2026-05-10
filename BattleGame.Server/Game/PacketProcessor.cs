@@ -98,6 +98,7 @@ namespace BattleGame.Server.Game
                 case PacketType.Move:
                 case PacketType.Attack:
                 case PacketType.GameState:
+                case PacketType.Input:
                 case PacketType.Disconnect:
                     if (!_client.IsAuthenticated) return;
                     await HandleGamePacketAsync(packet);
@@ -488,6 +489,9 @@ namespace BattleGame.Server.Game
                 case PacketType.GameState:
                 case PacketType.Disconnect:
                     await opponent.SendAsync(packet);
+                    break;
+                case PacketType.Input:
+                    _matchmaking.ApplyInput(roomId, ((InputPacket)packet).Input);
                     break;
             }
         }
