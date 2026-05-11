@@ -12,6 +12,7 @@ using BattleGame.Client.Managers;
 using BattleGame.Client.Game;
 using BattleGame.Client.Game.Core.Components;
 using BattleGame.Shared.Packets;
+using BattleGame.Shared.Simulation;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Drawing.Text;
@@ -28,6 +29,14 @@ namespace BattleGame.Client.Forms
         private const int StatusPanelWidth = 304;
 
         private readonly GameEngine _engine;
+        private readonly bool _isOnline;
+        private readonly int _localPlayerId;
+        private int _inputSequence;
+        private int _clientTick;
+        private bool _prevAttack;
+        private bool _prevSkill1;
+        private bool _prevSkill2;
+        private bool _prevDash;
 
         private float _roundSecondsRemaining = 180f;
         private int _currentRound = 1;
@@ -59,7 +68,12 @@ namespace BattleGame.Client.Forms
         private Graphics? _backGraphics;
         private readonly Dictionary<string, Image> _imageCache = new(StringComparer.OrdinalIgnoreCase);
 
-        public GameForm(string characterId, string mapId = "terrace", string? enemyCharacterId = null)
+        public GameForm(
+            string characterId,
+            string mapId = "terrace",
+            string? enemyCharacterId = null,
+            bool isOnline = false,
+            int localPlayerId = 0)
         {
             try
             {
@@ -84,6 +98,8 @@ namespace BattleGame.Client.Forms
                 UpdateStyles();
 
                 InputManager.Clear();
+                _isOnline = isOnline;
+                _localPlayerId = localPlayerId;
                 _engine = new GameEngine(characterId, mapId, this.ClientSize.Width, this.ClientSize.Height, enemyCharacterId);
 
                 CreateBackBuffer();
@@ -148,7 +164,7 @@ namespace BattleGame.Client.Forms
             UpdateUIBars();
             UpdateCharacterHeaders();
 
-            if (NetworkManager.Instance.IsConnected)
+            if (_isOnline && NetworkManager.Instance.IsConnected)
             {
                 _networkCts = new CancellationTokenSource();
                 _networkListenTask = ListenForRealtimePacketsAsync(_networkCts.Token);
@@ -323,9 +339,16 @@ namespace BattleGame.Client.Forms
                 _frameAccumulator += dt;
                 while (_frameAccumulator >= FixedTimestep)
                 {
-                    _engine.Update(FixedTimestep);
+                    if (!_isOnline)
+                        _engine.Update(FixedTimestep);
+                    else
+                        _engine.UpdateOnlineVisuals(FixedTimestep);
+
                     TrySendRealtimeState(FixedTimestep);
                     _frameAccumulator -= FixedTimestep;
+
+                    if (_isOnline)
+                        _clientTick++;
                 }
 
                 UpdateRoundTimer(dt);
@@ -337,6 +360,9 @@ namespace BattleGame.Client.Forms
 
         private void TrySendRealtimeState(float dt)
         {
+            if (!_isOnline)
+                return;
+
             if (!NetworkManager.Instance.IsConnected)
                 return;
 
@@ -358,31 +384,10 @@ namespace BattleGame.Client.Forms
                 if (!NetworkManager.Instance.IsConnected)
                     return;
 
-                var mv = _engine.Player.Get<MovementComponent>();
-                var ch = _engine.Player.Get<CharacterComponent>();
-                var sp = _engine.Player.Get<SpriteComponent>();
-                var enemyCh = _engine.Enemy.Get<CharacterComponent>();
-
-                await NetworkManager.Instance.SendAsync(new GameStatePacket
-                {
-                    X = mv.X,
-                    Y = mv.Y,
-                    VelocityX = mv.VelocityX,
-                    VelocityY = mv.VelocityY,
-                    FacingRight = mv.FacingRight,
-                    IsGrounded = mv.IsGrounded,
-                    Hp = ch.Hp,
-                    Mana = ch.Mana,
-                    EnemyHp = enemyCh.Hp,
-                    EnemyMana = enemyCh.Mana,
-                    IsProtecting = ch.IsProtecting,
-                    IsAttacking = ch.IsAttacking,
-                    IsUsingSkill = ch.IsUsingSkill,
-                    IsHurt = ch.IsHurt,
-                    IsDead = ch.IsDead,
-                    CurrentAnimation = sp.CurrentAnimation,
-                    CurrentFrame = sp.CurrentFrame
-                });
+                if (_isOnline)
+                    await NetworkManager.Instance.SendInputAsync(new InputPacket { Input = BuildBattleInput() });
+                else
+                    await SendLegacyGameStateAsync();
             }
             catch (Exception ex)
             {
@@ -394,6 +399,70 @@ namespace BattleGame.Client.Forms
             }
         }
 
+        private BattleInput BuildBattleInput()
+        {
+            bool left = InputManager.IsKeyDown(Keys.A);
+            bool right = InputManager.IsKeyDown(Keys.D);
+            bool attack = InputManager.IsKeyDown(Keys.J);
+            bool skill1 = InputManager.IsKeyDown(Keys.U);
+            bool skill2 = InputManager.IsKeyDown(Keys.I);
+            bool dash = InputManager.IsKeyDown(Keys.K);
+
+            var mv = _engine.Player.Get<MovementComponent>();
+            float moveX = right == left ? 0f : right ? 1f : -1f;
+            bool facingRight = moveX > 0f || (moveX == 0f && mv.FacingRight);
+
+            var input = new BattleInput
+            {
+                PlayerId = _localPlayerId,
+                Sequence = ++_inputSequence,
+                ClientTick = _clientTick,
+                MoveX = moveX,
+                JumpPressed = false,
+                BlockHeld = InputManager.IsKeyDown(Keys.S),
+                AttackPressed = attack && !_prevAttack,
+                SkillSlot = skill1 && !_prevSkill1 ? 1 : skill2 && !_prevSkill2 ? 2 : 0,
+                DashPressed = dash && !_prevDash,
+                FacingRight = facingRight
+            };
+
+            _prevAttack = attack;
+            _prevSkill1 = skill1;
+            _prevSkill2 = skill2;
+            _prevDash = dash;
+
+            return input;
+        }
+
+        private async Task SendLegacyGameStateAsync()
+        {
+            var mv = _engine.Player.Get<MovementComponent>();
+            var ch = _engine.Player.Get<CharacterComponent>();
+            var sp = _engine.Player.Get<SpriteComponent>();
+            var enemyCh = _engine.Enemy.Get<CharacterComponent>();
+
+            await NetworkManager.Instance.SendAsync(new GameStatePacket
+            {
+                X = mv.X,
+                Y = mv.Y,
+                VelocityX = mv.VelocityX,
+                VelocityY = mv.VelocityY,
+                FacingRight = mv.FacingRight,
+                IsGrounded = mv.IsGrounded,
+                Hp = ch.Hp,
+                Mana = ch.Mana,
+                EnemyHp = enemyCh.Hp,
+                EnemyMana = enemyCh.Mana,
+                IsProtecting = ch.IsProtecting,
+                IsAttacking = ch.IsAttacking,
+                IsUsingSkill = ch.IsUsingSkill,
+                IsHurt = ch.IsHurt,
+                IsDead = ch.IsDead,
+                CurrentAnimation = sp.CurrentAnimation,
+                CurrentFrame = sp.CurrentFrame
+            });
+        }
+
         private async Task ListenForRealtimePacketsAsync(CancellationToken token)
         {
             try
@@ -403,7 +472,9 @@ namespace BattleGame.Client.Forms
                     Packet? packet = await NetworkManager.Instance.TryReceiveAsync(
                         timeoutMs: 250,
                         token: token,
-                        acceptPacket: p => p.Type == PacketType.GameState || p.Type == PacketType.Disconnect);
+                        acceptPacket: p => p.Type == PacketType.WorldState
+                            || p.Type == PacketType.GameOver
+                            || p.Type == PacketType.Disconnect);
 
                     if (packet == null)
                     {
@@ -440,6 +511,11 @@ namespace BattleGame.Client.Forms
                 case PacketType.GameState:
                     ApplyRemoteState((GameStatePacket)packet);
                     break;
+                case PacketType.WorldState:
+                    ApplyWorldState((WorldStatePacket)packet);
+                    break;
+                case PacketType.GameOver:
+                    break;
                 case PacketType.Disconnect:
                     HandleOpponentDisconnected();
                     break;
@@ -463,6 +539,47 @@ namespace BattleGame.Client.Forms
             var joinRoom = new JoinRoom();
             joinRoom.Show();
             Close();
+        }
+
+        private void ApplyWorldState(WorldStatePacket packet)
+        {
+            var state = packet.State;
+            PlayerBattleState local = state.Player1.PlayerId == _localPlayerId ? state.Player1 : state.Player2;
+            PlayerBattleState remote = state.Player1.PlayerId == _localPlayerId ? state.Player2 : state.Player1;
+
+            _engine.ApplyOnlineWorldState(state, _localPlayerId);
+            ApplySnapshot(_engine.Player, local);
+            ApplySnapshot(_engine.Enemy, remote);
+        }
+
+        private static void ApplySnapshot(BattleGame.Client.Game.Core.Entity entity, PlayerBattleState snapshot)
+        {
+            var mv = entity.Get<MovementComponent>();
+            var ch = entity.Get<CharacterComponent>();
+            var sp = entity.Get<SpriteComponent>();
+
+            mv.X = snapshot.X;
+            mv.Y = snapshot.Y;
+            mv.VelocityX = snapshot.VelocityX;
+            mv.VelocityY = snapshot.VelocityY;
+            mv.FacingRight = snapshot.FacingRight;
+            mv.IsGrounded = snapshot.IsGrounded;
+
+            ch.Hp = Math.Clamp(snapshot.Hp, 0, ch.BaseStats.Hp);
+            ch.Mana = Math.Clamp(snapshot.Mana, 0, ch.BaseStats.Mana);
+            ch.IsProtecting = snapshot.IsProtecting;
+            ch.IsAttacking = snapshot.IsAttacking;
+            ch.IsUsingSkill = snapshot.IsUsingSkill;
+            ch.IsHurt = snapshot.IsHurt;
+            ch.IsStunned = snapshot.IsStunned;
+            ch.StunTimer = snapshot.StunTimer;
+            ch.HurtTimer = snapshot.HurtTimer;
+            ch.IsDead = snapshot.IsDead;
+
+            if (!string.IsNullOrWhiteSpace(snapshot.CurrentAnimation))
+                sp.CurrentAnimation = snapshot.CurrentAnimation;
+
+            sp.CurrentFrame = Math.Max(0, snapshot.CurrentFrame);
         }
 
         private void ApplyRemoteState(GameStatePacket remote)

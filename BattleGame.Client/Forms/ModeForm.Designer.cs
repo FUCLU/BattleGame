@@ -44,9 +44,10 @@
             // 
             button2.BackgroundImage = (Image)resources.GetObject("button2.BackgroundImage");
             button2.BackgroundImageLayout = ImageLayout.Stretch;
-            button2.Location = new Point(584, 374);
+            button2.Location = new Point(511, 280);
+            button2.Margin = new Padding(3, 2, 3, 2);
             button2.Name = "button2";
-            button2.Size = new Size(381, 65);
+            button2.Size = new Size(333, 49);
             button2.TabIndex = 1;
             button2.UseVisualStyleBackColor = true;
             button2.Click += button2_Click;
@@ -55,9 +56,10 @@
             // 
             pictureBox1.BackgroundImage = (Image)resources.GetObject("pictureBox1.BackgroundImage");
             pictureBox1.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox1.Location = new Point(334, 25);
+            pictureBox1.Location = new Point(292, 19);
+            pictureBox1.Margin = new Padding(3, 2, 3, 2);
             pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(400, 76);
+            pictureBox1.Size = new Size(350, 57);
             pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureBox1.TabIndex = 2;
             pictureBox1.TabStop = false;
@@ -67,9 +69,10 @@
             button3.BackgroundImage = (Image)resources.GetObject("button3.BackgroundImage");
             button3.BackgroundImageLayout = ImageLayout.Stretch;
             button3.FlatStyle = FlatStyle.Flat;
-            button3.Location = new Point(92, 484);
+            button3.Location = new Point(80, 363);
+            button3.Margin = new Padding(3, 2, 3, 2);
             button3.Name = "button3";
-            button3.Size = new Size(145, 65);
+            button3.Size = new Size(127, 49);
             button3.TabIndex = 3;
             button3.UseVisualStyleBackColor = true;
             button3.Click += button3_Click;
@@ -78,9 +81,10 @@
             // 
             pictureBox2.BackgroundImage = (Image)resources.GetObject("pictureBox2.BackgroundImage");
             pictureBox2.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox2.Location = new Point(92, 137);
+            pictureBox2.Location = new Point(80, 103);
+            pictureBox2.Margin = new Padding(3, 2, 3, 2);
             pictureBox2.Name = "pictureBox2";
-            pictureBox2.Size = new Size(381, 250);
+            pictureBox2.Size = new Size(333, 188);
             pictureBox2.TabIndex = 4;
             pictureBox2.TabStop = false;
             // 
@@ -88,9 +92,10 @@
             // 
             button4.BackgroundImage = (Image)resources.GetObject("button4.BackgroundImage");
             button4.BackgroundImageLayout = ImageLayout.Stretch;
-            button4.Location = new Point(92, 374);
+            button4.Location = new Point(80, 280);
+            button4.Margin = new Padding(3, 2, 3, 2);
             button4.Name = "button4";
-            button4.Size = new Size(381, 65);
+            button4.Size = new Size(333, 49);
             button4.TabIndex = 5;
             button4.UseVisualStyleBackColor = true;
             button4.Click += button4_Click;
@@ -99,20 +104,21 @@
             // 
             pictureBox3.BackgroundImage = (Image)resources.GetObject("pictureBox3.BackgroundImage");
             pictureBox3.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox3.Location = new Point(584, 137);
+            pictureBox3.Location = new Point(511, 103);
+            pictureBox3.Margin = new Padding(3, 2, 3, 2);
             pictureBox3.Name = "pictureBox3";
-            pictureBox3.Size = new Size(381, 250);
+            pictureBox3.Size = new Size(333, 188);
             pictureBox3.TabIndex = 6;
             pictureBox3.TabStop = false;
             // 
             // ModeForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.RoyalBlue;
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Stretch;
-            ClientSize = new Size(1057, 581);
+            ClientSize = new Size(925, 436);
             Controls.Add(button2);
             Controls.Add(pictureBox3);
             Controls.Add(button4);
@@ -120,6 +126,7 @@
             Controls.Add(button3);
             Controls.Add(pictureBox1);
             DoubleBuffered = true;
+            Margin = new Padding(3, 2, 3, 2);
             Name = "ModeForm";
             Text = "ModeForm";
             Load += ModeForm_Load;

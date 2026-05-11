@@ -596,7 +596,7 @@ namespace BattleGame.Client.Forms
 
         private void button1_Click(object sender, EventArgs e)
         {
-            OfflineModeSelection offlineModeSelection = new OfflineModeSelection();
+            OfflineMode_CPU offlineModeSelection = new OfflineMode_CPU();
             offlineModeSelection.Show();
             this.Close();
         }

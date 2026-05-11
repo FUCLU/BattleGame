@@ -30,5 +30,8 @@
         <Content Include="appsettings.Development.json" Condition="Exists('appsettings.Development.json')">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+        <Content Include="..\BattleGame.Client\Config\Characters\*.json" Link="Config\Characters\%(Filename)%(Extension)">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
 	</ItemGroup>
 </Project>
