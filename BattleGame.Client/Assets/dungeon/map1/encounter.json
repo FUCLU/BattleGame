@@ -1,0 +1,91 @@
+{
+  "mapId": "cave",
+  "portalX": 7700,
+  "waves": [
+    {
+      "waveId": "wave_1",
+      "spawns": [
+        {
+          "prefabId": "wave_grunt",
+          "count": 2,
+          "spawnXs": [7800, 7950],
+          "spawnY": 610
+        }
+      ]
+    },
+    {
+      "waveId": "wave_2",
+      "spawns": [
+        {
+          "prefabId": "wave_grunt",
+          "count": 3,
+          "spawnXs": [7800, 8000, 8200],
+          "spawnY": 610
+        }
+      ]
+    },
+    {
+      "waveId": "wave_3",
+      "spawns": [
+        {
+          "prefabId": "wave_ranger",
+          "count": 2,
+          "spawnXs": [7900, 8200],
+          "spawnY": 610
+        }
+      ]
+    },
+    {
+      "waveId": "wave_4",
+      "spawns": [
+        {
+          "prefabId": "wave_grunt",
+          "count": 3,
+          "spawnXs": [7800, 8000, 8200],
+          "spawnY": 610
+        },
+        {
+          "prefabId": "wave_ranger",
+          "count": 2,
+          "spawnXs": [7900, 8300],
+          "spawnY": 610
+        }
+      ]
+    },
+    {
+      "waveId": "wave_5",
+      "spawns": [
+        {
+          "prefabId": "wave_ranger",
+          "count": 3,
+          "spawnXs": [7900, 8100, 8300],
+          "spawnY": 610
+        }
+      ]
+    }
+  ],
+  "bossWaves": [
+    {
+      "waveId": "boss_1",
+      "spawns": [
+        {
+          "prefabId": "boss_guardian",
+          "count": 1,
+          "spawnXs": [8100],
+          "spawnY": 610
+        }
+      ]
+    },
+    {
+      "waveId": "boss_2",
+      "spawns": [
+        {
+          "prefabId": "boss_guardian",
+          "count": 1,
+          "spawnXs": [8250],
+          "spawnY": 610
+        }
+      ]
+    }
+  ]
+}

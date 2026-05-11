@@ -4,8 +4,10 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using BattleGame.Client.Game.Core;
 using BattleGame.Client.Game.Core.Components;
+using BattleGame.Client.Game.Dungeon;
 using BattleGame.Client.Game.Gameplay;
 using BattleGame.Client.Game.Input;
 using BattleGame.Client.Game.Rendering;
@@ -20,7 +22,8 @@ namespace BattleGame.Client.Game
         private const float GroundBottomMargin = 140f;
         private const string CaveMapId = "cave";
         private const string Stage2MapId = "stage2";
-        private const float DungeonWorldWidth = 8000f;
+        private const float CaveWorldWidth = 8000f;
+        private const float Stage2WorldWidth = 12000f;
         private const float DungeonGroundOffsetY = 30f;
         private const float CameraDeadZoneWidthRatio = 0.40f;
 
@@ -44,6 +47,9 @@ namespace BattleGame.Client.Game
         private Image? _mapBackground;
         private readonly List<ParallaxLayer> _parallaxLayers = new();
         private ParallaxLayer? _foregroundLayer;
+        private readonly Dictionary<string, List<MapObjectRenderItem>> _mapObjectsByLayer = new(StringComparer.OrdinalIgnoreCase);
+        private readonly Dictionary<string, Image> _mapObjectImageCache = new(StringComparer.OrdinalIgnoreCase);
+        private DungeonRunController? _dungeonRun;
 
         private DateTime _lastTime;
         private float _groundY;
@@ -71,6 +77,7 @@ namespace BattleGame.Client.Game
 
             // Load map background directly
             LoadMapBackground(mapId);
+            InitializeDungeonRun(mapId);
 
             // Load animations trước — ProjectileSystem cần để render
             var loader = new AnimationLoader("Assets");
@@ -169,9 +176,11 @@ namespace BattleGame.Client.Game
         private bool IsDungeonParallaxMap => IsCaveMap || IsStage2Map;
 
         private static float GetWorldWidth(string mapId, int formWidth)
-            => IsDungeonParallaxMapId(mapId)
-                ? DungeonWorldWidth
-                : formWidth;
+            => string.Equals(mapId, CaveMapId, StringComparison.OrdinalIgnoreCase)
+                ? CaveWorldWidth
+                : string.Equals(mapId, Stage2MapId, StringComparison.OrdinalIgnoreCase)
+                    ? Stage2WorldWidth
+                    : formWidth;
 
         private static float GetGroundY(string mapId, int formHeight)
             => formHeight - GroundBottomMargin +
@@ -262,6 +271,7 @@ namespace BattleGame.Client.Game
             _animSystem.Update(_enemy, dt);
 
             _projectileSystem.Update(dt);
+            UpdateDungeonRun();
 
             // ===== UPDATE BARRIERS =====
             foreach (var barrier in _playerCombatSystem.GetBarriers())
@@ -278,7 +288,6 @@ namespace BattleGame.Client.Game
 
         public void Draw(Graphics g)
         {
-            // Draw map background first
             if (IsDungeonParallaxMap && _parallaxLayers.Count > 0)
             {
                 DrawParallaxBackground(g);
@@ -312,6 +321,7 @@ namespace BattleGame.Client.Game
             if (IsDungeonParallaxMap && _foregroundLayer != null)
             {
                 DrawParallaxLayer(g, _foregroundLayer);
+                DrawLayerObjects(g, _foregroundLayer);
             }
         }
 
@@ -497,6 +507,7 @@ namespace BattleGame.Client.Game
             foreach (var layer in _parallaxLayers)
             {
                 DrawParallaxLayer(g, layer);
+                DrawLayerObjects(g, layer);
             }
         }
 
@@ -518,6 +529,27 @@ namespace BattleGame.Client.Game
             }
         }
 
+        private void DrawLayerObjects(Graphics g, ParallaxLayer layer)
+        {
+            if (!_mapObjectsByLayer.TryGetValue(layer.LayerId, out var objects) || objects.Count == 0)
+                return;
+
+            foreach (var obj in objects)
+            {
+                int drawWidth = obj.Width > 0 ? obj.Width : Math.Max(1, (int)MathF.Round(obj.Image.Width * obj.Scale));
+                int drawHeight = obj.Height > 0 ? obj.Height : Math.Max(1, (int)MathF.Round(obj.Image.Height * obj.Scale));
+                float screenX = obj.WorldX - (_cameraX * layer.Speed);
+                float screenY = obj.WorldY;
+
+                g.DrawImage(
+                    obj.Image,
+                    (int)MathF.Round(screenX),
+                    (int)MathF.Round(screenY),
+                    drawWidth,
+                    drawHeight);
+            }
+        }
+
         private void LoadMapBackground(string mapId)
         {
             _mapBackground?.Dispose();
@@ -527,6 +559,7 @@ namespace BattleGame.Client.Game
             _parallaxLayers.Clear();
             _foregroundLayer?.Image.Dispose();
             _foregroundLayer = null;
+            ClearMapObjects();
 
             if (string.Equals(mapId, CaveMapId, StringComparison.OrdinalIgnoreCase))
             {
@@ -573,22 +606,59 @@ namespace BattleGame.Client.Game
             }
         }
 
+        private void InitializeDungeonRun(string mapId)
+        {
+            _dungeonRun = null;
+            if (!string.Equals(mapId, CaveMapId, StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(mapId, Stage2MapId, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            string mapFolder = string.Equals(mapId, CaveMapId, StringComparison.OrdinalIgnoreCase) ? "map1" : "map2";
+            DungeonDefinition? definition = DungeonContentLoader.TryLoadDefinition(_clientRoot, mapFolder);
+            if (definition == null)
+                return;
+
+            DungeonMonsterCatalog? catalog = DungeonContentLoader.TryLoadMonsterCatalog(_clientRoot);
+            if (catalog == null || catalog.Monsters.Count == 0)
+                return;
+
+            _dungeonRun = new DungeonRunController(definition, catalog.Monsters);
+        }
+
+        private void UpdateDungeonRun()
+        {
+            if (_dungeonRun == null)
+                return;
+
+            float playerX = _player.Get<MovementComponent>().X;
+            _dungeonRun.Update(playerX);
+            while (_dungeonRun.TryDequeueSpawn(out DungeonSpawnRequest request))
+            {
+                // Spawn integration is intentionally isolated.
+                // Next step: route this request into a dedicated enemy spawner.
+                Console.WriteLine($"[Dungeon] Spawn request wave={request.WaveId}, prefab={request.PrefabId}, character={request.CharacterId}, x={request.X}, y={request.Y}, boss={request.IsBoss}");
+
+                // Temporary auto-complete to keep run state progressing before spawn integration.
+                _dungeonRun.MarkSpawnDefeated(request.SpawnToken);
+            }
+        }
+
         private void LoadCaveParallax()
         {
             LoadDungeonParallax(
                 folderName: "map1",
                 mapLabel: "cave",
-                previewFileName: "0.png",
+                previewFileName: "background",
                 layers: new (string FileName, float Speed)[]
                 {
-                    ("7.png", 0.00f),
-                    ("6.png", 0.12f),
-                    ("5.png", 0.22f),
-                    ("4.png", 0.36f),
-                    ("3.png", 0.52f),
-                    ("2.png", 1.00f)
+                    ("plan5.png", 0.10f),
+                    ("plan4.png", 0.20f),
+                    ("plan3.png", 0.23f),
+                    ("plan2.png", 0.38f)
                 },
-                foregroundFileName: "1.png");
+                foregroundFileName: "plan1.png");
         }
 
         private void LoadStage2Parallax()
@@ -628,20 +698,22 @@ namespace BattleGame.Client.Game
 
             foreach (var layer in layers)
             {
-                LoadParallaxLayer(mapPath, mapLabel, layer.FileName, layer.Speed, _parallaxLayers);
+                LoadParallaxLayer(mapPath, mapLabel, layer.FileName, layer.FileName, layer.Speed, _parallaxLayers);
             }
 
             if (!string.IsNullOrWhiteSpace(foregroundFileName))
             {
-                LoadParallaxLayer(mapPath, mapLabel, foregroundFileName, 1.00f, null);
+                LoadParallaxLayer(mapPath, mapLabel, "foreground", foregroundFileName, 1.00f, null);
             }
 
+            LoadMapObjects(mapPath);
             Console.WriteLine($"[GameEngine] Loaded {mapLabel} parallax layers: {_parallaxLayers.Count} from {mapPath}");
         }
 
         private void LoadParallaxLayer(
             string mapPath,
             string mapLabel,
+            string layerId,
             string fileName,
             float speed,
             List<ParallaxLayer>? targetLayers)
@@ -656,7 +728,7 @@ namespace BattleGame.Client.Game
                 float scale = Math.Max(
                     _formHeight / (float)image.Height,
                     _formWidth / (float)image.Width);
-                var parallaxLayer = new ParallaxLayer(image, speed, scale);
+                var parallaxLayer = new ParallaxLayer(layerId, image, speed, scale);
                 if (targetLayers == null)
                     _foregroundLayer = parallaxLayer;
                 else
@@ -668,18 +740,140 @@ namespace BattleGame.Client.Game
             }
         }
 
+        private void LoadMapObjects(string mapPath)
+        {
+            string objectPath = Path.Combine(mapPath, "objects.json");
+            if (!File.Exists(objectPath))
+                return;
+
+            try
+            {
+                string json = File.ReadAllText(objectPath);
+                var data = JsonSerializer.Deserialize<List<MapObjectConfig>>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (data == null)
+                    return;
+
+                foreach (var item in data)
+                {
+                    if (string.IsNullOrWhiteSpace(item.Layer) || string.IsNullOrWhiteSpace(item.Sprite))
+                        continue;
+
+                    Image? image = TryLoadMapObjectImage(item.Sprite);
+                    if (image == null)
+                        continue;
+
+                    if (!_mapObjectsByLayer.TryGetValue(item.Layer, out var list))
+                    {
+                        list = new List<MapObjectRenderItem>();
+                        _mapObjectsByLayer[item.Layer] = list;
+                    }
+
+                    list.Add(new MapObjectRenderItem(
+                        item.Layer,
+                        image,
+                        item.X,
+                        item.Y,
+                        item.Scale <= 0f ? 1f : item.Scale,
+                        item.Width,
+                        item.Height));
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[GameEngine] Error loading map objects {objectPath}: {ex.Message}");
+            }
+        }
+
+        private Image? TryLoadMapObjectImage(string spritePath)
+        {
+            string normalized = spritePath.Replace('/', Path.DirectorySeparatorChar).Replace('\\', Path.DirectorySeparatorChar);
+            string fullPath = Path.IsPathRooted(normalized)
+                ? normalized
+                : Path.Combine(_clientRoot, normalized);
+
+            if (!File.Exists(fullPath))
+            {
+                Console.WriteLine($"[GameEngine] Map object sprite not found: {fullPath}");
+                return null;
+            }
+
+            if (_mapObjectImageCache.TryGetValue(fullPath, out var cached))
+                return cached;
+
+            try
+            {
+                var image = Image.FromFile(fullPath);
+                _mapObjectImageCache[fullPath] = image;
+                return image;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[GameEngine] Error loading map object sprite {fullPath}: {ex.Message}");
+                return null;
+            }
+        }
+
+        private void ClearMapObjects()
+        {
+            _mapObjectsByLayer.Clear();
+            foreach (var image in _mapObjectImageCache.Values)
+            {
+                image.Dispose();
+            }
+            _mapObjectImageCache.Clear();
+        }
+
         private sealed class ParallaxLayer
         {
-            public ParallaxLayer(Image image, float speed, float scale)
+            public ParallaxLayer(string layerId, Image image, float speed, float scale)
             {
+                LayerId = layerId;
                 Image = image;
                 Speed = speed;
                 Scale = scale;
             }
 
+            public string LayerId { get; }
             public Image Image { get; }
             public float Speed { get; }
             public float Scale { get; }
+        }
+
+        private sealed class MapObjectRenderItem
+        {
+            public MapObjectRenderItem(string layer, Image image, float worldX, float worldY, float scale, int width, int height)
+            {
+                Layer = layer;
+                Image = image;
+                WorldX = worldX;
+                WorldY = worldY;
+                Scale = scale;
+                Width = width;
+                Height = height;
+            }
+
+            public string Layer { get; }
+            public Image Image { get; }
+            public float WorldX { get; }
+            public float WorldY { get; }
+            public float Scale { get; }
+            public int Width { get; }
+            public int Height { get; }
+        }
+
+        private sealed class MapObjectConfig
+        {
+            public string Layer { get; set; } = string.Empty;
+            public string Sprite { get; set; } = string.Empty;
+            public float X { get; set; }
+            public float Y { get; set; }
+            public float Scale { get; set; } = 1f;
+            public int Width { get; set; }
+            public int Height { get; set; }
         }
 
         private sealed class VisualFrameState
