@@ -35,6 +35,10 @@
             panel1 = new Panel();
             pbInfor = new PictureBox();
             panel5 = new Panel();
+            lblSpdValue = new Label();
+            lblDefValue = new Label();
+            lblAtkValue = new Label();
+            lblHpValue = new Label();
             panelSpdBack = new Panel();
             panelSpdFill = new Panel();
             panelDefBack = new Panel();
@@ -83,34 +87,36 @@
             panel4.Controls.Add(label5);
             panel4.Controls.Add(panel2);
             panel4.Controls.Add(panel3);
-            panel4.Location = new Point(20, 20);
+            panel4.Location = new Point(22, 23);
             panel4.Name = "panel4";
-            panel4.Size = new Size(1013, 539);
+            panel4.Size = new Size(1078, 543);
             panel4.TabIndex = 3;
+            panel4.Paint += panel4_Paint_1;
             // 
             // label5
             // 
             label5.AutoSize = true;
-            label5.Font = new Font("Britannic Bold", 19.8F);
-            label5.ForeColor = Color.PaleTurquoise;
-            label5.Location = new Point(368, 2);
+            label5.Font = new Font("Courier New", 24F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
+            label5.ForeColor = Color.DarkSlateGray;
+            label5.Location = new Point(315, 10);
             label5.Name = "label5";
-            label5.Size = new Size(292, 37);
+            label5.Size = new Size(470, 46);
             label5.TabIndex = 3;
-            label5.Text = "🛡️Chọn nhân vật🛡️";
+            label5.Text = "⚔️ Chọn nhân vật⚔️ ";
             // 
             // panel2
             // 
             panel2.AutoScroll = true;
             panel2.BackColor = Color.FromArgb(36, 58, 94);
+            panel2.BackgroundImageLayout = ImageLayout.Stretch;
             panel2.BorderStyle = BorderStyle.Fixed3D;
             panel2.Controls.Add(pnlWizard);
             panel2.Controls.Add(pnlSamurai);
             panel2.Controls.Add(pnlKitsune);
             panel2.Controls.Add(pnlLord);
-            panel2.Location = new Point(15, 51);
+            panel2.Location = new Point(16, 59);
             panel2.Name = "panel2";
-            panel2.Size = new Size(403, 443);
+            panel2.Size = new Size(398, 463);
             panel2.TabIndex = 2;
             // 
             // pnlWizard
@@ -259,16 +265,16 @@
             panel3.Controls.Add(btnSellect);
             panel3.Controls.Add(button2);
             panel3.Controls.Add(label2);
-            panel3.Location = new Point(445, 51);
+            panel3.Location = new Point(435, 59);
             panel3.Name = "panel3";
-            panel3.Size = new Size(561, 443);
+            panel3.Size = new Size(621, 463);
             panel3.TabIndex = 1;
             // 
             // panel1
             // 
             panel1.BackColor = Color.FromArgb(15, 28, 46);
             panel1.Controls.Add(pbInfor);
-            panel1.Location = new Point(11, 94);
+            panel1.Location = new Point(11, 107);
             panel1.Name = "panel1";
             panel1.Size = new Size(230, 212);
             panel1.TabIndex = 8;
@@ -277,9 +283,9 @@
             // 
             pbInfor.BackColor = Color.Transparent;
             pbInfor.Image = (Image)resources.GetObject("pbInfor.Image");
-            pbInfor.Location = new Point(3, 7);
+            pbInfor.Location = new Point(3, 11);
             pbInfor.Name = "pbInfor";
-            pbInfor.Size = new Size(224, 202);
+            pbInfor.Size = new Size(227, 201);
             pbInfor.SizeMode = PictureBoxSizeMode.Zoom;
             pbInfor.TabIndex = 2;
             pbInfor.TabStop = false;
@@ -287,6 +293,10 @@
             // panel5
             // 
             panel5.BackColor = Color.FromArgb(46, 76, 109);
+            panel5.Controls.Add(lblSpdValue);
+            panel5.Controls.Add(lblDefValue);
+            panel5.Controls.Add(lblAtkValue);
+            panel5.Controls.Add(lblHpValue);
             panel5.Controls.Add(panelSpdBack);
             panel5.Controls.Add(panelDefBack);
             panel5.Controls.Add(panelAtkBack);
@@ -296,17 +306,53 @@
             panel5.Controls.Add(lblSPD);
             panel5.Controls.Add(lblATK);
             panel5.Controls.Add(lblHP);
-            panel5.Location = new Point(247, 91);
+            panel5.Location = new Point(247, 107);
             panel5.Name = "panel5";
-            panel5.Size = new Size(291, 215);
+            panel5.Size = new Size(351, 215);
             panel5.TabIndex = 7;
+            // 
+            // lblSpdValue
+            // 
+            lblSpdValue.AutoSize = true;
+            lblSpdValue.Location = new Point(299, 131);
+            lblSpdValue.Name = "lblSpdValue";
+            lblSpdValue.Size = new Size(33, 20);
+            lblSpdValue.TabIndex = 18;
+            lblSpdValue.Text = "120";
+            // 
+            // lblDefValue
+            // 
+            lblDefValue.AutoSize = true;
+            lblDefValue.Location = new Point(299, 92);
+            lblDefValue.Name = "lblDefValue";
+            lblDefValue.Size = new Size(33, 20);
+            lblDefValue.TabIndex = 17;
+            lblDefValue.Text = "120";
+            // 
+            // lblAtkValue
+            // 
+            lblAtkValue.AutoSize = true;
+            lblAtkValue.Location = new Point(299, 48);
+            lblAtkValue.Name = "lblAtkValue";
+            lblAtkValue.Size = new Size(33, 20);
+            lblAtkValue.TabIndex = 16;
+            lblAtkValue.Text = "120";
+            // 
+            // lblHpValue
+            // 
+            lblHpValue.AutoSize = true;
+            lblHpValue.Location = new Point(299, 13);
+            lblHpValue.Name = "lblHpValue";
+            lblHpValue.Size = new Size(33, 20);
+            lblHpValue.TabIndex = 15;
+            lblHpValue.Text = "120";
             // 
             // panelSpdBack
             // 
             panelSpdBack.BackColor = Color.FromArgb(30, 30, 30);
             panelSpdBack.BorderStyle = BorderStyle.Fixed3D;
             panelSpdBack.Controls.Add(panelSpdFill);
-            panelSpdBack.Location = new Point(80, 131);
+            panelSpdBack.Location = new Point(98, 133);
             panelSpdBack.Name = "panelSpdBack";
             panelSpdBack.Size = new Size(190, 16);
             panelSpdBack.TabIndex = 14;
@@ -325,7 +371,7 @@
             panelDefBack.BackColor = Color.FromArgb(30, 30, 30);
             panelDefBack.BorderStyle = BorderStyle.Fixed3D;
             panelDefBack.Controls.Add(panelDefFill);
-            panelDefBack.Location = new Point(80, 90);
+            panelDefBack.Location = new Point(98, 92);
             panelDefBack.Name = "panelDefBack";
             panelDefBack.Size = new Size(190, 16);
             panelDefBack.TabIndex = 13;
@@ -344,7 +390,7 @@
             panelAtkBack.BackColor = Color.FromArgb(30, 30, 30);
             panelAtkBack.BorderStyle = BorderStyle.Fixed3D;
             panelAtkBack.Controls.Add(panelAtkFill);
-            panelAtkBack.Location = new Point(80, 50);
+            panelAtkBack.Location = new Point(98, 52);
             panelAtkBack.Name = "panelAtkBack";
             panelAtkBack.Size = new Size(190, 16);
             panelAtkBack.TabIndex = 12;
@@ -363,7 +409,7 @@
             panelHpBack.BackColor = Color.FromArgb(30, 30, 30);
             panelHpBack.BorderStyle = BorderStyle.Fixed3D;
             panelHpBack.Controls.Add(panelHpFill);
-            panelHpBack.Location = new Point(80, 12);
+            panelHpBack.Location = new Point(98, 14);
             panelHpBack.Name = "panelHpBack";
             panelHpBack.Size = new Size(190, 16);
             panelHpBack.TabIndex = 11;
@@ -436,7 +482,8 @@
             // 
             btnSellect.BackgroundImage = (Image)resources.GetObject("btnSellect.BackgroundImage");
             btnSellect.BackgroundImageLayout = ImageLayout.Stretch;
-            btnSellect.Location = new Point(247, 364);
+            btnSellect.FlatStyle = FlatStyle.Popup;
+            btnSellect.Location = new Point(292, 387);
             btnSellect.Name = "btnSellect";
             btnSellect.Size = new Size(138, 43);
             btnSellect.TabIndex = 1;
@@ -446,7 +493,8 @@
             // 
             button2.BackgroundImage = (Image)resources.GetObject("button2.BackgroundImage");
             button2.BackgroundImageLayout = ImageLayout.Stretch;
-            button2.Location = new Point(409, 364);
+            button2.FlatStyle = FlatStyle.Popup;
+            button2.Location = new Point(469, 387);
             button2.Name = "button2";
             button2.Size = new Size(129, 43);
             button2.TabIndex = 0;
@@ -456,8 +504,8 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Book Antiqua", 36F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
-            label2.ForeColor = Color.FromArgb(208, 230, 255);
-            label2.Location = new Point(167, 6);
+            label2.ForeColor = Color.FromArgb(255, 235, 156);
+            label2.Location = new Point(212, 6);
             label2.Name = "label2";
             label2.Size = new Size(229, 72);
             label2.TabIndex = 3;
@@ -498,7 +546,8 @@
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1057, 579);
+            BackColor = Color.SteelBlue;
+            ClientSize = new Size(1112, 592);
             Controls.Add(panel4);
             Name = "CharacterSelection";
             Text = "Character Selection";
@@ -574,5 +623,9 @@
         private Panel panel6;
         private PictureBox pictureBox1;
         private Label label1;
+        private Label lblDefValue;
+        private Label lblAtkValue;
+        private Label lblHpValue;
+        private Label lblSpdValue;
     }
 }
