@@ -1,0 +1,14 @@
+{
+  "id": "slimdemon_hunter",
+  "characterId": "slimdemon",
+  "chaseSpeedMultiplier": 0.75,
+  "engageRangeBonus": 8,
+  "skill1Range": 0,
+  "skill1Cooldown": 0,
+  "basicAttackCooldown": 0.8,
+  "postSkillActionCooldown": 0.35,
+  "dashMinRange": 480,
+  "dashCooldown": 4.5,
+  "dashDuration": 0.22,
+  "dashSpeedMultiplier": 3.0
+}

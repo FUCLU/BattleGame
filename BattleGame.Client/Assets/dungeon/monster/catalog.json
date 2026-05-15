@@ -1,0 +1,29 @@
+{
+  "monsters": [
+    {
+      "prefabId": "wave_grunt",
+      "characterId": "samurai",
+      "aiProfile": "melee_basic"
+    },
+    {
+      "prefabId": "wave_ranger",
+      "characterId": "wizard",
+      "aiProfile": "ranged_basic"
+    },
+    {
+      "prefabId": "boss_guardian",
+      "characterId": "cthulu",
+      "aiProfile": "boss_phase"
+    },
+    {
+      "prefabId": "boss_cthulu",
+      "characterId": "cthulu",
+      "aiProfile": "boss_phase"
+    },
+    {
+      "prefabId": "boss_slimdemon",
+      "characterId": "slimdemon",
+      "aiProfile": "boss_phase"
+    }
+  ]
+}

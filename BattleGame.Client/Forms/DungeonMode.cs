@@ -20,7 +20,7 @@ namespace BattleGame.Client.Forms
 
         private void btnStage1_Click(object sender, EventArgs e)
         {
-            GameForm gameForm = new GameForm("lord", "cave");
+            GameForm gameForm = new GameForm("haladin", "cave");
             gameForm.Show();
             this.Close();
         }

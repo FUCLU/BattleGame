@@ -15,7 +15,7 @@ namespace BattleGame.Client.Game.Gameplay
         {
             string projectDir = ResolveClientRoot();
 
-            string path = Path.Combine(projectDir, "Config", "Characters", $"{characterId}.json");
+            string path = CharacterDefinitionLoader.ResolveConfigPath(projectDir, characterId);
             System.Diagnostics.Debug.WriteLine($"[CharacterFactory] Loading character from: {path}");
 
             var definition = CharacterDefinitionLoader.Load(path);
@@ -62,25 +62,10 @@ namespace BattleGame.Client.Game.Gameplay
 
         private static string ResolveClientRoot()
         {
-            string current = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+            string startDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
                 ?? AppDomain.CurrentDomain.BaseDirectory;
 
-            while (!string.IsNullOrWhiteSpace(current))
-            {
-                if (Directory.Exists(Path.Combine(current, "Assets")) &&
-                    Directory.Exists(Path.Combine(current, "Config")))
-                {
-                    return current;
-                }
-
-                var parent = Directory.GetParent(current);
-                if (parent == null)
-                    break;
-
-                current = parent.FullName;
-            }
-
-            return Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", ".."));
+            return ClientContentRoot.Resolve(startDirectory);
         }
     }
 }

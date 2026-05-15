@@ -68,7 +68,7 @@ public class BarrierRenderer
         int y = ResolveDrawY(bc.Y, drawHeight, bc.Render);
         var state = g.Save();
 
-        if (!bc.FacingRight)
+        if (bc.FacingRight)
         {
             g.DrawImage(frame, x, y, drawWidth, drawHeight);
         }

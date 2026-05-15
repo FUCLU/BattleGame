@@ -460,11 +460,20 @@ namespace BattleGame.Client.Game.Systems
         private static (float X, float Y) ResolveBarrierSpawnPosition(Entity caster, Entity? target, EffectData e)
         {
             var casterMv = caster.Get<MovementComponent>();
-            if (target == null)
-                return (casterMv.X + e.SpawnOffsetX, casterMv.Y + e.SpawnOffsetY);
-
-            var targetMv = target.Get<MovementComponent>();
             var mode = (e.SpawnMode ?? "between").Trim().ToLowerInvariant();
+
+            if (target == null)
+            {
+                // For front-based spawns, follow caster facing even when no target exists (e.g. dungeon solo).
+                if (mode == "casterfront" || mode == "targetfront")
+                {
+                    float dir = casterMv.FacingRight ? 1f : -1f;
+                    return (casterMv.X + dir * e.SpawnOffsetX, casterMv.Y + e.SpawnOffsetY);
+                }
+
+                return (casterMv.X + e.SpawnOffsetX, casterMv.Y + e.SpawnOffsetY);
+            }
+            var targetMv = target.Get<MovementComponent>();
 
             return mode switch
             {
@@ -472,7 +481,7 @@ namespace BattleGame.Client.Game.Systems
                     targetMv.X + (casterMv.X < targetMv.X ? e.SpawnOffsetX : -e.SpawnOffsetX),
                     targetMv.Y + e.SpawnOffsetY),
                 "casterfront" => (
-                    casterMv.X + (casterMv.X < targetMv.X ? e.SpawnOffsetX : -e.SpawnOffsetX),
+                    casterMv.X + (casterMv.FacingRight ? e.SpawnOffsetX : -e.SpawnOffsetX),
                     casterMv.Y + e.SpawnOffsetY),
                 _ => (
                     ((casterMv.X + targetMv.X) * 0.5f) + (targetMv.X >= casterMv.X ? e.SpawnOffsetX : -e.SpawnOffsetX),
