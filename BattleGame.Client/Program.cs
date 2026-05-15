@@ -26,7 +26,7 @@ namespace BattleGame.Client
                 //     "Lỗi kết nối",
                 //     MessageBoxButtons.OK,
                 //     MessageBoxIcon.Error);
-                // return;
+                // return;  
             }
 
             Application.Run(new LoginForm());

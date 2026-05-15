@@ -1,0 +1,178 @@
+{
+  "id": "stonegolem",
+  "selection": {
+    "displayName": "Golem",
+    "previewImage": "Idle.png",
+    "skillLabel": "Flying Obelisk / Laser Beam",
+    "assetFolder": "StoneGolem"
+  },
+  "stats": {
+    "hp": 165,
+    "def": 20,
+    "mana": 100,
+    "atk": 24,
+    "speed": 175,
+    "atkSpeed": 1.0,
+    "attackProjectile": "ArmProjectitle",
+    "attackProjectileSpeed": 520,
+    "stunDuration": 0.0,
+    "attackRange": 95
+  },
+
+  "render": {
+    "scale": 1.5,
+    "offsetY": 24,
+    "useSpriteSize": true,
+    "protectionOverlayOffsetY": 0.0,
+    "protectionUsesIdleBase": false,
+    "protectionBlocksAllDirections": false
+  },
+
+  "skills": {
+    "skill1": {
+      "id": "flying_obelisk",
+      "animation": "Skill1",
+      "manaCost": 0,
+      "cooldown": 0.0,
+      "effects": [
+        {
+          "type": "projectile",
+          "trigger": "onEnd",
+          "projectileAnim": "FlyingObelisk",
+          "damage": 30,
+          "stun": 1.0,
+          "speed": 430,
+          "range": 55,
+          "render": {
+            "scale": 0.8,
+            "offsetX": 0,
+            "offsetY": 0,
+            "useSpriteSize": true,
+            "alignY": "center"
+          }
+        }
+      ]
+    },
+
+    "skill2": {
+      "id": "laser_beam",
+      "animation": "Skill2",
+      "manaCost": 0,
+      "cooldown": 0.0,
+      "effects": [
+        {
+          "type": "barrier",
+          "trigger": "onEnd",
+          "frames": [ 9, 10, 11, 12, 13, 14 ],
+          "objectAnim": "Laser",
+          "damage": 16,
+          "duration": 2.0,
+          "spawnMode": "casterFront",
+          "spawnOffsetX": 120,
+          "spawnOffsetY": -62,
+          "collisionWidth": 420,
+          "collisionHeight": 120,
+          "blockEnemyAttack": false,
+          "blockEnemyProjectile": false,
+          "blockEnemySkill": false,
+          "render": {
+            "scale": 1.0,
+            "offsetX": 0,
+            "offsetY": 0,
+            "useSpriteSize": true,
+            "alignY": "center",
+            "facingSource": "owner"
+          }
+        }
+      ]
+    }
+  },
+
+  "animations": {
+    "Idle": {
+      "frameCount": 8,
+      "fps": 8,
+      "loop": true
+    },
+    "Walk": {
+      "file": "Idle.png",
+      "frameCount": 8,
+      "fps": 8,
+      "loop": true
+    },
+    "Run": {
+      "file": "Idle.png",
+      "frameCount": 8,
+      "fps": 10,
+      "loop": true
+    },
+
+    "Attack_1": {
+      "frameCount": 9,
+      "fps": 10,
+      "loop": false
+    },
+    "Attack_2": {
+      "file": "Attack_1.png",
+      "frameCount": 9,
+      "fps": 10,
+      "loop": false
+    },
+
+    "Protection": {
+      "frameCount": 8,
+      "fps": 8,
+      "loop": false
+    },
+    "Hurt": {
+      "file": "Protection.png",
+      "frameCount": 8,
+      "fps": 12,
+      "loop": false
+    },
+    "Dead": {
+      "frameCount": 14,
+      "fps": 10,
+      "loop": false
+    },
+    "Jump": {
+      "file": "Idle.png",
+      "frameCount": 8,
+      "fps": 10,
+      "loop": false
+    },
+    "Dash": {
+      "file": "Skill2.png",
+      "frameCount": 7,
+      "fps": 14,
+      "loop": false
+    },
+
+    "Skill1": {
+      "frameCount": 9,
+      "fps": 12,
+      "loop": false
+    },
+    "Skill2": {
+      "frameCount": 7,
+      "fps": 12,
+      "loop": false
+    },
+    "FlyingObelisk": {
+      "frameCount": 13,
+      "fps": 15,
+      "loop": true
+    },
+    "ArmProjectitle": {
+      "frameCount": 6,
+      "fps": 16,
+      "loop": true
+    },
+    "Laser": {
+      "file": "LaserCast.png",
+      "frameCount": 14,
+      "fps": 8,
+      "loop": true
+    }
+  }
+}

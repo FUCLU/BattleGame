@@ -15,6 +15,7 @@ namespace BattleGame.Client.Config
         public float ProtectionOverlayOffsetY { get; init; } = 0f;
         public bool ProtectionUsesIdleBase { get; init; } = true;
         public bool ProtectionBlocksAllDirections { get; init; } = false;
+        public bool InvertFacing { get; init; } = false;
     }
 
     public sealed class CharacterSelectionConfig
@@ -38,6 +39,21 @@ namespace BattleGame.Client.Config
 
     public static class CharacterDefinitionLoader
     {
+        public static string ResolveConfigPath(string configRoot, string characterId)
+        {
+            string characterPath = Path.Combine(configRoot, "Config", "Characters", $"{characterId}.json");
+            if (File.Exists(characterPath))
+                return characterPath;
+
+            string bossPath = Path.Combine(configRoot, "Config", "Bosses", $"{characterId}.json");
+            if (File.Exists(bossPath))
+                return bossPath;
+
+            throw new FileNotFoundException(
+                $"Config not found for '{characterId}' in Config/Characters or Config/Bosses.",
+                characterPath);
+        }
+
         public static CharacterDefinition Load(string configPath)
         {
             using var doc = JsonDocument.Parse(File.ReadAllText(configPath));
@@ -100,7 +116,9 @@ namespace BattleGame.Client.Config
                     : true,
                 ProtectionBlocksAllDirections = render.TryGetProperty("protectionBlocksAllDirections", out var protectionBlocksAllDirections)
                     ? protectionBlocksAllDirections.GetBoolean()
-                    : false
+                    : false,
+                InvertFacing = render.TryGetProperty("invertFacing", out var invertFacing)
+                    && invertFacing.GetBoolean()
             };
         }
 

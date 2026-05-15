@@ -16,7 +16,7 @@ namespace BattleGame.Server.Config
             ConnectionString =
                 config["DB_CONNECTION"]
                 ?? config.GetConnectionString("DefaultConnection")
-                ?? "Host=localhost;Port=5432;Database=battlegame;Username=postgres;Password=battlegame123";
+                ?? "Host=localhost;Port=5433;Database=battlegame;Username=admin;Password=admin";
             Smtp = new SmtpConfig
             {
                 Host = config["SMTP_HOST"] ?? config["Smtp:Host"] ?? "localhost",

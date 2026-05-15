@@ -6,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using BattleGame.Client.Config;
 
 namespace BattleGame.Client.Game.Rendering
 {
@@ -24,33 +25,23 @@ namespace BattleGame.Client.Game.Rendering
 
         private static string ResolveClientRoot(string startDirectory)
         {
-            string current = startDirectory;
-            while (!string.IsNullOrWhiteSpace(current))
-            {
-                if (Directory.Exists(Path.Combine(current, "Assets")) &&
-                    Directory.Exists(Path.Combine(current, "Config")))
-                {
-                    return current;
-                }
-
-                var parent = Directory.GetParent(current);
-                if (parent == null)
-                    break;
-
-                current = parent.FullName;
-            }
-
-            return Path.GetFullPath(Path.Combine(startDirectory, "..", "..", ".."));
+            return ClientContentRoot.Resolve(startDirectory);
         }
 
         public Dictionary<string, SpriteAnimation> Load(string characterId)
         {
-            var configPath = Path.Combine(_configRoot, "Characters", $"{characterId}.json");
-            if (!File.Exists(configPath))
-                throw new FileNotFoundException($"Config not found: {configPath}");
+            var configPath = CharacterDefinitionLoader.ResolveConfigPath(
+                Directory.GetParent(_configRoot)?.FullName ?? _configRoot,
+                characterId);
 
             using var doc = JsonDocument.Parse(File.ReadAllText(configPath));
             var root = doc.RootElement;
+            string? assetFolderHint = null;
+            if (root.TryGetProperty("selection", out var selection) &&
+                selection.TryGetProperty("assetFolder", out var assetFolderProp))
+            {
+                assetFolderHint = assetFolderProp.GetString();
+            }
 
             var animations = root.GetProperty("animations");
             var result = new Dictionary<string, SpriteAnimation>();
@@ -64,17 +55,20 @@ namespace BattleGame.Client.Game.Rendering
                 var fileName = anim.Value.TryGetProperty("file", out var file)
                     ? file.GetString()
                     : null;
+                var layout = anim.Value.TryGetProperty("layout", out var layoutProp)
+                    ? (layoutProp.GetString() ?? "horizontal")
+                    : "horizontal";
                 var offsetX = anim.Value.TryGetProperty("offsetX", out var ox) ? ox.GetSingle() : 0f;
                 var offsetY = anim.Value.TryGetProperty("offsetY", out var oy) ? oy.GetSingle() : 0f;
 
-                var sheet = LoadSheet(characterId, name, fileName);
+                var sheet = LoadSheet(characterId, name, fileName, assetFolderHint);
                 if (sheet == null)
                 {
                     System.Diagnostics.Debug.WriteLine($"[AnimationLoader] Animation {characterId}/{name} NOT found (file missing)");
                     continue;
                 }
 
-                var frames = SliceFrames(sheet, frameCount);
+                var frames = SliceFrames(sheet, frameCount, layout);
 
                 result[name] = new SpriteAnimation
                 {
@@ -95,7 +89,7 @@ namespace BattleGame.Client.Game.Rendering
             return result;
         }
 
-        private Bitmap? LoadSheet(string characterId, string animName, string? fileName = null)
+        private Bitmap? LoadSheet(string characterId, string animName, string? fileName = null, string? assetFolderHint = null)
         {
             if (string.IsNullOrWhiteSpace(characterId))
                 return null;
@@ -103,12 +97,26 @@ namespace BattleGame.Client.Game.Rendering
             string folder = char.ToUpper(characterId[0]) + characterId[1..];
             string spriteFileName = string.IsNullOrWhiteSpace(fileName) ? $"{animName}.png" : fileName;
             string path = Path.Combine(_assetRoot, "Characters", folder, spriteFileName);
+
+            if (!string.IsNullOrWhiteSpace(assetFolderHint))
+            {
+                string hintedPath = Path.Combine(_assetRoot, assetFolderHint, spriteFileName);
+                if (File.Exists(hintedPath))
+                    path = hintedPath;
+            }
             if (!File.Exists(path) && animName.StartsWith("Attack_", StringComparison.OrdinalIgnoreCase))
             {
                 string legacyAttackName = "Attack" + animName[7..];
                 string legacyPath = Path.Combine(_assetRoot, "Characters", folder, $"{legacyAttackName}.png");
                 if (File.Exists(legacyPath))
                     path = legacyPath;
+            }
+
+            if (!File.Exists(path))
+            {
+                string dungeonBossPath = Path.Combine(_assetRoot, "dungeon", "boss", characterId.ToLowerInvariant(), spriteFileName);
+                if (File.Exists(dungeonBossPath))
+                    path = dungeonBossPath;
             }
 
             if (!File.Exists(path)) return null;
@@ -121,17 +129,18 @@ namespace BattleGame.Client.Game.Rendering
             return converted;
         }
 
-        private static Bitmap[] SliceFrames(Bitmap sheet, int frameCount)
+        private static Bitmap[] SliceFrames(Bitmap sheet, int frameCount, string layout)
         {
-            int fw = sheet.Width / frameCount;
-            int fh = sheet.Height;
+            bool vertical = string.Equals(layout, "vertical", StringComparison.OrdinalIgnoreCase);
+            int fw = vertical ? sheet.Width : Math.Max(1, sheet.Width / Math.Max(1, frameCount));
+            int fh = vertical ? Math.Max(1, sheet.Height / Math.Max(1, frameCount)) : sheet.Height;
             var frames = new Bitmap[frameCount];
 
-            var rect = new Rectangle(0, 0, sheet.Width, fh);
+            var rect = new Rectangle(0, 0, sheet.Width, sheet.Height);
             var sheetData = sheet.LockBits(rect, ImageLockMode.ReadOnly, PixelFormat.Format32bppArgb);
 
             int stride = sheetData.Stride;
-            byte[] sheetBytes = new byte[stride * fh];
+            byte[] sheetBytes = new byte[stride * sheet.Height];
             Marshal.Copy(sheetData.Scan0, sheetBytes, 0, sheetBytes.Length);
 
             sheet.UnlockBits(sheetData);
@@ -148,7 +157,9 @@ namespace BattleGame.Client.Game.Rendering
 
                 for (int y = 0; y < fh; y++)
                 {
-                    int srcRow = y * stride + i * fw * 4;
+                    int srcY = vertical ? (i * fh + y) : y;
+                    int srcX = vertical ? 0 : i * fw;
+                    int srcRow = srcY * stride + srcX * 4;
                     int dstRow = y * frameData.Stride;
                     Buffer.BlockCopy(sheetBytes, srcRow, frameBytes, dstRow, fw * 4);
                 }

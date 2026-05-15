@@ -26,6 +26,12 @@ namespace BattleGame.Client.Managers
             await _socket.ConnectAsync();
         }
 
+        public async Task ReconnectAsync()
+        {
+            _socket.Close();
+            await ConnectAsync();
+        }
+
         public bool IsConnected => _socket.IsConnected();
 
         public async Task<bool> EnsureConnectedAsync()

@@ -5,8 +5,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using BattleGame.Client.Config;
 using BattleGame.Client.Game.Core;
 using BattleGame.Client.Game.Core.Components;
+using BattleGame.Client.Game.AI;
 using BattleGame.Client.Game.Dungeon;
 using BattleGame.Client.Game.Gameplay;
 using BattleGame.Client.Game.Input;
@@ -26,9 +28,8 @@ namespace BattleGame.Client.Game
         private const float Stage2WorldWidth = 12000f;
         private const float DungeonGroundOffsetY = 30f;
         private const float CameraDeadZoneWidthRatio = 0.40f;
-
         private Entity _player = null!;
-        private Entity _enemy = null!;
+        private Entity? _enemy;
 
         private readonly AnimationSystem _animSystem = new();
         private readonly MovementSystem _moveSystem = new();
@@ -44,12 +45,17 @@ namespace BattleGame.Client.Game
         private readonly List<EffectState> _onlineEffects = new();
         private readonly Dictionary<int, VisualFrameState> _projectileFrames = new();
         private readonly Dictionary<int, VisualFrameState> _effectFrames = new();
+        private readonly Dictionary<string, SpriteAnimation> _enemyAnimations = new(StringComparer.OrdinalIgnoreCase);
         private Image? _mapBackground;
         private readonly List<ParallaxLayer> _parallaxLayers = new();
         private ParallaxLayer? _foregroundLayer;
         private readonly Dictionary<string, List<MapObjectRenderItem>> _mapObjectsByLayer = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, Image> _mapObjectImageCache = new(StringComparer.OrdinalIgnoreCase);
         private DungeonRunController? _dungeonRun;
+        private readonly bool _hideDefaultEnemyInDungeon;
+        private BossAiController? _bossAiController;
+        private string? _activeDungeonSpawnToken;
+        private bool _activeDungeonSpawnDefeated;
 
         private DateTime _lastTime;
         private float _groundY;
@@ -61,7 +67,7 @@ namespace BattleGame.Client.Game
         private readonly string _clientRoot;
 
         public Entity Player => _player;
-        public Entity Enemy => _enemy;
+        public Entity? Enemy => _enemy;
 
         public GameEngine(string characterId, string mapId, int formWidth, int formHeight, string? enemyCharacterId = null)
         {
@@ -71,6 +77,7 @@ namespace BattleGame.Client.Game
             _formHeight = formHeight;
             _groundY = GetGroundY(mapId, formHeight);
             _mapWidth = GetWorldWidth(mapId, formWidth);
+            _hideDefaultEnemyInDungeon = IsDungeonParallaxMapId(mapId);
 
             _moveSystem.MapLeft = 50f;
             _moveSystem.MapRight = _mapWidth - 50f;
@@ -96,22 +103,27 @@ namespace BattleGame.Client.Game
             _player = CharacterFactory.Create(characterId, 200f, _groundY, animKeys);
 
             // Enemy theo character đối thủ đã chọn từ RoomForm/MatchFound.
-            string resolvedEnemyCharacterId = string.IsNullOrWhiteSpace(enemyCharacterId)
-                ? "samurai"
-                : enemyCharacterId.Trim().ToLowerInvariant();
+            if (!_hideDefaultEnemyInDungeon)
+            {
+                string resolvedEnemyCharacterId = string.IsNullOrWhiteSpace(enemyCharacterId)
+                    ? "samurai"
+                    : enemyCharacterId.Trim().ToLowerInvariant();
 
-            var enemyLoader = new AnimationLoader("Assets");
-            var enemyAnimations = enemyLoader.Load(resolvedEnemyCharacterId);
-            _onlineEffectAnimations = MergeAnimations(animations, enemyAnimations);
-            var enemyAnimKeys = new Dictionary<string, object>();
-            foreach (var kv in enemyAnimations)
-                enemyAnimKeys[kv.Key] = kv.Value;
-            float enemyStartX = IsDungeonParallaxMap ? Math.Min(_mapWidth - 300f, 7600f) : 500f;
-            _enemy = CharacterFactory.Create(resolvedEnemyCharacterId, enemyStartX, _groundY, enemyAnimKeys);
+                var enemyLoader = new AnimationLoader("Assets");
+                foreach (var kv in enemyLoader.Load(resolvedEnemyCharacterId))
+                    _enemyAnimations[kv.Key] = kv.Value;
+                var enemyAnimKeys = new Dictionary<string, object>();
+                foreach (var kv in _enemyAnimations)
+                    enemyAnimKeys[kv.Key] = kv.Value;
+                float enemyStartX = IsDungeonParallaxMap ? Math.Min(_mapWidth - 300f, 7600f) : 500f;
+                _enemy = CharacterFactory.Create(resolvedEnemyCharacterId, enemyStartX, _groundY, enemyAnimKeys);
+            }
+            _onlineEffectAnimations = MergeAnimations(animations, _enemyAnimations);
 
             // Đăng ký target cho projectile collision
             _projectileSystem.RegisterTarget(_player);
-            _projectileSystem.RegisterTarget(_enemy);
+            if (_enemy != null)
+                _projectileSystem.RegisterTarget(_enemy);
 
             // Chia sẻ barrier giữa cả hai phía
             _playerCombatSystem.SetBarrierProvider(GetAllBarriers);
@@ -119,12 +131,15 @@ namespace BattleGame.Client.Game
             _projectileSystem.SetBarrierProvider(GetAllBarriers);
 
             // Player đánh enemy, Enemy đánh player
-            _playerCombatSystem.SetTarget(_enemy);
-            _enemyCombatSystem.SetTarget(_player);
+            if (_enemy != null)
+            {
+                _playerCombatSystem.SetTarget(_enemy);
+                _enemyCombatSystem.SetTarget(_player);
+            }
 
-            _renderer = new CharacterRenderer(_player.Id, animations, enemyAnimations);
-            _barrierRenderer = new BarrierRenderer(animations);
-            _controller = new PlayerController(_player, _enemy, _playerCombatSystem);
+            _renderer = new CharacterRenderer(_player.Id, animations, _enemyAnimations);
+            _barrierRenderer = new BarrierRenderer(_onlineEffectAnimations);
+            _controller = new PlayerController(_player, _enemy ?? _player, _playerCombatSystem);
             _lastTime = DateTime.Now;
             UpdateCamera();
         }
@@ -135,7 +150,8 @@ namespace BattleGame.Client.Game
             PlayerBattleState remote = state.Player1.PlayerId == localPlayerId ? state.Player2 : state.Player1;
 
             ApplySnapshot(_player, local);
-            ApplySnapshot(_enemy, remote);
+            if (_enemy != null)
+                ApplySnapshot(_enemy, remote);
 
             _onlineProjectiles.Clear();
             _onlineProjectiles.AddRange(state.Projectiles);
@@ -192,25 +208,10 @@ namespace BattleGame.Client.Game
 
         private static string ResolveClientRoot()
         {
-            string current = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+            string startDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
                 ?? AppDomain.CurrentDomain.BaseDirectory;
 
-            while (!string.IsNullOrWhiteSpace(current))
-            {
-                if (Directory.Exists(Path.Combine(current, "Assets")) &&
-                    Directory.Exists(Path.Combine(current, "Config")))
-                {
-                    return current;
-                }
-
-                var parent = Directory.GetParent(current);
-                if (parent == null)
-                    break;
-
-                current = parent.FullName;
-            }
-
-            return Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", ".."));
+            return ClientContentRoot.Resolve(startDirectory);
         }
 
         public void Resize(int formWidth, int formHeight)
@@ -228,7 +229,8 @@ namespace BattleGame.Client.Game
             _moveSystem.MapRight = _mapWidth - 50f;
 
             ResizeEntity(_player, oldGroundY, _groundY);
-            ResizeEntity(_enemy, oldGroundY, _groundY);
+            if (_enemy != null)
+                ResizeEntity(_enemy, oldGroundY, _groundY);
             UpdateCamera();
         }
 
@@ -255,20 +257,26 @@ namespace BattleGame.Client.Game
             dt = Math.Min(dt, 0.05f);
 
             _controller.Update();
+            if (_enemy != null)
+                _bossAiController?.Update(dt, _enemy, _player, _enemyCombatSystem);
 
             // ===== UPDATE ANIMATION FIRST (before combat check) =====
             _renderer.Update(_player, dt);
-            _renderer.Update(_enemy, dt);
+            if (_enemy != null)
+                _renderer.Update(_enemy, dt);
 
             // ===== COMBAT (now AnimationFinished is up-to-date) =====
             _playerCombatSystem.Update(_player, dt);
-            _enemyCombatSystem.Update(_enemy, dt);
+            if (_enemy != null)
+                _enemyCombatSystem.Update(_enemy, dt);
 
             _moveSystem.Update(_player, dt);
-            _moveSystem.Update(_enemy, dt);
+            if (_enemy != null)
+                _moveSystem.Update(_enemy, dt);
 
             _animSystem.Update(_player, dt);
-            _animSystem.Update(_enemy, dt);
+            if (_enemy != null)
+                _animSystem.Update(_enemy, dt);
 
             _projectileSystem.Update(dt);
             UpdateDungeonRun();
@@ -278,9 +286,12 @@ namespace BattleGame.Client.Game
             {
                 _barrierRenderer.Update(barrier, dt);
             }
-            foreach (var barrier in _enemyCombatSystem.GetBarriers())
+            if (_enemy != null)
             {
-                _barrierRenderer.Update(barrier, dt);
+                foreach (var barrier in _enemyCombatSystem.GetBarriers())
+                {
+                    _barrierRenderer.Update(barrier, dt);
+                }
             }
 
             UpdateCamera();
@@ -288,6 +299,8 @@ namespace BattleGame.Client.Game
 
         public void Draw(Graphics g)
         {
+            bool drawEnemyOverForeground = IsDungeonParallaxMap && _enemy != null;
+
             if (IsDungeonParallaxMap && _parallaxLayers.Count > 0)
             {
                 DrawParallaxBackground(g);
@@ -301,7 +314,14 @@ namespace BattleGame.Client.Game
             g.TranslateTransform(-_cameraX, 0f);
 
             _renderer.Draw(g, _player);
-            _renderer.Draw(g, _enemy);
+            if (_enemy != null && !drawEnemyOverForeground)
+            {
+                _renderer.Draw(g, _enemy);
+            }
+            if (IsDungeonParallaxMap && _enemy != null && !drawEnemyOverForeground)
+            {
+                _renderer.DrawHealthBar(g, _enemy);
+            }
             _projectileSystem.Draw(g);
             DrawOnlineProjectiles(g);
 
@@ -310,9 +330,12 @@ namespace BattleGame.Client.Game
             {
                 _barrierRenderer.Draw(g, barrier);
             }
-            foreach (var barrier in _enemyCombatSystem.GetBarriers())
+            if (_enemy != null)
             {
-                _barrierRenderer.Draw(g, barrier);
+                foreach (var barrier in _enemyCombatSystem.GetBarriers())
+                {
+                    _barrierRenderer.Draw(g, barrier);
+                }
             }
             DrawOnlineEffects(g);
 
@@ -322,6 +345,15 @@ namespace BattleGame.Client.Game
             {
                 DrawParallaxLayer(g, _foregroundLayer);
                 DrawLayerObjects(g, _foregroundLayer);
+            }
+
+            if (drawEnemyOverForeground && _enemy != null)
+            {
+                var enemyState = g.Save();
+                g.TranslateTransform(-_cameraX, 0f);
+                _renderer.Draw(g, _enemy);
+                _renderer.DrawHealthBar(g, _enemy);
+                g.Restore(enemyState);
             }
         }
 
@@ -632,17 +664,75 @@ namespace BattleGame.Client.Game
             if (_dungeonRun == null)
                 return;
 
+            CompleteActiveDungeonSpawnIfDefeated();
+
             float playerX = _player.Get<MovementComponent>().X;
             _dungeonRun.Update(playerX);
             while (_dungeonRun.TryDequeueSpawn(out DungeonSpawnRequest request))
             {
-                // Spawn integration is intentionally isolated.
-                // Next step: route this request into a dedicated enemy spawner.
                 Console.WriteLine($"[Dungeon] Spawn request wave={request.WaveId}, prefab={request.PrefabId}, character={request.CharacterId}, x={request.X}, y={request.Y}, boss={request.IsBoss}");
-
-                // Temporary auto-complete to keep run state progressing before spawn integration.
-                _dungeonRun.MarkSpawnDefeated(request.SpawnToken);
+                SpawnDungeonEnemy(request);
             }
+        }
+
+        private void CompleteActiveDungeonSpawnIfDefeated()
+        {
+            if (_dungeonRun == null || _activeDungeonSpawnToken == null || _enemy == null)
+                return;
+
+            var enemyCharacter = _enemy.Get<CharacterComponent>();
+            if (!enemyCharacter.IsDead)
+                return;
+
+            if (!_activeDungeonSpawnDefeated)
+            {
+                _activeDungeonSpawnDefeated = true;
+                _bossAiController = null;
+                Console.WriteLine($"[Dungeon] Boss defeated token={_activeDungeonSpawnToken}");
+            }
+
+            var enemySprite = _enemy.Get<SpriteComponent>();
+            if (!string.Equals(enemySprite.CurrentAnimation, "Dead", StringComparison.OrdinalIgnoreCase) ||
+                !enemySprite.AnimationFinished)
+            {
+                return;
+            }
+
+            _dungeonRun.MarkSpawnDefeated(_activeDungeonSpawnToken);
+            _activeDungeonSpawnToken = null;
+            _activeDungeonSpawnDefeated = false;
+            _enemy = null;
+        }
+
+        private void SpawnDungeonEnemy(DungeonSpawnRequest request)
+        {
+            if (_enemy != null && !_enemy.Get<CharacterComponent>().IsDead)
+                return;
+
+            var enemyLoader = new AnimationLoader("Assets");
+            _enemyAnimations.Clear();
+            foreach (var kv in enemyLoader.Load(request.CharacterId))
+            {
+                _enemyAnimations[kv.Key] = kv.Value;
+                _onlineEffectAnimations.TryAdd(kv.Key, kv.Value);
+            }
+
+            var enemyAnimKeys = new Dictionary<string, object>();
+            foreach (var kv in _enemyAnimations)
+                enemyAnimKeys[kv.Key] = kv.Value;
+
+            _enemy = CharacterFactory.Create(request.CharacterId, request.X, _groundY, enemyAnimKeys);
+            var enemyMovement = _enemy.Get<MovementComponent>();
+            enemyMovement.GroundY = _groundY;
+            enemyMovement.Y = request.Y > 0f ? request.Y : enemyMovement.GroundY;
+            enemyMovement.FacingRight = _player.Get<MovementComponent>().X >= enemyMovement.X;
+
+            _projectileSystem.RegisterTarget(_enemy);
+            _playerCombatSystem.SetTarget(_enemy);
+            _enemyCombatSystem.SetTarget(_player);
+            _bossAiController = new BossAiController(BossAiProfileLoader.Load(_clientRoot, request.CharacterId));
+            _activeDungeonSpawnToken = request.SpawnToken;
+            _activeDungeonSpawnDefeated = false;
         }
 
         private void LoadCaveParallax()

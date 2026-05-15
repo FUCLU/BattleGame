@@ -78,6 +78,7 @@ namespace BattleGame.Client.Forms
             try
             {
                 button1.Enabled = false;
+                await NetworkManager.Instance.ReconnectAsync();
 
                 var result = await NetworkManager.Instance.RegisterAsync(
                     new RegisterPacket

@@ -49,6 +49,7 @@
     "skill2": {
       "id": "holy_wrath",
       "animation": "Skill2",
+      "invulnerableWhileCasting": true,
       "manaCost": 0,
       "cooldown": 0.0,
 
@@ -126,7 +127,6 @@
       "fps": 14,
       "loop": false
     },
-
     "Skill1": {
       "frameCount": 26,
       "fps": 14,

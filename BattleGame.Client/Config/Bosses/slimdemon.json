@@ -1,0 +1,67 @@
+{
+  "id": "slimdemon",
+  "selection": {
+    "displayName": "Slim Demon",
+    "previewImage": "Idle.png",
+    "skillLabel": "Claw Swipe",
+    "assetFolder": "dungeon/boss/slimdemon"
+  },
+  "stats": {
+    "hp": 360,
+    "def": 8,
+    "mana": 100,
+    "atk": 24,
+    "speed": 180,
+    "atkSpeed": 0.85,
+    "stunDuration": 0.0,
+    "attackRange": 155
+  },
+  "render": {
+    "scale": 5,
+    "offsetY": 0,
+    "useSpriteSize": false,
+    "protectionOverlayOffsetY": 0.0,
+    "protectionUsesIdleBase": false,
+    "protectionBlocksAllDirections": false,
+    "invertFacing": true
+  },
+  "animations": {
+    "Idle": {
+      "frameCount": 6,
+      "fps": 10,
+      "loop": true
+    },
+    "Run": {
+      "frameCount": 12,
+      "fps": 12,
+      "loop": true
+    },
+    "Walk": {
+      "file": "Run.png",
+      "frameCount": 12,
+      "fps": 10,
+      "loop": true
+    },
+    "Dash": {
+      "file": "Run.png",
+      "frameCount": 12,
+      "fps": 16,
+      "loop": false
+    },
+    "Attack_1": {
+      "frameCount": 15,
+      "fps": 14,
+      "loop": false
+    },
+    "Hurt": {
+      "frameCount": 5,
+      "fps": 10,
+      "loop": false
+    },
+    "Dead": {
+      "frameCount": 22,
+      "fps": 14,
+      "loop": false
+    }
+  }
+}

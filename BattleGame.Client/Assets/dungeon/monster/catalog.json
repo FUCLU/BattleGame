@@ -12,7 +12,17 @@
     },
     {
       "prefabId": "boss_guardian",
-      "characterId": "lord",
+      "characterId": "cthulu",
+      "aiProfile": "boss_phase"
+    },
+    {
+      "prefabId": "boss_cthulu",
+      "characterId": "cthulu",
+      "aiProfile": "boss_phase"
+    },
+    {
+      "prefabId": "boss_slimdemon",
+      "characterId": "slimdemon",
       "aiProfile": "boss_phase"
     }
   ]

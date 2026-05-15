@@ -30,6 +30,7 @@ namespace BattleGame.Client.Forms
 
         private readonly GameEngine _engine;
         private readonly bool _isOnline;
+        private readonly bool _isDungeonMap;
         private readonly int _localPlayerId;
         private int _inputSequence;
         private int _clientTick;
@@ -99,6 +100,7 @@ namespace BattleGame.Client.Forms
 
                 InputManager.Clear();
                 _isOnline = isOnline;
+                _isDungeonMap = IsDungeonMap(mapId);
                 _localPlayerId = localPlayerId;
                 _engine = new GameEngine(characterId, mapId, this.ClientSize.Width, this.ClientSize.Height, enemyCharacterId);
 
@@ -155,6 +157,8 @@ namespace BattleGame.Client.Forms
                   panel3, panel1, label3, label4, pictureBox1, pictureBox2 })
                 c.BringToFront();
 
+            ApplyDungeonHudVisibility();
+
             // Round/time are rendered directly into backbuffer to avoid WinForms control flicker.
             panelStatus.Visible = false;
             btnExit.Parent = this;
@@ -189,8 +193,26 @@ namespace BattleGame.Client.Forms
             string? playerId = _engine.Player.Get<CharacterComponent>()?.CharacterId;
             SetCharacterHeader(label3, pictureBox1, playerId, lookup);
 
-            string? enemyId = _engine.Enemy.Get<CharacterComponent>()?.CharacterId;
-            SetCharacterHeader(label4, pictureBox2, enemyId, lookup);
+            if (!_isDungeonMap && _engine.Enemy != null)
+            {
+                string? enemyId = _engine.Enemy.Get<CharacterComponent>()?.CharacterId;
+                SetCharacterHeader(label4, pictureBox2, enemyId, lookup);
+            }
+        }
+
+        private static bool IsDungeonMap(string mapId)
+            => string.Equals(mapId, "cave", StringComparison.OrdinalIgnoreCase)
+               || string.Equals(mapId, "stage2", StringComparison.OrdinalIgnoreCase);
+
+        private void ApplyDungeonHudVisibility()
+        {
+            if (!_isDungeonMap)
+                return;
+
+            label4.Visible = false;
+            pictureBox2.Visible = false;
+            panel3.Visible = false;
+            panel1.Visible = false;
         }
 
         private void SetCharacterHeader(Label nameLabel, PictureBox portraitBox, string? characterId,
@@ -439,7 +461,7 @@ namespace BattleGame.Client.Forms
             var mv = _engine.Player.Get<MovementComponent>();
             var ch = _engine.Player.Get<CharacterComponent>();
             var sp = _engine.Player.Get<SpriteComponent>();
-            var enemyCh = _engine.Enemy.Get<CharacterComponent>();
+            var enemyCh = _engine.Enemy?.Get<CharacterComponent>();
 
             await NetworkManager.Instance.SendAsync(new GameStatePacket
             {
@@ -451,8 +473,8 @@ namespace BattleGame.Client.Forms
                 IsGrounded = mv.IsGrounded,
                 Hp = ch.Hp,
                 Mana = ch.Mana,
-                EnemyHp = enemyCh.Hp,
-                EnemyMana = enemyCh.Mana,
+                EnemyHp = enemyCh?.Hp ?? 0,
+                EnemyMana = enemyCh?.Mana ?? 0,
                 IsProtecting = ch.IsProtecting,
                 IsAttacking = ch.IsAttacking,
                 IsUsingSkill = ch.IsUsingSkill,
@@ -549,7 +571,8 @@ namespace BattleGame.Client.Forms
 
             _engine.ApplyOnlineWorldState(state, _localPlayerId);
             ApplySnapshot(_engine.Player, local);
-            ApplySnapshot(_engine.Enemy, remote);
+            if (_engine.Enemy != null)
+                ApplySnapshot(_engine.Enemy, remote);
         }
 
         private static void ApplySnapshot(BattleGame.Client.Game.Core.Entity entity, PlayerBattleState snapshot)
@@ -584,6 +607,9 @@ namespace BattleGame.Client.Forms
 
         private void ApplyRemoteState(GameStatePacket remote)
         {
+            if (_engine.Enemy == null)
+                return;
+
             var enemyMv = _engine.Enemy.Get<MovementComponent>();
             var enemyCh = _engine.Enemy.Get<CharacterComponent>();
             var enemySp = _engine.Enemy.Get<SpriteComponent>();
@@ -651,6 +677,7 @@ namespace BattleGame.Client.Forms
             label4.Location = new Point(Math.Max(HudMargin, pictureBox2.Left - label4.Width - 6), 42);
             panel3.Location = new Point(rightHudX, 94);
             panel1.Location = new Point(rightHudX, 132);
+            ApplyDungeonHudVisibility();
 
             panelStatus.Location = new Point(
                 Math.Max(HudMargin, (ClientSize.Width - StatusPanelWidth) / 2),
@@ -686,8 +713,8 @@ namespace BattleGame.Client.Forms
                     if (panelManaFill.Width != manaW) panelManaFill.Width = Math.Max(0, manaW);
                 }
 
-                var enemyChar = _engine.Enemy.Get<CharacterComponent>();
-                if (enemyChar != null)
+                var enemyChar = _engine.Enemy?.Get<CharacterComponent>();
+                if (enemyChar != null && !_isDungeonMap)
                 {
                     string hpText = $"{enemyChar.Hp}/{enemyChar.BaseStats.Hp}";
                     if (label6.Text != hpText) label6.Text = hpText;
