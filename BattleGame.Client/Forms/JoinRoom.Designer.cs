@@ -50,8 +50,9 @@
             lblRoomCode = new Label();
             lblRoomName = new Label();
             button1 = new Button();
-            button3 = new Button();
+            findroom = new Button();
             panel1.SuspendLayout();
+            flowLayoutPanelRooms.SuspendLayout();
             panelRoomTemplate.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)picLock).BeginInit();
             SuspendLayout();
@@ -208,6 +209,7 @@
             flowLayoutPanelRooms.BackColor = Color.Transparent;
             flowLayoutPanelRooms.BackgroundImage = (Image)resources.GetObject("flowLayoutPanelRooms.BackgroundImage");
             flowLayoutPanelRooms.BackgroundImageLayout = ImageLayout.Stretch;
+            flowLayoutPanelRooms.Controls.Add(panelRoomTemplate);
             flowLayoutPanelRooms.FlowDirection = FlowDirection.TopDown;
             flowLayoutPanelRooms.Location = new Point(418, 82);
             flowLayoutPanelRooms.Margin = new Padding(10);
@@ -220,13 +222,12 @@
             // panelRoomTemplate
             // 
             panelRoomTemplate.BackColor = Color.SteelBlue;
-            panelRoomTemplate.Controls.Add(button3);
             panelRoomTemplate.Controls.Add(picLock);
             panelRoomTemplate.Controls.Add(btnJoin);
             panelRoomTemplate.Controls.Add(lblSlot);
             panelRoomTemplate.Controls.Add(lblRoomCode);
             panelRoomTemplate.Controls.Add(lblRoomName);
-            panelRoomTemplate.Location = new Point(226, 540);
+            panelRoomTemplate.Location = new Point(13, 13);
             panelRoomTemplate.Name = "panelRoomTemplate";
             panelRoomTemplate.Size = new Size(619, 64);
             panelRoomTemplate.TabIndex = 0;
@@ -245,7 +246,9 @@
             // btnJoin
             // 
             btnJoin.BackColor = Color.DarkKhaki;
-            btnJoin.Location = new Point(337, 9);
+            btnJoin.FlatStyle = FlatStyle.Popup;
+            btnJoin.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnJoin.Location = new Point(481, 9);
             btnJoin.Name = "btnJoin";
             btnJoin.Size = new Size(116, 46);
             btnJoin.TabIndex = 3;
@@ -290,22 +293,23 @@
             button1.BackgroundImage = (Image)resources.GetObject("button1.BackgroundImage");
             button1.BackgroundImageLayout = ImageLayout.Stretch;
             button1.FlatStyle = FlatStyle.Popup;
-            button1.Location = new Point(877, 540);
+            button1.Location = new Point(846, 542);
             button1.Name = "button1";
-            button1.Size = new Size(194, 52);
+            button1.Size = new Size(208, 52);
             button1.TabIndex = 2;
             button1.UseVisualStyleBackColor = true;
             button1.Click += button1_Click;
             // 
-            // button3
+            // findroom
             // 
-            button3.BackColor = Color.Crimson;
-            button3.Location = new Point(474, 9);
-            button3.Name = "button3";
-            button3.Size = new Size(116, 46);
-            button3.TabIndex = 5;
-            button3.Text = "REMOVE";
-            button3.UseVisualStyleBackColor = false;
+            findroom.BackgroundImage = (Image)resources.GetObject("findroom.BackgroundImage");
+            findroom.BackgroundImageLayout = ImageLayout.Stretch;
+            findroom.FlatStyle = FlatStyle.Popup;
+            findroom.Location = new Point(443, 542);
+            findroom.Name = "findroom";
+            findroom.Size = new Size(189, 52);
+            findroom.TabIndex = 3;
+            findroom.UseVisualStyleBackColor = true;
             // 
             // JoinRoom
             // 
@@ -314,7 +318,7 @@
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(1128, 616);
-            Controls.Add(panelRoomTemplate);
+            Controls.Add(findroom);
             Controls.Add(button1);
             Controls.Add(flowLayoutPanelRooms);
             Controls.Add(panel1);
@@ -324,6 +328,7 @@
             Load += JoinRoom_Load;
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
+            flowLayoutPanelRooms.ResumeLayout(false);
             panelRoomTemplate.ResumeLayout(false);
             panelRoomTemplate.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)picLock).EndInit();
@@ -353,6 +358,6 @@
         private Label label4;
         private Button button2;
         private TextBox textBox1;
-        private Button button3;
+        private Button findroom;
     }
 }

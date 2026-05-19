@@ -12,46 +12,9 @@ public static class BattleCharacterCatalog
             3 => "wizard",
             4 => "haladin",
             5 => "heavycrystal",
+            6 => "stonegolem",
             _ => "lord"
         };
     }
 
-    public static BattleCharacterStats GetStats(string characterId)
-    {
-        return characterId.ToLowerInvariant() switch
-        {
-            "lord" => new BattleCharacterStats
-            {
-                Hp = 130,
-                Mana = 140,
-                Atk = 26,
-                Def = 14,
-                Speed = 250f,
-                AttackRange = 180f,
-                AttackDuration = 0.77f,
-                ProtectionBlocksAllDirections = true
-            },
-            "samurai" => new BattleCharacterStats
-            {
-                Hp = 100,
-                Mana = 100,
-                Atk = 20,
-                Def = 10,
-                Speed = 350f,
-                AttackRange = 100f,
-                AttackDuration = 0.5f
-            },
-            "wizard" => new BattleCharacterStats
-            {
-                Hp = 100,
-                Mana = 100,
-                Atk = 20,
-                Def = 10,
-                Speed = 200f,
-                AttackRange = 100f,
-                AttackDuration = 1f
-            },
-            _ => new BattleCharacterStats()
-        };
-    }
 }

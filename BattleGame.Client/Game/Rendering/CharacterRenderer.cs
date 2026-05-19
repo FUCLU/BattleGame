@@ -28,13 +28,9 @@ public class CharacterRenderer
     public void Update(Entity entity, float deltaTime)
     {
         var sp = entity.Get<SpriteComponent>();
-        var animations = GetAnimationsForEntity(entity);
-        if (!animations.TryGetValue(sp.CurrentAnimation, out var anim))
-        {
-            if (!string.Equals(sp.CurrentAnimation, "Dash", StringComparison.OrdinalIgnoreCase)
-                || !animations.TryGetValue("Run", out anim))
-                return;
-        }
+        if (!TryGetAnimation(entity, sp.CurrentAnimation, out var anim))
+            return;
+
         if (anim.Frames.Length == 0) return;
         sp.CurrentAnimationFrameCount = anim.Frames.Length;
 
@@ -69,12 +65,9 @@ public class CharacterRenderer
         bool renderFacingRight = ch.Render.InvertFacing ? !mv.FacingRight : mv.FacingRight;
 
         var animations = GetAnimationsForEntity(entity);
-        if (!animations.TryGetValue(sp.CurrentAnimation, out var anim))
-        {
-            if (!string.Equals(sp.CurrentAnimation, "Dash", StringComparison.OrdinalIgnoreCase)
-                || !animations.TryGetValue("Run", out anim))
-                return;
-        }
+        if (!TryGetAnimation(animations, sp.CurrentAnimation, out var anim))
+            return;
+
         if (anim.Frames.Length == 0) return;
 
         var frameIndex = Math.Min(sp.CurrentFrame, anim.Frames.Length - 1);
@@ -116,13 +109,9 @@ public class CharacterRenderer
         var ch = entity.Get<CharacterComponent>();
         bool renderFacingRight = ch.Render.InvertFacing ? !mv.FacingRight : mv.FacingRight;
 
-        var animations = GetAnimationsForEntity(entity);
-        if (!animations.TryGetValue(sp.CurrentAnimation, out var anim))
-        {
-            if (!string.Equals(sp.CurrentAnimation, "Dash", StringComparison.OrdinalIgnoreCase)
-                || !animations.TryGetValue("Run", out anim))
-                return;
-        }
+        if (!TryGetAnimation(entity, sp.CurrentAnimation, out var anim))
+            return;
+
         if (anim.Frames.Length == 0 || ch.BaseStats.Hp <= 0) return;
 
         var frameIndex = Math.Min(sp.CurrentFrame, anim.Frames.Length - 1);
@@ -144,6 +133,70 @@ public class CharacterRenderer
         g.FillRectangle(backBrush, backRect);
         if (fillRect.Width > 0)
             g.FillRectangle(fillBrush, fillRect);
+    }
+
+    private bool TryGetAnimation(Entity entity, string animationName, out SpriteAnimation anim)
+        => TryGetAnimation(GetAnimationsForEntity(entity), animationName, out anim);
+
+    private static bool TryGetAnimation(
+        Dictionary<string, SpriteAnimation> animations,
+        string animationName,
+        out SpriteAnimation anim)
+    {
+        if (!string.IsNullOrWhiteSpace(animationName) &&
+            animations.TryGetValue(animationName, out anim!))
+        {
+            return true;
+        }
+
+        foreach (string fallback in GetFallbackAnimations(animationName))
+        {
+            if (animations.TryGetValue(fallback, out anim!))
+                return true;
+        }
+
+        anim = null!;
+        return false;
+    }
+
+    private static IEnumerable<string> GetFallbackAnimations(string animationName)
+    {
+        if (animationName.StartsWith("Attack_", StringComparison.OrdinalIgnoreCase))
+        {
+            yield break;
+        }
+
+        switch (animationName.ToLowerInvariant())
+        {
+            case "dash":
+                yield break;
+            case "run":
+                yield return "Walk";
+                yield return "Idle";
+                yield break;
+            case "walk":
+                yield return "Run";
+                yield return "Idle";
+                yield break;
+            case "jump":
+            case "fall":
+                yield return "Run";
+                yield return "Walk";
+                yield return "Idle";
+                yield break;
+            case "hurt":
+                yield return "Protection";
+                yield return "Idle";
+                yield break;
+            case "dead":
+                yield return "Hurt";
+                yield return "Idle";
+                yield break;
+            case "protection":
+                yield break;
+            default:
+                yield break;
+        }
     }
 
     private static void DrawFrame(Graphics g, Image frame, Rectangle destinationRect, bool facingRight)

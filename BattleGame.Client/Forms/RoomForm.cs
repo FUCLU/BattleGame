@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using BattleGame.Client.Game.Rendering;
 using BattleGame.Client.Managers;
 using BattleGame.Shared.Packets;
 
@@ -21,27 +22,29 @@ namespace BattleGame.Client.Forms
         private const int PacketListenPollMs = 250;
         private readonly string _roomCode;
         private readonly bool _isHost;
-        private readonly int _localPlayerIndex;
-        private readonly int _timeLimitMinutes;
+        private int _timeLimitMinutes;
         private int _playerCount;
-        private bool _isReady;
-        private bool _remoteReady;
+        private bool _player1Ready;
+        private bool _player2Ready;
+        private string _player1Name;
+        private string _player2Name;
         private string _selectedCharacterId = "lord";
         private string _selectedMapId = "terrace";
         private CancellationTokenSource? _listenCts;
         private Task? _listenTask;
         private bool _leaveSent;
 
-        public RoomForm(string roomCode, bool isHost, int playerCount, string mapId, int timeLimitMinutes)
+        public RoomForm(string roomCode, bool isHost, int playerCount, string mapId, int timeLimitMinutes, string? player1Name = null, string? player2Name = null)
         {
             InitializeComponent();
             StartPosition = FormStartPosition.CenterScreen;
             _roomCode = roomCode;
             _isHost = isHost;
             _playerCount = Math.Clamp(playerCount, 0, MaxPlayers);
-            _localPlayerIndex = _playerCount <= 1 ? 1 : (isHost ? 1 : 2);
             _selectedMapId = string.IsNullOrWhiteSpace(mapId) ? "terrace" : mapId;
             _timeLimitMinutes = Math.Clamp(timeLimitMinutes, 1, 5);
+            _player1Name = string.IsNullOrWhiteSpace(player1Name) ? "Player..." : player1Name.Trim();
+            _player2Name = string.IsNullOrWhiteSpace(player2Name) ? "Player..." : player2Name.Trim();
             button1.Click += button1_Click;
             button5.Click += button1_Click;
             button2.Click += button2_Click;
@@ -49,6 +52,18 @@ namespace BattleGame.Client.Forms
             if (_isHost && _playerCount == 0)
             {
                 _playerCount = 1;
+            }
+
+            string localUsername = string.IsNullOrWhiteSpace(PlayerSession.Username) ? "You" : PlayerSession.Username;
+            if (_isHost)
+            {
+                if (string.IsNullOrWhiteSpace(player1Name))
+                    _player1Name = localUsername;
+            }
+            else
+            {
+                if (string.IsNullOrWhiteSpace(player2Name))
+                    _player2Name = localUsername;
             }
         }
 
@@ -84,7 +99,7 @@ namespace BattleGame.Client.Forms
             base.OnFormClosed(e);
         }
 
-        private void RoomForm_Load(object sender, EventArgs e)
+        private async void RoomForm_Load(object sender, EventArgs e)
         {
             AddMessage("", "Connecting to room...");
             ConfigureOnlineLayout();
@@ -95,6 +110,8 @@ namespace BattleGame.Client.Forms
             {
                 _listenCts = new CancellationTokenSource();
                 _listenTask = ListenForPacketsAsync(_listenCts.Token);
+
+                await RefreshRoomSnapshotAsync();
 
                 if (_isHost && TryParseRoomId(out int roomId))
                 {
@@ -112,20 +129,27 @@ namespace BattleGame.Client.Forms
             button1.Visible = true;
             label5.Text = GetMapDisplayName(_selectedMapId);
             label6.Text = FormatTimeLimit(_timeLimitMinutes);
-            button4.Visible = _isHost;
+            button3.Location = new Point(721, 12);
             button3.Enabled = _playerCount > 0;
-            button4.Enabled = _isHost && _playerCount >= MaxPlayers && _isReady && _remoteReady;
         }
 
         private void UpdateRoomStatus()
         {
             textBox3.Text = _roomCode;
+            bool localFirst = IsLocalPlayer1();
+            string displayPlayer1 = localFirst ? _player1Name : _player2Name;
+            string displayPlayer2 = localFirst ? _player2Name : _player1Name;
+            textBox1.Text = displayPlayer1;
+            textBox2.Text = displayPlayer2;
 
             bool hasPlayer1 = _playerCount >= 1;
             bool hasPlayer2 = _playerCount >= 2;
 
-            UpdateReadyLabel(lblReady1, hasPlayer1, isReady: false);
-            UpdateReadyLabel(lblReady2, hasPlayer2, isReady: false);
+            bool topReady = localFirst ? _player1Ready : _player2Ready;
+            bool bottomReady = localFirst ? _player2Ready : _player1Ready;
+
+            UpdateReadyLabel(lblReady1, hasPlayer1, isReady: topReady);
+            UpdateReadyLabel(lblReady2, hasPlayer2, isReady: bottomReady);
 
             if (!hasPlayer1 || !hasPlayer2)
             {
@@ -215,58 +239,26 @@ namespace BattleGame.Client.Forms
             if (selection.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(selection.SelectedCharacterId))
             {
                 _selectedCharacterId = selection.SelectedCharacterId;
-                _isReady = true;
+                WarmCharacterAssets(_selectedCharacterId);
 
                 if (NetworkManager.Instance.IsConnected)
                 {
+                    int roomId = 0;
+                    TryParseRoomId(out roomId);
                     await NetworkManager.Instance.SelectCharacterAsync(new SelectionCharacterPacket
                     {
+                        RoomId = roomId,
                         CharacterId = CharacterIdToNetwork(_selectedCharacterId)
                     });
                 }
-            }
-            else
-            {
-                _isReady = false;
+
+                if (IsLocalPlayer1())
+                    _player1Ready = true;
+                else
+                    _player2Ready = true;
             }
 
             UpdateReadyState();
-        }
-
-        private void button4_Click(object sender, EventArgs e)
-        {
-            if (!_isHost)
-            {
-                MessageBox.Show("Chỉ chủ phòng mới có thể bắt đầu trận.", "Room", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            if (_playerCount < MaxPlayers)
-            {
-                MessageBox.Show("Chưa đủ người chơi.", "Room", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            if (!_isReady || !_remoteReady)
-            {
-                MessageBox.Show("Chưa đủ người sẵn sàng.", "Room", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                return;
-            }
-
-            if (NetworkManager.Instance.IsConnected)
-            {
-                _ = StartOnlineMatchAsync();
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(_selectedCharacterId))
-            {
-                _selectedCharacterId = "lord";
-            }
-
-            GameForm gameForm = new GameForm(_selectedCharacterId, _selectedMapId);
-            gameForm.Show();
-            Close();
         }
 
         private void UpdateReadyState()
@@ -276,18 +268,15 @@ namespace BattleGame.Client.Forms
             bool canReady = _playerCount > 0;
 
             button3.Enabled = canReady;
-            button4.Enabled = _isHost && _playerCount >= MaxPlayers && _isReady && _remoteReady;
 
-            if (_localPlayerIndex == 1)
-            {
-                UpdateReadyLabel(lblReady1, hasPlayer1, _isReady);
-                UpdateReadyLabel(lblReady2, hasPlayer2, _remoteReady);
-            }
-            else
-            {
-                UpdateReadyLabel(lblReady1, hasPlayer1, _remoteReady);
-                UpdateReadyLabel(lblReady2, hasPlayer2, _isReady);
-            }
+            bool localFirst = IsLocalPlayer1();
+            bool displayHasPlayer1 = localFirst ? hasPlayer1 : hasPlayer2;
+            bool displayHasPlayer2 = localFirst ? hasPlayer2 : hasPlayer1;
+            bool displayReady1 = localFirst ? _player1Ready : _player2Ready;
+            bool displayReady2 = localFirst ? _player2Ready : _player1Ready;
+
+            UpdateReadyLabel(lblReady1, displayHasPlayer1, displayReady1);
+            UpdateReadyLabel(lblReady2, displayHasPlayer2, displayReady2);
         }
 
         private static void UpdateReadyLabel(Label label, bool hasPlayer, bool isReady)
@@ -326,22 +315,45 @@ namespace BattleGame.Client.Forms
         void AddMessage(string sender, string message)
         {
             string time = DateTime.Now.ToString("HH:mm");
-
-            string formatted;
-
-            formatted = $"[{time}] {sender}: {message}\n";
+            string displaySender = string.IsNullOrWhiteSpace(sender) ? "SYSTEM" : sender.Trim();
+            string formatted = $"[{time}] {displaySender}: {message}\n";
             richtxtBoxMessage.AppendText(formatted);
             richtxtBoxMessage.ScrollToCaret();
         }
 
-        private void btnSend_Click(object sender, EventArgs e)
+        private async void btnSend_Click(object sender, EventArgs e)
         {
             string msg = txtBoxInp.Text.Trim();
+            if (string.IsNullOrEmpty(msg))
+                return;
 
-            if (string.IsNullOrEmpty(msg)) return;
+            txtBoxInp.Clear();
+            if (!NetworkManager.Instance.IsConnected || !TryParseRoomId(out int roomId))
+            {
+                AddMessage(string.IsNullOrWhiteSpace(PlayerSession.Username) ? "You" : PlayerSession.Username, msg);
+                return;
+            }
 
-            AddMessage("tester", msg); // TODO: thay bằng username thật
+            btnSend.Enabled = false;
+            try
+            {
+                await NetworkManager.Instance.SendChatAsync(new ChatMessagePacket
+                {
+                    RoomId = roomId,
+                    Message = msg
+                });
+            }
+            catch
+            {
+                AddMessage("SYSTEM", "Gửi tin nhắn thất bại.");
+            }
+            finally
+            {
+                btnSend.Enabled = true;
+            }
 
+            if (IsDisposed)
+                return;
             txtBoxInp.Clear();
         }
 
@@ -405,23 +417,31 @@ namespace BattleGame.Client.Forms
                     var joinResult = (JoinRoomResultPacket)packet;
                     if (joinResult.Success)
                     {
+                        if (joinResult.MapId >= 0)
+                        {
+                            _selectedMapId = MapIdFromNetwork(joinResult.MapId);
+                            label5.Text = GetMapDisplayName(_selectedMapId);
+                        }
+                        if (joinResult.TimeLimitMinutes > 0)
+                        {
+                            _timeLimitMinutes = Math.Clamp(joinResult.TimeLimitMinutes, 1, 5);
+                            label6.Text = FormatTimeLimit(_timeLimitMinutes);
+                        }
+
+                        _player1Name = string.IsNullOrWhiteSpace(joinResult.Player1Name) ? _player1Name : joinResult.Player1Name;
+                        _player2Name = string.IsNullOrWhiteSpace(joinResult.Player2Name) ? _player2Name : joinResult.Player2Name;
                         _playerCount = MaxPlayers;
                         UpdateRoomStatus();
                         UpdateReadyState();
+
+                        if (!string.IsNullOrWhiteSpace(joinResult.Message))
+                            AddMessage("SYSTEM", joinResult.Message);
                     }
                     break;
                 case PacketType.Ready:
                     var readyPacket = (ReadyPacket)packet;
-                    if (_isHost)
-                    {
-                        _isReady = readyPacket.Player1Ready;
-                        _remoteReady = readyPacket.Player2Ready;
-                    }
-                    else
-                    {
-                        _isReady = readyPacket.Player2Ready;
-                        _remoteReady = readyPacket.Player1Ready;
-                    }
+                    _player1Ready = readyPacket.Player1Ready;
+                    _player2Ready = readyPacket.Player2Ready;
                     UpdateReadyState();
                     break;
                 case PacketType.SelectMap:
@@ -431,8 +451,61 @@ namespace BattleGame.Client.Forms
                     break;
                 case PacketType.MatchFound:
                     var matchFound = (MatchFoundPacket)packet;
+                    _player1Name = string.IsNullOrWhiteSpace(matchFound.Player1Name) ? _player1Name : matchFound.Player1Name;
+                    _player2Name = string.IsNullOrWhiteSpace(matchFound.Player2Name) ? _player2Name : matchFound.Player2Name;
+                    if (matchFound.TimeLimitMinutes > 0)
+                        _timeLimitMinutes = Math.Clamp(matchFound.TimeLimitMinutes, 1, 5);
                     OpenMatch(matchFound);
                     break;
+                case PacketType.RoomClosed:
+                    var closed = (RoomClosedPacket)packet;
+                    HandleRoomClosed(closed.Message);
+                    break;
+                case PacketType.ChatMessage:
+                    var chat = (ChatMessagePacket)packet;
+                    AddMessage(chat.SenderName, chat.Message);
+                    break;
+            }
+        }
+
+        private async Task RefreshRoomSnapshotAsync()
+        {
+            if (!NetworkManager.Instance.IsConnected || !TryParseRoomId(out int roomId))
+                return;
+
+            try
+            {
+                var roomResult = await NetworkManager.Instance.GetRoomAsync(new GetRoomPacket());
+                RoomInfo? room = roomResult.Rooms.FirstOrDefault(r => r.RoomId == roomId);
+                if (room == null)
+                    return;
+
+                if (!string.IsNullOrWhiteSpace(room.Player1Name))
+                    _player1Name = room.Player1Name;
+
+                if (!string.IsNullOrWhiteSpace(room.Player2Name))
+                    _player2Name = room.Player2Name;
+
+                _player1Ready = room.Player1Ready;
+                _player2Ready = room.Player2Ready;
+                _playerCount = Math.Clamp(room.CurrentPlayers, 0, MaxPlayers);
+
+                if (room.MapId >= 0)
+                {
+                    _selectedMapId = MapIdFromNetwork(room.MapId);
+                    label5.Text = GetMapDisplayName(_selectedMapId);
+                }
+                if (room.TimeLimitMinutes > 0)
+                {
+                    _timeLimitMinutes = Math.Clamp(room.TimeLimitMinutes, 1, 5);
+                    label6.Text = FormatTimeLimit(_timeLimitMinutes);
+                }
+
+                UpdateRoomStatus();
+                UpdateReadyState();
+            }
+            catch
+            {
             }
         }
 
@@ -441,29 +514,87 @@ namespace BattleGame.Client.Forms
             return type == PacketType.JoinRoomResult
                 || type == PacketType.Ready
                 || type == PacketType.SelectMap
-                || type == PacketType.MatchFound;
+                || type == PacketType.MatchFound
+                || type == PacketType.RoomClosed
+                || type == PacketType.ChatMessage;
         }
 
-        private async Task StartOnlineMatchAsync()
+        private void HandleRoomClosed(string message)
         {
-            await NetworkManager.Instance.SendAsync(new MatchRequestPacket());
+            _leaveSent = true;
+            _listenCts?.Cancel();
+            if (!string.IsNullOrWhiteSpace(message))
+            {
+                MessageBox.Show(message, "Room Closed", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            var joinRoom = new JoinRoom();
+            joinRoom.Show();
+            if (NetworkManager.Instance.IsConnected)
+            {
+                _ = joinRoom.RefreshRoomsFromServerAsync();
+            }
+            Close();
         }
 
         private void OpenMatch(MatchFoundPacket matchFound)
         {
             string mapId = MapIdFromNetwork(matchFound.MapId);
-            string localCharacterId = _isHost
-                ? CharacterIdFromNetwork(matchFound.Player1CharacterId)
-                : CharacterIdFromNetwork(matchFound.Player2CharacterId);
-            string enemyCharacterId = _isHost
+            int preferredUserId = NetworkManager.Instance.PreferredUserId;
+            int localPlayerId;
+            if (preferredUserId > 0 && (matchFound.Player1Id == preferredUserId || matchFound.Player2Id == preferredUserId))
+            {
+                localPlayerId = preferredUserId;
+            }
+            else
+            {
+                string localUsername = (PlayerSession.Username ?? string.Empty).Trim();
+                if (!string.IsNullOrWhiteSpace(localUsername) &&
+                    string.Equals(localUsername, matchFound.Player1Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    localPlayerId = matchFound.Player1Id;
+                }
+                else if (!string.IsNullOrWhiteSpace(localUsername) &&
+                    string.Equals(localUsername, matchFound.Player2Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    localPlayerId = matchFound.Player2Id;
+                }
+                else
+                {
+                    localPlayerId = IsLocalPlayer1() ? matchFound.Player1Id : matchFound.Player2Id;
+                }
+            }
+
+            bool localIsP1 = localPlayerId == matchFound.Player1Id;
+            int localCharacterNetworkId = localIsP1
+                ? matchFound.Player1CharacterId
+                : matchFound.Player2CharacterId;
+            string localCharacterId = CharacterIdFromNetwork(localCharacterNetworkId);
+            string enemyCharacterId = localIsP1
                 ? CharacterIdFromNetwork(matchFound.Player2CharacterId)
                 : CharacterIdFromNetwork(matchFound.Player1CharacterId);
+            string localName = localIsP1 ? _player1Name : _player2Name;
+            string enemyName = localIsP1 ? _player2Name : _player1Name;
 
             _leaveSent = true;
-            int localPlayerId = _isHost ? matchFound.Player1Id : matchFound.Player2Id;
-            GameForm gameForm = new GameForm(localCharacterId, mapId, enemyCharacterId, isOnline: true, localPlayerId: localPlayerId);
+            GameForm gameForm = new GameForm(localCharacterId, mapId, enemyCharacterId, isOnline: true, localPlayerId: localPlayerId, localUsername: localName, enemyUsername: enemyName, roomId: matchFound.RoomId);
             gameForm.Show();
             Close();
+        }
+
+        private bool IsLocalPlayer1()
+        {
+            string localUsername = (PlayerSession.Username ?? string.Empty).Trim();
+            if (!string.IsNullOrWhiteSpace(localUsername))
+            {
+                if (string.Equals(localUsername, _player1Name, StringComparison.OrdinalIgnoreCase))
+                    return true;
+
+                if (string.Equals(localUsername, _player2Name, StringComparison.OrdinalIgnoreCase))
+                    return false;
+            }
+
+            return _isHost;
         }
 
         private bool TryParseRoomId(out int roomId)
@@ -478,6 +609,7 @@ namespace BattleGame.Client.Forms
                 "terrace" => 0,
                 "throneroom" => 1,
                 "castle" => 2,
+                "forest" => 3,
                 _ => 0
             };
         }
@@ -489,6 +621,7 @@ namespace BattleGame.Client.Forms
                 0 => "terrace",
                 1 => "throneroom",
                 2 => "castle",
+                3 => "forest",
                 _ => "terrace"
             };
         }
@@ -503,6 +636,7 @@ namespace BattleGame.Client.Forms
                 "wizard" => 3,
                 "haladin" => 4,
                 "heavycrystal" => 5,
+                "stonegolem" => 6,
                 _ => 0
             };
         }
@@ -517,8 +651,27 @@ namespace BattleGame.Client.Forms
                 3 => "wizard",
                 4 => "haladin",
                 5 => "heavycrystal",
+                6 => "stonegolem",
                 _ => "lord"
             };
+        }
+
+        private static void WarmCharacterAssets(string characterId)
+        {
+            if (string.IsNullOrWhiteSpace(characterId))
+                return;
+
+            _ = Task.Run(() =>
+            {
+                try
+                {
+                    _ = new AnimationLoader("Assets").Load(characterId);
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[RoomForm] Failed to warm character assets for '{characterId}': {ex}");
+                }
+            });
         }
 
     }

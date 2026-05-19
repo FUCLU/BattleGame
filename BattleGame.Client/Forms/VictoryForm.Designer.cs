@@ -37,6 +37,7 @@
             // 
             button1.BackgroundImage = (Image)resources.GetObject("button1.BackgroundImage");
             button1.BackgroundImageLayout = ImageLayout.Stretch;
+            button1.FlatStyle = FlatStyle.Popup;
             button1.Location = new Point(224, 388);
             button1.Name = "button1";
             button1.Size = new Size(179, 69);
@@ -48,6 +49,7 @@
             // 
             button2.BackgroundImage = (Image)resources.GetObject("button2.BackgroundImage");
             button2.BackgroundImageLayout = ImageLayout.Stretch;
+            button2.FlatStyle = FlatStyle.Popup;
             button2.Location = new Point(519, 388);
             button2.Name = "button2";
             button2.Size = new Size(183, 69);

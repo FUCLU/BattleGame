@@ -12,6 +12,8 @@ namespace BattleGame.Client.Game.Rendering
 {
     public class AnimationLoader
     {
+        private static readonly object CacheLock = new();
+        private static readonly Dictionary<string, Dictionary<string, SpriteAnimation>> Cache = new(StringComparer.OrdinalIgnoreCase);
         private readonly string _assetRoot;
         private readonly string _configRoot;
 
@@ -30,9 +32,18 @@ namespace BattleGame.Client.Game.Rendering
 
         public Dictionary<string, SpriteAnimation> Load(string characterId)
         {
+            string normalizedCharacterId = (characterId ?? string.Empty).Trim().ToLowerInvariant();
+            string cacheKey = $"{_assetRoot}|{normalizedCharacterId}";
+
+            lock (CacheLock)
+            {
+                if (Cache.TryGetValue(cacheKey, out var cached))
+                    return new Dictionary<string, SpriteAnimation>(cached, StringComparer.OrdinalIgnoreCase);
+            }
+
             var configPath = CharacterDefinitionLoader.ResolveConfigPath(
                 Directory.GetParent(_configRoot)?.FullName ?? _configRoot,
-                characterId);
+                normalizedCharacterId);
 
             using var doc = JsonDocument.Parse(File.ReadAllText(configPath));
             var root = doc.RootElement;
@@ -44,7 +55,7 @@ namespace BattleGame.Client.Game.Rendering
             }
 
             var animations = root.GetProperty("animations");
-            var result = new Dictionary<string, SpriteAnimation>();
+            var result = new Dictionary<string, SpriteAnimation>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var anim in animations.EnumerateObject())
             {
@@ -61,7 +72,7 @@ namespace BattleGame.Client.Game.Rendering
                 var offsetX = anim.Value.TryGetProperty("offsetX", out var ox) ? ox.GetSingle() : 0f;
                 var offsetY = anim.Value.TryGetProperty("offsetY", out var oy) ? oy.GetSingle() : 0f;
 
-                var sheet = LoadSheet(characterId, name, fileName, assetFolderHint);
+                var sheet = LoadSheet(normalizedCharacterId, name, fileName, assetFolderHint);
                 if (sheet == null)
                 {
                     System.Diagnostics.Debug.WriteLine($"[AnimationLoader] Animation {characterId}/{name} NOT found (file missing)");
@@ -86,6 +97,9 @@ namespace BattleGame.Client.Game.Rendering
             }
 
             System.Diagnostics.Debug.WriteLine($"[AnimationLoader] Total animations loaded for {characterId}: {result.Count}");
+            lock (CacheLock)
+                Cache[cacheKey] = new Dictionary<string, SpriteAnimation>(result, StringComparer.OrdinalIgnoreCase);
+
             return result;
         }
 
@@ -100,7 +114,7 @@ namespace BattleGame.Client.Game.Rendering
 
             if (!string.IsNullOrWhiteSpace(assetFolderHint))
             {
-                string hintedPath = Path.Combine(_assetRoot, assetFolderHint, spriteFileName);
+                string hintedPath = Path.Combine(_assetRoot, "Characters", assetFolderHint, spriteFileName);
                 if (File.Exists(hintedPath))
                     path = hintedPath;
             }

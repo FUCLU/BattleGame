@@ -16,6 +16,56 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Content Include="Assets\Characters\**\*.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Include="Assets\PotraitPic\**\*.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Include="Assets\dungeon\**\*.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Include="Assets\dungeon\**\*.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Include="Config\Characters\*.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Include="Config\Bosses\*.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Include="Config\BossAiProfiles\*.json">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Include="clientsettings*.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
+		<Content Include="Assets\Characters\Haladin\*.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Assets\Characters\HeavyCrystal\*.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Assets\Characters\StoneGolem\*.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+		<Content Include="Assets\PotraitPic\*.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</Content>
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Remove="Assets\Background\login.png" />
 		<None Remove="Assets\Characters\Attack.png" />
 		<None Remove="Assets\Characters\Dead.png" />
@@ -29,7 +79,6 @@
 		<None Remove="Assets\Characters\Kitsune\Fire_2.png" />
 		<None Remove="Assets\Characters\Kitsune\Hurt.png" />
 		<None Remove="Assets\Characters\Kitsune\Idle.png" />
-		<None Remove="Assets\Characters\Kitsune\Idle_2.png" />
 		<None Remove="Assets\Characters\Kitsune\Jump.png" />
 		<None Remove="Assets\Characters\Kitsune\Object.png" />
 		<None Remove="Assets\Characters\Kitsune\Run.png" />
@@ -43,7 +92,6 @@
 		<None Remove="Assets\Characters\Lord\Hurt.png" />
 		<None Remove="Assets\Characters\Lord\Idle.png" />
 		<None Remove="Assets\Characters\Lord\Lightning.png" />
-		<None Remove="Assets\Characters\Lord\Necromancer_creativekind-Sheet.png" />
 		<None Remove="Assets\Characters\Lord\Protection.png" />
 		<None Remove="Assets\Characters\Lord\Run.png" />
 		<None Remove="Assets\Characters\Lord\Skill1.png" />
@@ -99,9 +147,6 @@
 	  <Content Include="Assets\Characters\Kitsune\Idle.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
-	  <Content Include="Assets\Characters\Kitsune\Idle_2.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
 	  <Content Include="Assets\Characters\Kitsune\Jump.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
@@ -139,9 +184,6 @@
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Assets\Characters\Lord\Lightning.png">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	  <Content Include="Assets\Characters\Lord\Necromancer_creativekind-Sheet.png">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
 	  <Content Include="Assets\Characters\Lord\Protection.png">

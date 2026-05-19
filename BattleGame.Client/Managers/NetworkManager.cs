@@ -12,8 +12,12 @@ namespace BattleGame.Client.Managers
         public static NetworkManager Instance => _instance ??= new NetworkManager();
 
         private readonly ClientSocket _socket;
+        public int PreferredUserId { get; set; } = 0;
+        public int PreferredRoomId { get; set; } = 0;
         private readonly SemaphoreSlim _receiveGate = new(1, 1);
         private readonly List<Packet> _pendingPackets = new();
+        private string _savedUsername = string.Empty;
+        private string _savedPassword = string.Empty;
 
         private NetworkManager()
         {
@@ -29,7 +33,34 @@ namespace BattleGame.Client.Managers
         public async Task ReconnectAsync()
         {
             _socket.Close();
+            ClearPendingPackets();
             await ConnectAsync();
+        }
+
+        public void RememberLogin(string username, string password, int userId)
+        {
+            _savedUsername = username ?? string.Empty;
+            _savedPassword = password ?? string.Empty;
+            PreferredUserId = userId;
+        }
+
+        public async Task<bool> ReconnectAndRestoreSessionAsync()
+        {
+            await ReconnectAsync();
+            if (string.IsNullOrWhiteSpace(_savedUsername) || string.IsNullOrEmpty(_savedPassword))
+                return IsConnected;
+
+            var result = await LoginAsync(new LoginPacket
+            {
+                Username = _savedUsername,
+                Password = _savedPassword
+            });
+
+            if (!result.Success)
+                return false;
+
+            PreferredUserId = result.UserId;
+            return true;
         }
 
         public bool IsConnected => _socket.IsConnected();
@@ -181,13 +212,41 @@ namespace BattleGame.Client.Managers
         public async Task<JoinRoomResultPacket> JoinRoomAsync(JoinRoomPacket packet)
         {
             await SendAsync(packet);
-            return await ReceiveExpectedAsync<JoinRoomResultPacket>(PacketType.JoinRoomResult, 8000);
+            var result = await ReceiveExpectedAsync<JoinRoomResultPacket>(PacketType.JoinRoomResult, 8000);
+            if (result.Success)
+                PreferredRoomId = result.RoomId;
+            return result;
+        }
+
+        public async Task<JoinRoomResultPacket> JoinRoomWithServerRedirectAsync(JoinRoomPacket packet)
+        {
+            var result = await JoinRoomAsync(packet);
+            if (!result.RequiresReconnect)
+                return result;
+
+            PreferredRoomId = packet.RoomId;
+            bool restored = await ReconnectAndRestoreSessionAsync();
+            if (!restored)
+            {
+                return new JoinRoomResultPacket
+                {
+                    Success = false,
+                    RoomId = packet.RoomId,
+                    ServerId = result.ServerId,
+                    Message = "Không thể reconnect tới server đang giữ phòng."
+                };
+            }
+
+            return await JoinRoomAsync(packet);
         }
 
         public async Task<CreateRoomResultPacket> CreateRoomAsync(CreateRoomPacket packet)
         {
             await SendAsync(packet);
-            return await ReceiveExpectedAsync<CreateRoomResultPacket>(PacketType.CreateRoomResult, 8000);
+            var result = await ReceiveExpectedAsync<CreateRoomResultPacket>(PacketType.CreateRoomResult, 8000);
+            if (result.RoomId > 0)
+                PreferredRoomId = result.RoomId;
+            return result;
         }
 
         public async Task<GetLeaderboardResultPacket> GetLeaderboardAsync(GetLeaderboardPacket packet)
@@ -233,6 +292,11 @@ namespace BattleGame.Client.Managers
         }
 
         public async Task DisconnectAsync(DisconnectPacket packet)
+        {
+            await SendAsync(packet);
+        }
+
+        public async Task SendChatAsync(ChatMessagePacket packet)
         {
             await SendAsync(packet);
         }
@@ -306,6 +370,11 @@ namespace BattleGame.Client.Managers
 
             packet = null;
             return false;
+        }
+
+        private void ClearPendingPackets()
+        {
+            _pendingPackets.Clear();
         }
 
         private bool TryTakePendingByType(PacketType expectedType, out Packet? packet)

@@ -1,6 +1,7 @@
-﻿using System.Net.Sockets;
+using System.Net.Sockets;
 using System.Text;
 using BattleGame.Client.Config;
+using BattleGame.Client.Managers;
 using BattleGame.Shared.Network;
 using BattleGame.Shared.Packets;
 
@@ -17,11 +18,12 @@ namespace BattleGame.Client.Network
 
         public async Task ConnectAsync()
         {
-            Console.WriteLine("[Client] Connecting to LoadBalancer...");
+            Console.WriteLine($"[Client] Connecting to LoadBalancer {_config.ServerIP}:{_config.ServerPort} (profile={_config.Profile})...");
             _client = new TcpClient();
             await _client.ConnectAsync(_config.ServerIP, _config.ServerPort);
             _stream = _client.GetStream();
             Console.WriteLine("[Client] Connected to LB, waiting for redirect...");
+            await SendAffinityHintAsync();
 
             byte[] lenBuf = new byte[4];
             await ReadExactAsync(lenBuf, 4);
@@ -44,16 +46,30 @@ namespace BattleGame.Client.Network
             Console.WriteLine($"[Client] Connected to GameServer {host}:{port}");
         }
 
-        // Dùng riêng cho đọc redirect — plain text, không qua AES
+        // Dung rieng cho doc redirect plain text, khong qua AES
         private async Task ReadExactAsync(byte[] buffer, int count)
         {
             int received = 0;
             while (received < count)
             {
                 int n = await _stream!.ReadAsync(buffer, received, count - received);
-                if (n == 0) throw new IOException("Mất kết nối");
+                if (n == 0) throw new IOException("Mat ket noi");
                 received += n;
             }
+        }
+
+        private async Task SendAffinityHintAsync()
+        {
+            if (_stream == null)
+                return;
+
+            int uid = NetworkManager.Instance.PreferredUserId;
+            int rid = NetworkManager.Instance.PreferredRoomId;
+            string hint = $"uid={uid};rid={rid}";
+            byte[] data = Encoding.UTF8.GetBytes(hint);
+            byte[] length = BitConverter.GetBytes(data.Length);
+            await _stream.WriteAsync(length, 0, 4);
+            await _stream.WriteAsync(data, 0, data.Length);
         }
 
         public async Task SendPacketAsync(Packet packet)

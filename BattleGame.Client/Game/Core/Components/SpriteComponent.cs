@@ -8,4 +8,5 @@ public class SpriteComponent : IComponent
     public float FrameTimer { get; set; } = 0f;
     public bool LoopAnimation { get; set; } = true;
     public bool AnimationFinished { get; set; } = false;
+    public int SyncedActionId { get; set; } = -1;
 }

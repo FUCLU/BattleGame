@@ -11,6 +11,8 @@ namespace BattleGame.Client.Game.Systems
 {
     public class ProjectileSystem
     {
+        private const float ProjectileCollisionDelay = 0.08f;
+
         private readonly List<Entity> _projectiles = new();
         private readonly List<Entity> _targets = new();
         private readonly Dictionary<string, SpriteAnimation> _animations;
@@ -59,19 +61,19 @@ namespace BattleGame.Client.Game.Systems
                     }
                 }
 
-                if (IsBlockedByBarrier(p))
-                {
-                    var visualCenter = GetCollisionPoint(p);
-                    System.Diagnostics.Debug.WriteLine($"[ProjectileSystem] Projectile blocked by barrier at ({visualCenter.X}, {visualCenter.Y})");
-                    p.IsDestroyed = true;
-                }
-
                 // Lifetime
                 p.Timer += dt;
                 if (p.Timer >= p.Lifetime)
                 {
                     _projectiles.RemoveAt(i);
                     continue;
+                }
+
+                if (p.Timer >= ProjectileCollisionDelay && IsBlockedByBarrier(p))
+                {
+                    var visualCenter = GetCollisionPoint(p);
+                    System.Diagnostics.Debug.WriteLine($"[ProjectileSystem] Projectile blocked by barrier at ({visualCenter.X}, {visualCenter.Y})");
+                    p.IsDestroyed = true;
                 }
 
                 // Collision
@@ -86,7 +88,7 @@ namespace BattleGame.Client.Game.Systems
                         if (ch.IsDead) continue;
                         if (ch.IsInvulnerable) continue;
 
-                        if (CheckHit(p, mv))
+                        if (p.Timer >= ProjectileCollisionDelay && CheckHit(p, mv))
                         {
                             if (IsBlockedByProtection(p, target))
                             {
@@ -205,7 +207,8 @@ namespace BattleGame.Client.Game.Systems
         private bool CheckHit(ProjectileComponent p, MovementComponent mv)
         {
             var collisionPoint = GetCollisionPoint(p);
-            return CharacterHitbox.ContainsPoint(mv, collisionPoint.X, collisionPoint.Y);
+            float collisionSize = Math.Max(1f, p.Range * 2f);
+            return CharacterHitbox.IntersectsRectangle(mv, collisionPoint.X, collisionPoint.Y, collisionSize, collisionSize);
         }
 
         private static (float X, float Y) GetCollisionPoint(ProjectileComponent p)
@@ -218,7 +221,7 @@ namespace BattleGame.Client.Game.Systems
             var ch = target.Get<CharacterComponent>();
             if (ch.IsDead || ch.IsInvulnerable) return;
 
-            int dmg = Math.Max(0, p.Damage - ch.BaseStats.Def);
+            int dmg = p.Damage <= 0 ? 0 : Math.Max(1, p.Damage - ch.BaseStats.Def);
             ch.Hp = Math.Max(0, ch.Hp - dmg);
 
             ch.IsHurt = true;

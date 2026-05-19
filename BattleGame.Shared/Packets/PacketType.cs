@@ -33,6 +33,9 @@
         LeaveRoom = 29,
         Input = 30,
         WorldState = 31,
-        HitEvent = 32
+        HitEvent = 32,
+        RoomClosed = 33,
+        ChatMessage = 34,
+        Victory = 35
     }
 }

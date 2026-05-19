@@ -8,6 +8,7 @@ namespace BattleGame.Shared.Packets
     {
         public int RoomId { get; set; }
         public int MapId { get; set; }
+        public int TimeLimitMinutes { get; set; } = 3;
         public int Player1Id { get; set; }
         public string? Player1Name { get; set; }
         public int Player1CharacterId { get; set; }

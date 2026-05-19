@@ -1,3 +1,4 @@
+using System;
 using System.Text.Json;
 using BattleGame.Shared.Models;
 using BattleGame.Shared.Simulation;
@@ -37,7 +38,22 @@ public static class BattleCharacterDefinitionLoader
 
     public static BattleCharacterDefinition LoadById(string configRoot, string characterId)
     {
-        return Load(Path.Combine(configRoot, "Config", "Characters", $"{characterId}.json"));
+        string normalizedId = (characterId ?? string.Empty).Trim().ToLowerInvariant();
+        string[] candidates =
+        {
+            Path.Combine(configRoot, "Config", "Characters", $"{normalizedId}.json"),
+            Path.Combine(configRoot, "Config", "Bosses", $"{normalizedId}.json")
+        };
+
+        foreach (string path in candidates)
+        {
+            if (File.Exists(path))
+                return Load(path);
+        }
+
+        throw new FileNotFoundException(
+            $"Cannot find battle character config for '{characterId}' in Config/Characters or Config/Bosses under '{configRoot}'.",
+            candidates[0]);
     }
 
     private static BattleCharacterStats ParseStats(JsonElement stats, JsonElement root)
@@ -50,11 +66,12 @@ public static class BattleCharacterDefinitionLoader
         }
 
         float atkSpeed = stats.GetProperty("atkSpeed").GetSingle();
-        return new BattleCharacterStats
+        var parsed = new BattleCharacterStats
         {
             Hp = stats.GetProperty("hp").GetInt32(),
             Def = stats.GetProperty("def").GetInt32(),
             Mana = stats.GetProperty("mana").GetInt32(),
+            ManaRegen = stats.TryGetProperty("manaRegen", out var manaRegen) ? manaRegen.GetSingle() : 8f,
             Atk = stats.GetProperty("atk").GetInt32(),
             Speed = stats.GetProperty("speed").GetSingle(),
             AtkSpeed = atkSpeed,
@@ -65,6 +82,34 @@ public static class BattleCharacterDefinitionLoader
             AttackProjectileSpeed = stats.TryGetProperty("attackProjectileSpeed", out var aps) ? aps.GetSingle() : 0f,
             ProtectionBlocksAllDirections = protectionBlocksAllDirections
         };
+
+        if (root.TryGetProperty("animations", out var animations) && animations.ValueKind == JsonValueKind.Object)
+        {
+            int attackAnimCount = 0;
+            foreach (var animation in animations.EnumerateObject())
+            {
+                if (!animation.Value.TryGetProperty("frameCount", out var frameCountElement))
+                    continue;
+
+                int frameCount = Math.Max(1, frameCountElement.GetInt32());
+                float fps = animation.Value.TryGetProperty("fps", out var fpsElement)
+                    ? Math.Max(1f, fpsElement.GetSingle())
+                    : 10f;
+
+                parsed.Animations[animation.Name] = new BattleCharacterStats.AnimationMeta
+                {
+                    FrameCount = frameCount,
+                    Fps = fps
+                };
+
+                if (animation.Name.StartsWith("Attack_", StringComparison.OrdinalIgnoreCase))
+                    attackAnimCount++;
+            }
+
+            parsed.AttackAnimCount = Math.Max(1, attackAnimCount);
+        }
+
+        return parsed;
     }
 
     private static SkillData? TryParseSkill(JsonElement root, string skillName)
@@ -106,24 +151,36 @@ public static class BattleCharacterDefinitionLoader
 
         foreach (var e in effects.EnumerateArray())
         {
+            string type = ReadString(e, "type") ?? "";
+            bool isMelee = string.Equals(type, "melee", StringComparison.OrdinalIgnoreCase);
+            float range = e.TryGetProperty("range", out var r) ? r.GetSingle() : 50f;
+            int collisionWidth = e.TryGetProperty("collisionWidth", out var cw)
+                ? cw.GetInt32()
+                : isMelee ? Math.Max(1, (int)MathF.Round(range)) : 80;
+            int collisionHeight = e.TryGetProperty("collisionHeight", out var ch)
+                ? ch.GetInt32()
+                : isMelee ? (int)BattleHitbox.CharacterHeight : 80;
+
             var effect = new EffectData
             {
-                Type = ReadString(e, "type") ?? "",
+                Type = type,
                 Trigger = ReadString(e, "trigger") ?? "",
                 Damage = e.TryGetProperty("damage", out var d) ? d.GetInt32() : 0,
                 Stun = e.TryGetProperty("stun", out var s) ? s.GetSingle() : 0f,
                 Speed = e.TryGetProperty("speed", out var sp) ? sp.GetSingle() : 0f,
                 ProjectileAnim = ReadString(e, "projectileAnim") ?? "",
                 ObjectAnim = ReadString(e, "objectAnim") ?? "",
-                SpawnMode = ReadString(e, "spawnMode") ?? "between",
-                SpawnOffsetX = e.TryGetProperty("spawnOffsetX", out var sox) ? sox.GetSingle() : 10f,
-                SpawnOffsetY = e.TryGetProperty("spawnOffsetY", out var soy) ? soy.GetSingle() : -30f,
-                CollisionWidth = e.TryGetProperty("collisionWidth", out var cw) ? cw.GetInt32() : 80,
-                CollisionHeight = e.TryGetProperty("collisionHeight", out var ch) ? ch.GetInt32() : 80,
+                SpawnMode = ReadString(e, "spawnMode") ?? (isMelee ? "casterFront" : "between"),
+                SpawnOffsetX = e.TryGetProperty("spawnOffsetX", out var sox)
+                    ? sox.GetSingle()
+                    : isMelee ? BattleHitbox.CharacterWidth / 2f + collisionWidth / 2f : 10f,
+                SpawnOffsetY = e.TryGetProperty("spawnOffsetY", out var soy) ? soy.GetSingle() : isMelee ? 0f : -30f,
+                CollisionWidth = collisionWidth,
+                CollisionHeight = collisionHeight,
                 BlockEnemyAttack = e.TryGetProperty("blockEnemyAttack", out var bea) ? bea.GetBoolean() : true,
                 BlockEnemyProjectile = e.TryGetProperty("blockEnemyProjectile", out var bep) ? bep.GetBoolean() : true,
                 BlockEnemySkill = e.TryGetProperty("blockEnemySkill", out var bes) ? bes.GetBoolean() : true,
-                Range = e.TryGetProperty("range", out var r) ? r.GetSingle() : 50f,
+                Range = range,
                 Duration = e.TryGetProperty("duration", out var dur) ? dur.GetSingle() : 3f,
                 Render = ParseEffectRender(e)
             };

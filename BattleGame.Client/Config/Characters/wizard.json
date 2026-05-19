@@ -6,14 +6,15 @@
     "skillLabel": "Light Charge / Light Ball"
   },
   "stats": {
-    "hp": 100,
-    "def": 10,
-    "mana": 100,
-    "atk": 20,
-    "speed": 200,
+    "hp": 95,
+    "def": 7,
+    "mana": 150,
+    "manaRegen": 10.0,
+    "atk": 16,
+    "speed": 215,
     "atkSpeed": 1.0,
     "stunDuration": 0.0,
-    "attackRange": 100
+    "attackRange": 130
   },
 
   "render": {
@@ -28,17 +29,22 @@
     "skill1": {
       "id": "light_charge",
       "animation": "Light_charge",
-      "manaCost": 0,
-      "cooldown": 0.0,
+      "manaCost": 35,
+      "cooldown": 5.5,
 
       "effects": [
         {
           "type": "melee",
           "trigger": "onFrames",
-          "frames": [5, 6, 7, 8,9,10,11,12,13],
-          "damage": 12,
+          "frames": [ 5, 6, 7, 8, 9, 10, 11, 12 ],
+          "damage": 16,
           "stun": 0.0,
-          "range": 130
+          "range": 130,
+          "spawnMode": "casterFront",
+          "spawnOffsetX": 115,
+          "spawnOffsetY": 0,
+          "collisionWidth": 130,
+          "collisionHeight": 100
         }
       ]
     },
@@ -46,16 +52,17 @@
     "skill2": {
       "id": "Light_ball",
       "animation": "Light_ball",
-      "manaCost": 0,
-      "cooldown": 0.0,
+      "manaCost": 30,
+      "cooldown": 4.5,
 
       "effects": [
         {
           "type": "projectile",
-          "trigger": "onEnd",
+          "trigger": "onFrame",
+          "frames": [ 4 ],
           "projectileAnim": "Charge",
-          "damage": 30,
-          "stun": 1.0,
+          "damage": 38,
+          "stun": 0.45,
           "speed": 600,
           "range": 50,
           "render": {
@@ -77,7 +84,7 @@
       "loop": true
     },
     "Walk": {
-      "frameCount": 9,
+      "frameCount": 7,
       "fps": 10,
       "loop": true
     },
@@ -108,12 +115,12 @@
       "loop": false
     },
     "Dead": {
-      "frameCount": 6,
+      "frameCount": 5,
       "fps": 8,
       "loop": false
     },
     "Jump": {
-      "frameCount": 9,
+      "frameCount": 8,
       "fps": 10,
       "loop": false
     },

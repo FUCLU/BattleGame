@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+using BattleGame.LoadBalancer.Logging;
 
 namespace BattleGame.LoadBalancer.Routing
 {
@@ -21,12 +22,14 @@ namespace BattleGame.LoadBalancer.Routing
                 await stream.WriteAsync(length, 0, 4);
                 await stream.WriteAsync(data, 0, data.Length);
 
-                Console.WriteLine($"[LB] Redirect client → {endpoint}");
+                LbLogger.Event("routing", "redirect",
+                    ("serverId", endpoint.ServerId),
+                    ("endpoint", endpoint.ToPublicString()));
 
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[LB] Redirect failed: {ex.Message}");
+                LbLogger.Error($"redirect failed: {ex.Message}", "routing");
             }
             finally
             {

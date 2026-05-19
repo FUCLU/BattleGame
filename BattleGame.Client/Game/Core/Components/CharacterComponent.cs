@@ -1,5 +1,6 @@
 using BattleGame.Client.Config;
 using BattleGame.Shared.Models;
+using System;
 using System.Collections.Generic;
 
 namespace BattleGame.Client.Game.Core.Components
@@ -8,6 +9,8 @@ namespace BattleGame.Client.Game.Core.Components
     {
         public string CharacterId { get; set; } = "";
         public CharacterRenderConfig Render { get; set; } = new();
+        public HashSet<string> AvailableAnimations { get; set; } = new(StringComparer.OrdinalIgnoreCase);
+        public Dictionary<string, float> AnimationDurations { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 
         // ===== BASE STATS =====
         public CharacterStats BaseStats { get; set; } = new();
@@ -22,6 +25,7 @@ namespace BattleGame.Client.Game.Core.Components
 
         public float Skill1Cooldown { get; set; }
         public float Skill2Cooldown { get; set; }
+        public float ManaRegenAccumulator { get; set; }
 
         public string CurrentSkillAnim { get; set; } = "Skill1";
 
@@ -66,5 +70,16 @@ namespace BattleGame.Client.Game.Core.Components
         public HashSet<(int, int)> TriggeredFrames { get; set; } = new(); // (effectIdx, frameIdx)
         public HashSet<int> TriggeredAttackEffects { get; set; } = new();
         public HashSet<(int, int)> TriggeredAttackFrames { get; set; } = new(); // (effectIdx, frameIdx)
+
+        public float GetAnimationDuration(string animation, float fallbackDuration)
+        {
+            if (!string.IsNullOrWhiteSpace(animation) &&
+                AnimationDurations.TryGetValue(animation, out float duration))
+            {
+                return Math.Max(0.05f, duration);
+            }
+
+            return Math.Max(0.05f, fallbackDuration);
+        }
     }
 }

@@ -11,7 +11,6 @@ public static class ClientContentRoot
             ? AppDomain.CurrentDomain.BaseDirectory
             : startDirectory;
 
-        string? firstRunnableRoot = null;
         while (!string.IsNullOrWhiteSpace(current))
         {
             bool hasAssets = Directory.Exists(Path.Combine(current, "Assets"));
@@ -19,10 +18,9 @@ public static class ClientContentRoot
 
             if (hasAssets && hasConfig)
             {
-                if (File.Exists(Path.Combine(current, "BattleGame.Client.csproj")))
-                    return current;
-
-                firstRunnableRoot ??= current;
+                // Prefer the nearest runnable root (usually bin/publish) to avoid
+                // loading stale source assets/config when running online/deployed builds.
+                return current;
             }
 
             var parent = Directory.GetParent(current);
@@ -32,7 +30,6 @@ public static class ClientContentRoot
             current = parent.FullName;
         }
 
-        return firstRunnableRoot
-            ?? Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", ".."));
+        return Path.GetFullPath(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", ".."));
     }
 }

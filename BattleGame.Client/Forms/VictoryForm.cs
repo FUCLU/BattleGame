@@ -26,7 +26,7 @@ namespace BattleGame.Client.Forms
         private void button2_Click(object sender, EventArgs e)
         {
             LeaderboardForm leaderboardForm = new LeaderboardForm();
-            leaderboardForm.ShowDialog();
+            leaderboardForm.Show();
             this.Close();
         }
 

@@ -31,6 +31,8 @@ public class PlayerBattleState
     public string CurrentSkillAnimation { get; set; } = "";
     public HashSet<int> TriggeredEffects { get; set; } = new();
     public HashSet<int> TriggeredAttackEffects { get; set; } = new();
+    public HashSet<string> TriggeredEffectFrames { get; set; } = new();
+    public HashSet<string> TriggeredAttackEffectFrames { get; set; } = new();
 
     public float HurtTimer { get; set; }
     public float StunTimer { get; set; }

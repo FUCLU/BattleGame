@@ -28,6 +28,7 @@ pgdata/
 # ── Thông tin nhạy cảm ───────────────────────────────────────
 appsettings.Production.json
 appsettings.Local.json
+clientsettings.Local.json
 .env
 *.pfx
 *.p12

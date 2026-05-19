@@ -82,7 +82,7 @@
             // 
             // panel4
             // 
-            panel4.BackColor = Color.SteelBlue;
+            panel4.BackColor = Color.FromArgb(36, 58, 94);
             panel4.BorderStyle = BorderStyle.Fixed3D;
             panel4.Controls.Add(label5);
             panel4.Controls.Add(panel2);
@@ -96,18 +96,18 @@
             // label5
             // 
             label5.AutoSize = true;
-            label5.Font = new Font("Courier New", 24F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
-            label5.ForeColor = Color.DarkSlateGray;
+            label5.Font = new Font("Segoe UI", 22F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label5.ForeColor = Color.WhiteSmoke;
             label5.Location = new Point(315, 10);
             label5.Name = "label5";
-            label5.Size = new Size(470, 46);
+            label5.Size = new Size(396, 50);
             label5.TabIndex = 3;
             label5.Text = "⚔️ Chọn nhân vật⚔️ ";
             // 
             // panel2
             // 
             panel2.AutoScroll = true;
-            panel2.BackColor = Color.FromArgb(36, 58, 94);
+            panel2.BackColor = Color.FromArgb(28, 45, 72);
             panel2.BackgroundImageLayout = ImageLayout.Stretch;
             panel2.BorderStyle = BorderStyle.Fixed3D;
             panel2.Controls.Add(pnlWizard);
@@ -144,11 +144,11 @@
             // lblWizardName
             // 
             lblWizardName.AutoSize = true;
-            lblWizardName.Font = new Font("Book Antiqua", 19.8F, FontStyle.Bold | FontStyle.Italic);
-            lblWizardName.ForeColor = Color.FromArgb(208, 230, 255);
+            lblWizardName.Font = new Font("Segoe UI", 18F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblWizardName.ForeColor = Color.WhiteSmoke;
             lblWizardName.Location = new Point(110, 15);
             lblWizardName.Name = "lblWizardName";
-            lblWizardName.Size = new Size(127, 39);
+            lblWizardName.Size = new Size(118, 41);
             lblWizardName.TabIndex = 1;
             lblWizardName.Text = "Wizard";
             lblWizardName.Click += CharacterPanel_Click;
@@ -178,11 +178,11 @@
             // lblSamuraiName
             // 
             lblSamuraiName.AutoSize = true;
-            lblSamuraiName.Font = new Font("Book Antiqua", 19.8F, FontStyle.Bold | FontStyle.Italic);
-            lblSamuraiName.ForeColor = Color.FromArgb(208, 230, 255);
+            lblSamuraiName.Font = new Font("Segoe UI", 18F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblSamuraiName.ForeColor = Color.WhiteSmoke;
             lblSamuraiName.Location = new Point(110, 12);
             lblSamuraiName.Name = "lblSamuraiName";
-            lblSamuraiName.Size = new Size(140, 39);
+            lblSamuraiName.Size = new Size(133, 41);
             lblSamuraiName.TabIndex = 1;
             lblSamuraiName.Text = "Samurai";
             lblSamuraiName.Click += CharacterPanel_Click;
@@ -213,11 +213,11 @@
             // lblKitsuneName
             // 
             lblKitsuneName.AutoSize = true;
-            lblKitsuneName.Font = new Font("Book Antiqua", 19.8F, FontStyle.Bold | FontStyle.Italic);
-            lblKitsuneName.ForeColor = Color.FromArgb(208, 230, 255);
+            lblKitsuneName.Font = new Font("Segoe UI", 18F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblKitsuneName.ForeColor = Color.WhiteSmoke;
             lblKitsuneName.Location = new Point(110, 11);
             lblKitsuneName.Name = "lblKitsuneName";
-            lblKitsuneName.Size = new Size(131, 39);
+            lblKitsuneName.Size = new Size(123, 41);
             lblKitsuneName.TabIndex = 1;
             lblKitsuneName.Text = "Kitsune";
             lblKitsuneName.Click += CharacterPanel_Click;
@@ -247,18 +247,18 @@
             // lblLordName
             // 
             lblLordName.AutoSize = true;
-            lblLordName.Font = new Font("Book Antiqua", 19.8F, FontStyle.Bold | FontStyle.Italic);
-            lblLordName.ForeColor = Color.FromArgb(208, 230, 255);
+            lblLordName.Font = new Font("Segoe UI", 18F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblLordName.ForeColor = Color.WhiteSmoke;
             lblLordName.Location = new Point(110, 9);
             lblLordName.Name = "lblLordName";
-            lblLordName.Size = new Size(86, 39);
+            lblLordName.Size = new Size(82, 41);
             lblLordName.TabIndex = 1;
             lblLordName.Text = "Lord";
             lblLordName.Click += CharacterPanel_Click;
             // 
             // panel3
             // 
-            panel3.BackColor = Color.FromArgb(31, 47, 86);
+            panel3.BackColor = Color.FromArgb(24, 36, 68);
             panel3.BorderStyle = BorderStyle.Fixed3D;
             panel3.Controls.Add(panel1);
             panel3.Controls.Add(panel5);
@@ -292,7 +292,7 @@
             // 
             // panel5
             // 
-            panel5.BackColor = Color.FromArgb(46, 76, 109);
+            panel5.BackColor = Color.FromArgb(34, 58, 92);
             panel5.Controls.Add(lblSpdValue);
             panel5.Controls.Add(lblDefValue);
             panel5.Controls.Add(lblAtkValue);
@@ -314,6 +314,7 @@
             // lblSpdValue
             // 
             lblSpdValue.AutoSize = true;
+            lblSpdValue.ForeColor = Color.WhiteSmoke;
             lblSpdValue.Location = new Point(299, 131);
             lblSpdValue.Name = "lblSpdValue";
             lblSpdValue.Size = new Size(33, 20);
@@ -323,6 +324,7 @@
             // lblDefValue
             // 
             lblDefValue.AutoSize = true;
+            lblDefValue.ForeColor = Color.WhiteSmoke;
             lblDefValue.Location = new Point(299, 92);
             lblDefValue.Name = "lblDefValue";
             lblDefValue.Size = new Size(33, 20);
@@ -332,6 +334,7 @@
             // lblAtkValue
             // 
             lblAtkValue.AutoSize = true;
+            lblAtkValue.ForeColor = Color.WhiteSmoke;
             lblAtkValue.Location = new Point(299, 48);
             lblAtkValue.Name = "lblAtkValue";
             lblAtkValue.Size = new Size(33, 20);
@@ -341,6 +344,7 @@
             // lblHpValue
             // 
             lblHpValue.AutoSize = true;
+            lblHpValue.ForeColor = Color.WhiteSmoke;
             lblHpValue.Location = new Point(299, 13);
             lblHpValue.Name = "lblHpValue";
             lblHpValue.Size = new Size(33, 20);
@@ -426,55 +430,55 @@
             // lblDEF
             // 
             lblDEF.AutoSize = true;
-            lblDEF.Font = new Font("Showcard Gothic", 10.8F, FontStyle.Italic);
-            lblDEF.ForeColor = Color.DarkOrange;
+            lblDEF.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblDEF.ForeColor = Color.Gold;
             lblDEF.Location = new Point(20, 88);
             lblDEF.Name = "lblDEF";
-            lblDEF.Size = new Size(43, 23);
+            lblDEF.Size = new Size(44, 25);
             lblDEF.TabIndex = 10;
             lblDEF.Text = "DEF";
             // 
             // lblSkill
             // 
             lblSkill.AutoSize = true;
-            lblSkill.Font = new Font("Showcard Gothic", 10.8F, FontStyle.Italic);
-            lblSkill.ForeColor = Color.DarkOrange;
+            lblSkill.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblSkill.ForeColor = Color.Gold;
             lblSkill.Location = new Point(18, 174);
             lblSkill.Name = "lblSkill";
-            lblSkill.Size = new Size(58, 23);
+            lblSkill.Size = new Size(47, 25);
             lblSkill.TabIndex = 9;
             lblSkill.Text = "Skill";
             // 
             // lblSPD
             // 
             lblSPD.AutoSize = true;
-            lblSPD.Font = new Font("Showcard Gothic", 10.8F, FontStyle.Italic);
-            lblSPD.ForeColor = Color.DarkOrange;
+            lblSPD.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblSPD.ForeColor = Color.Gold;
             lblSPD.Location = new Point(19, 129);
             lblSPD.Name = "lblSPD";
-            lblSPD.Size = new Size(44, 23);
+            lblSPD.Size = new Size(46, 25);
             lblSPD.TabIndex = 8;
             lblSPD.Text = "SPD";
             // 
             // lblATK
             // 
             lblATK.AutoSize = true;
-            lblATK.Font = new Font("Showcard Gothic", 10.8F, FontStyle.Italic);
-            lblATK.ForeColor = Color.DarkOrange;
+            lblATK.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblATK.ForeColor = Color.Gold;
             lblATK.Location = new Point(20, 46);
             lblATK.Name = "lblATK";
-            lblATK.Size = new Size(45, 23);
+            lblATK.Size = new Size(47, 25);
             lblATK.TabIndex = 6;
             lblATK.Text = "ATK";
             // 
             // lblHP
             // 
             lblHP.AutoSize = true;
-            lblHP.Font = new Font("Showcard Gothic", 10.8F, FontStyle.Italic);
-            lblHP.ForeColor = Color.DarkOrange;
+            lblHP.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            lblHP.ForeColor = Color.Gold;
             lblHP.Location = new Point(20, 8);
             lblHP.Name = "lblHP";
-            lblHP.Size = new Size(36, 23);
+            lblHP.Size = new Size(37, 25);
             lblHP.TabIndex = 5;
             lblHP.Text = "HP";
             // 
@@ -483,9 +487,9 @@
             btnSellect.BackgroundImage = (Image)resources.GetObject("btnSellect.BackgroundImage");
             btnSellect.BackgroundImageLayout = ImageLayout.Stretch;
             btnSellect.FlatStyle = FlatStyle.Popup;
-            btnSellect.Location = new Point(292, 387);
+            btnSellect.Location = new Point(267, 381);
             btnSellect.Name = "btnSellect";
-            btnSellect.Size = new Size(138, 43);
+            btnSellect.Size = new Size(160, 54);
             btnSellect.TabIndex = 1;
             btnSellect.Click += btnSellect_Click;
             // 
@@ -494,20 +498,20 @@
             button2.BackgroundImage = (Image)resources.GetObject("button2.BackgroundImage");
             button2.BackgroundImageLayout = ImageLayout.Stretch;
             button2.FlatStyle = FlatStyle.Popup;
-            button2.Location = new Point(469, 387);
+            button2.Location = new Point(457, 381);
             button2.Name = "button2";
-            button2.Size = new Size(129, 43);
+            button2.Size = new Size(141, 49);
             button2.TabIndex = 0;
             button2.Click += button2_Click;
             // 
             // label2
             // 
             label2.AutoSize = true;
-            label2.Font = new Font("Book Antiqua", 36F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
-            label2.ForeColor = Color.FromArgb(255, 235, 156);
+            label2.Font = new Font("Segoe UI", 28F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label2.ForeColor = Color.WhiteSmoke;
             label2.Location = new Point(212, 6);
             label2.Name = "label2";
-            label2.Size = new Size(229, 72);
+            label2.Size = new Size(183, 62);
             label2.TabIndex = 3;
             label2.Text = "Wizard";
             // 

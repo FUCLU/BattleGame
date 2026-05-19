@@ -30,6 +30,7 @@ namespace BattleGame.Shared.Network
                 PacketType.GameState => JsonSerializer.Serialize((GameStatePacket)packet, options),
                 PacketType.HealthUpdate => JsonSerializer.Serialize((HealthUpdatePacket)packet, options),
                 PacketType.GameOver => JsonSerializer.Serialize((GameOverPacket)packet, options),
+                PacketType.Victory => JsonSerializer.Serialize((VictoryPacket)packet, options),
                 PacketType.Disconnect => JsonSerializer.Serialize((DisconnectPacket)packet, options),
                 PacketType.CreateRoom => JsonSerializer.Serialize((CreateRoomPacket)packet, options),
                 PacketType.CreateRoomResult => JsonSerializer.Serialize((CreateRoomResultPacket)packet, options),
@@ -47,6 +48,8 @@ namespace BattleGame.Shared.Network
                 PacketType.Input => JsonSerializer.Serialize((InputPacket)packet, options),
                 PacketType.WorldState => JsonSerializer.Serialize((WorldStatePacket)packet, options),
                 PacketType.HitEvent => JsonSerializer.Serialize((HitEventPacket)packet, options),
+                PacketType.RoomClosed => JsonSerializer.Serialize((RoomClosedPacket)packet, options),
+                PacketType.ChatMessage => JsonSerializer.Serialize((ChatMessagePacket)packet, options),
                 _ => JsonSerializer.Serialize(packet, options)
             };
         }
@@ -74,6 +77,7 @@ namespace BattleGame.Shared.Network
                 PacketType.GameState => JsonSerializer.Deserialize<GameStatePacket>(json, options)!,
                 PacketType.HealthUpdate => JsonSerializer.Deserialize<HealthUpdatePacket>(json, options)!,
                 PacketType.GameOver => JsonSerializer.Deserialize<GameOverPacket>(json, options)!,
+                PacketType.Victory => JsonSerializer.Deserialize<VictoryPacket>(json, options)!,
                 PacketType.Disconnect => JsonSerializer.Deserialize<DisconnectPacket>(json, options)!,
                 PacketType.CreateRoom => JsonSerializer.Deserialize<CreateRoomPacket>(json, options)!,
                 PacketType.CreateRoomResult => JsonSerializer.Deserialize<CreateRoomResultPacket>(json, options)!,
@@ -91,6 +95,8 @@ namespace BattleGame.Shared.Network
                 PacketType.Input => JsonSerializer.Deserialize<InputPacket>(json, options)!,
                 PacketType.WorldState => JsonSerializer.Deserialize<WorldStatePacket>(json, options)!,
                 PacketType.HitEvent => JsonSerializer.Deserialize<HitEventPacket>(json, options)!,
+                PacketType.RoomClosed => JsonSerializer.Deserialize<RoomClosedPacket>(json, options)!,
+                PacketType.ChatMessage => JsonSerializer.Deserialize<ChatMessagePacket>(json, options)!,
                 _ => throw new NotSupportedException($"Chưa hỗ trợ packet type: {type}")
             };
         }

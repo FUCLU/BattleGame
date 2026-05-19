@@ -68,11 +68,11 @@
             label4.BackColor = Color.Transparent;
             label4.Font = new Font("Book Antiqua", 13.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
             label4.ForeColor = Color.LawnGreen;
-            label4.Location = new Point(858, 42);
+            label4.Location = new Point(840, 45);
             label4.Name = "label4";
             label4.Size = new Size(98, 28);
             label4.TabIndex = 17;
-            label4.Text = "Player 2";
+            label4.Text = "Player...";
             // 
             // pictureBox2
             // 
@@ -140,7 +140,7 @@
             // 
             label6.AutoSize = true;
             label6.Font = new Font("Book Antiqua", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            label6.ForeColor = Color.White;
+            label6.ForeColor = Color.Black;
             label6.Location = new Point(93, -3);
             label6.Name = "label6";
             label6.Size = new Size(75, 22);
@@ -157,7 +157,7 @@
             label3.Name = "label3";
             label3.Size = new Size(98, 28);
             label3.TabIndex = 13;
-            label3.Text = "Player 1";
+            label3.Text = "Player...";
             // 
             // pictureBox1
             // 
@@ -224,7 +224,7 @@
             lblHP.AutoSize = true;
             lblHP.BackColor = Color.Firebrick;
             lblHP.Font = new Font("Book Antiqua", 10.8F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            lblHP.ForeColor = Color.White;
+            lblHP.ForeColor = Color.Black;
             lblHP.Location = new Point(93, -3);
             lblHP.Name = "lblHP";
             lblHP.Size = new Size(75, 22);

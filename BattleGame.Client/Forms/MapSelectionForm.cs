@@ -20,6 +20,7 @@ namespace BattleGame.Client.Forms
         public MapSelectionForm()
         {
             InitializeComponent();
+            StartPosition = FormStartPosition.CenterParent;
         }
 
         private static readonly string AssetsRoot = Path.Combine(

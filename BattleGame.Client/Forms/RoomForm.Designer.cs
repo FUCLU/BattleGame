@@ -40,7 +40,6 @@
             textBox2 = new TextBox();
             textBox1 = new TextBox();
             panel1 = new Panel();
-            button4 = new Button();
             button3 = new Button();
             button2 = new Button();
             panel4 = new Panel();
@@ -76,16 +75,17 @@
             // 
             // btnSend
             // 
-            btnSend.BackColor = Color.DarkSlateGray;
-            btnSend.BackgroundImage = (Image)resources.GetObject("btnSend.BackgroundImage");
+            btnSend.BackColor = Color.White;
             btnSend.BackgroundImageLayout = ImageLayout.Stretch;
             btnSend.FlatAppearance.BorderColor = Color.LightBlue;
             btnSend.FlatStyle = FlatStyle.Flat;
-            btnSend.Font = new Font("Book Antiqua", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            btnSend.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnSend.ForeColor = SystemColors.ActiveCaptionText;
             btnSend.Location = new Point(419, 383);
             btnSend.Name = "btnSend";
             btnSend.Size = new Size(89, 38);
             btnSend.TabIndex = 3;
+            btnSend.Text = "SEND";
             btnSend.UseVisualStyleBackColor = false;
             btnSend.Click += btnSend_Click;
             // 
@@ -98,7 +98,7 @@
             txtBoxInp.Location = new Point(20, 390);
             txtBoxInp.Multiline = true;
             txtBoxInp.Name = "txtBoxInp";
-            txtBoxInp.PlaceholderText = "Nhap tin nhan ...";
+            txtBoxInp.PlaceholderText = " Nhap tin nhan ...";
             txtBoxInp.Size = new Size(372, 27);
             txtBoxInp.TabIndex = 2;
             txtBoxInp.KeyDown += txtBoxInp_KeyDown;
@@ -178,7 +178,7 @@
             textBox2.Size = new Size(301, 35);
             textBox2.TabIndex = 3;
             textBox2.TabStop = false;
-            textBox2.Text = "Player 2";
+            textBox2.Text = "Player...";
             // 
             // textBox1
             // 
@@ -191,14 +191,13 @@
             textBox1.Size = new Size(301, 35);
             textBox1.TabIndex = 2;
             textBox1.TabStop = false;
-            textBox1.Text = "Player 1";
+            textBox1.Text = "Player...";
             // 
             // panel1
             // 
             panel1.BackColor = Color.Transparent;
             panel1.BackgroundImage = (Image)resources.GetObject("panel1.BackgroundImage");
             panel1.BackgroundImageLayout = ImageLayout.Stretch;
-            panel1.Controls.Add(button4);
             panel1.Controls.Add(button3);
             panel1.Controls.Add(button2);
             panel1.Location = new Point(65, 483);
@@ -206,51 +205,35 @@
             panel1.Size = new Size(910, 68);
             panel1.TabIndex = 3;
             // 
-            // button4
-            // 
-            button4.BackColor = Color.DarkSlateGray;
-            button4.BackgroundImage = (Image)resources.GetObject("button4.BackgroundImage");
-            button4.BackgroundImageLayout = ImageLayout.Stretch;
-            button4.FlatAppearance.BorderColor = Color.DimGray;
-            button4.FlatStyle = FlatStyle.Popup;
-            button4.Font = new Font("Showcard Gothic", 10.2F, FontStyle.Italic, GraphicsUnit.Point, 0);
-            button4.ForeColor = Color.MediumTurquoise;
-            button4.Location = new Point(721, 12);
-            button4.Name = "button4";
-            button4.Size = new Size(161, 43);
-            button4.TabIndex = 9;
-            button4.UseVisualStyleBackColor = false;
-            button4.Click += button4_Click;
-            // 
             // button3
             // 
-            button3.BackColor = Color.MediumSlateBlue;
-            button3.BackgroundImage = (Image)resources.GetObject("button3.BackgroundImage");
+            button3.BackColor = Color.White;
             button3.BackgroundImageLayout = ImageLayout.Stretch;
             button3.FlatAppearance.BorderColor = Color.DimGray;
             button3.FlatStyle = FlatStyle.Popup;
-            button3.Font = new Font("Showcard Gothic", 10.2F, FontStyle.Italic, GraphicsUnit.Point, 0);
-            button3.ForeColor = Color.MediumTurquoise;
-            button3.Location = new Point(382, 12);
+            button3.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button3.ForeColor = SystemColors.ActiveCaptionText;
+            button3.Location = new Point(729, 12);
             button3.Name = "button3";
             button3.Size = new Size(161, 43);
             button3.TabIndex = 8;
+            button3.Text = "READY";
             button3.UseVisualStyleBackColor = false;
             button3.Click += button3_Click_1;
             // 
             // button2
             // 
-            button2.BackColor = Color.Sienna;
-            button2.BackgroundImage = (Image)resources.GetObject("button2.BackgroundImage");
+            button2.BackColor = Color.Snow;
             button2.BackgroundImageLayout = ImageLayout.Stretch;
             button2.FlatAppearance.BorderColor = Color.DimGray;
-            button2.FlatStyle = FlatStyle.Popup;
-            button2.Font = new Font("Showcard Gothic", 10.2F, FontStyle.Italic, GraphicsUnit.Point, 0);
-            button2.ForeColor = Color.LightGreen;
+            button2.FlatStyle = FlatStyle.Flat;
+            button2.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button2.ForeColor = SystemColors.ActiveCaptionText;
             button2.Location = new Point(26, 12);
             button2.Name = "button2";
             button2.Size = new Size(161, 43);
             button2.TabIndex = 7;
+            button2.Text = "BACK";
             button2.UseVisualStyleBackColor = false;
             // 
             // panel4
@@ -402,7 +385,6 @@
         private TextBox textBox2;
         private TextBox textBox1;
         private Panel panel1;
-        private Button button4;
         private Button button3;
         private Button button2;
         private Button btnSend;

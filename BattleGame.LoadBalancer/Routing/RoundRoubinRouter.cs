@@ -4,49 +4,66 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using BattleGame.LoadBalancer.Logging;
+using BattleGame.LoadBalancer.Registry;
+
 namespace BattleGame.LoadBalancer.Routing
 {
     public class RoundRoubinRouter
     {
-        private readonly List<ServerEndpoint> servers = new List<ServerEndpoint>();
+        private readonly RedisBackendRegistry _registry;
         private int index = 0;
         private readonly object lockObj = new object();
 
-        public void Register(ServerEndpoint endpoint)
+        public RoundRoubinRouter(RedisBackendRegistry registry)
         {
+            _registry = registry;
+        }
+
+        public Task RegisterAsync(ServerEndpoint endpoint)
+        {
+            if (!endpoint.IsValid())
+                return Task.CompletedTask;
+
+            return _registry.UpsertAsync(endpoint, true);
+        }
+
+        public async Task SetHealthAsync(ServerEndpoint endpoint, bool isHealthy)
+        {
+            await _registry.SetHealthAsync(endpoint, isHealthy);
+            LbLogger.Event("health", isHealthy ? "up" : "down",
+                ("serverId", endpoint.ServerId),
+                ("endpoint", endpoint.ToString()));
+        }
+
+        public async Task<ServerEndpoint?> GetNextAsync(int? userId = null, int? roomId = null)
+        {
+            var active = await _registry.GetHealthyAsync();
+            string? preferredServerId = await _registry.ResolvePreferredServerIdAsync(userId, roomId);
             lock (lockObj)
             {
-                if (!servers.Any(s => s.Host == endpoint.Host && s.Port == endpoint.Port))
+                if (active.Count == 0)
+                    return null;
+                if (!string.IsNullOrWhiteSpace(preferredServerId))
                 {
-                    servers.Add(endpoint);
+                    var preferred = active.FirstOrDefault(s => s.ServerId == preferredServerId);
+                    if (preferred != null)
+                        return preferred;
                 }
+                index = index % active.Count;
+                return active[index++];
             }
         }
 
-        public void Remove(ServerEndpoint endpoint)
+        public Task<List<ServerEndpoint>> GetAllAsync()
         {
-            lock (lockObj)
-            {
-                servers.RemoveAll(s => s.Host == endpoint.Host && s.Port == endpoint.Port);
-            }
+            return _registry.GetAllAsync();
         }
 
-        public ServerEndpoint? GetNext()
+        public async Task<int> ActiveCountAsync()
         {
-            lock (lockObj)
-            {
-                if (servers.Count == 0) return null;
-                index = index % servers.Count;
-                return servers[index++];
-            }
-        }
-
-        public List<ServerEndpoint> GetAll()
-        {
-            lock (lockObj)
-            {
-                return new List<ServerEndpoint>(servers);
-            }
+            var active = await _registry.GetHealthyAsync();
+            return active.Count;
         }
     }
 }

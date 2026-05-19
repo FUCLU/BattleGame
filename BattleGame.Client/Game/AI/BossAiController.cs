@@ -75,11 +75,30 @@ public sealed class BossAiController
         if (!_profile.CanDash || _dashCooldown > 0f || distance < _profile.DashMinRange)
             return;
 
+        string dashAnimation = ResolveDashAnimation(bossCh);
+        if (string.IsNullOrWhiteSpace(dashAnimation))
+            return;
+
+        float duration = bossCh.GetAnimationDuration(dashAnimation, _profile.DashDuration);
         bossCh.IsDashing = true;
         bossCh.DashTimer = _profile.DashDuration;
         bossCh.DashDuration = _profile.DashDuration;
+        bossCh.ActionTimer = duration;
+        bossCh.ActionDuration = duration;
         bossCh.DashSpeedMultiplier = _profile.DashSpeedMultiplier;
         bossMv.VelocityX = (bossMv.FacingRight ? 1f : -1f) * bossMv.Speed * bossCh.DashSpeedMultiplier;
         _dashCooldown = _profile.DashCooldown;
+    }
+
+    private static string ResolveDashAnimation(CharacterComponent ch)
+    {
+        if (ch.AvailableAnimations.Contains("Dash"))
+            return "Dash";
+        if (ch.AvailableAnimations.Contains("Run"))
+            return "Run";
+        if (ch.AvailableAnimations.Contains("Walk"))
+            return "Walk";
+
+        return string.Empty;
     }
 }

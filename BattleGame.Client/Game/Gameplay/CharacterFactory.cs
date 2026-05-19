@@ -1,6 +1,7 @@
 using BattleGame.Client.Config;
 using BattleGame.Client.Game.Core;
 using BattleGame.Client.Game.Core.Components;
+using BattleGame.Client.Game.Rendering;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +11,8 @@ namespace BattleGame.Client.Game.Gameplay
 {
     public static class CharacterFactory
     {
+        private static int _nextEntityId = 0;
+
         public static Entity Create(string characterId, float startX, float groundY,
                                     Dictionary<string, object> availableAnimations)
         {
@@ -28,7 +31,9 @@ namespace BattleGame.Client.Game.Gameplay
                 if (availableAnimations.ContainsKey($"Attack_{i}")) attackCount++;
             attackCount = Math.Max(1, attackCount);
 
-            int entityId = characterId.GetHashCode();
+            // Must be unique per entity instance; characterId-based hash collides
+            // when both players pick the same character.
+            int entityId = System.Threading.Interlocked.Increment(ref _nextEntityId);
             var entity = new Entity(entityId);
 
             entity.Add(new CharacterComponent
@@ -36,6 +41,8 @@ namespace BattleGame.Client.Game.Gameplay
                 CharacterId = definition.Id,
                 BaseStats = baseStats,
                 Render = definition.Render,
+                AvailableAnimations = new HashSet<string>(availableAnimations.Keys, StringComparer.OrdinalIgnoreCase),
+                AnimationDurations = BuildAnimationDurations(availableAnimations),
                 Hp = baseStats.Hp,
                 Mana = baseStats.Mana,
                 Skill1 = definition.Skill1,
@@ -58,6 +65,21 @@ namespace BattleGame.Client.Game.Gameplay
             entity.Add(new SpriteComponent());
 
             return entity;
+        }
+
+        private static Dictionary<string, float> BuildAnimationDurations(Dictionary<string, object> animations)
+        {
+            var durations = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var kv in animations)
+            {
+                if (kv.Value is not SpriteAnimation animation || animation.Frames.Length == 0)
+                    continue;
+
+                durations[kv.Key] = animation.Frames.Length / Math.Max(1f, animation.Fps);
+            }
+
+            return durations;
         }
 
         private static string ResolveClientRoot()

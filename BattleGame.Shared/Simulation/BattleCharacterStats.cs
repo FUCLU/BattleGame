@@ -1,11 +1,19 @@
 using BattleGame.Shared.Models;
+using System;
 
 namespace BattleGame.Shared.Simulation;
 
 public class BattleCharacterStats
 {
+    public sealed class AnimationMeta
+    {
+        public int FrameCount { get; set; } = 1;
+        public float Fps { get; set; } = 10f;
+    }
+
     public int Hp { get; set; } = 100;
     public int Mana { get; set; } = 100;
+    public float ManaRegen { get; set; } = 8f;
     public int Atk { get; set; } = 20;
     public int Def { get; set; } = 10;
     public float Speed { get; set; } = 250f;
@@ -13,10 +21,12 @@ public class BattleCharacterStats
     public float StunDuration { get; set; }
     public float AttackRange { get; set; } = 100f;
     public float AttackDuration { get; set; } = 0.5f;
+    public int AttackAnimCount { get; set; } = 1;
     public string? AttackProjectile { get; set; }
     public float AttackProjectileSpeed { get; set; }
     public bool ProtectionBlocksAllDirections { get; set; }
     public List<EffectData> AttackEffects { get; set; } = new();
     public SkillData? Skill1 { get; set; }
     public SkillData? Skill2 { get; set; }
+    public Dictionary<string, AnimationMeta> Animations { get; set; } = new(StringComparer.OrdinalIgnoreCase);
 }

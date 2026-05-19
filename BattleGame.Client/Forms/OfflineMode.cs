@@ -31,5 +31,12 @@ namespace BattleGame.Client.Forms
             dungeonMode.Show();
             this.Close();
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            this.Close();
+            ModeForm menuForm = new ModeForm();
+            menuForm.Show();
+        }
     }
 }
