@@ -16,12 +16,16 @@ public class MovementSystem
 
         if (ch.IsDashing)
         {
-            ch.DashTimer -= deltaTime;
-            mv.VelocityX = (mv.FacingRight ? 1 : -1) * mv.Speed * ch.DashSpeedMultiplier;
+            ch.DashTimer = Math.Max(0f, ch.DashTimer - deltaTime);
+            ch.ActionTimer = Math.Max(0f, ch.ActionTimer - deltaTime);
+            mv.VelocityX = ch.DashTimer > 0f
+                ? (mv.FacingRight ? 1 : -1) * mv.Speed * ch.DashSpeedMultiplier
+                : 0f;
 
             if (ch.DashTimer <= 0f)
             {
                 ch.IsDashing = false;
+                ch.ActionTimer = 0f;
                 mv.VelocityX = 0f;
             }
         }

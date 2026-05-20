@@ -76,21 +76,40 @@ namespace BattleGame.Client.Game.Input
             // ===== DASH =====
             if (curK && !_prevK && !ch.IsBusy && !ch.IsProtecting)
             {
-                ch.IsDashing = true;
-                ch.DashTimer = ch.DashDuration;
-                mv.VelocityX = (mv.FacingRight ? 1 : -1) * mv.Speed * ch.DashSpeedMultiplier;
+                string dashAnimation = ResolveDashAnimation(ch);
+                if (!string.IsNullOrWhiteSpace(dashAnimation))
+                {
+                    float duration = ch.DashDuration > 0f ? ch.DashDuration : 0.22f;
+                    ch.IsDashing = true;
+                    ch.DashTimer = duration;
+                    ch.ActionTimer = duration;
+                    ch.ActionDuration = duration;
+                    mv.VelocityX = (mv.FacingRight ? 1 : -1) * mv.Speed * ch.DashSpeedMultiplier;
 
-                var sp = _entity.Get<SpriteComponent>();
-                sp.CurrentAnimation = "Dash";
-                sp.CurrentFrame = 0;
-                sp.FrameTimer = 0f;
-                sp.AnimationFinished = false;
+                    var sp = _entity.Get<SpriteComponent>();
+                    sp.CurrentAnimation = dashAnimation;
+                    sp.CurrentFrame = 0;
+                    sp.FrameTimer = 0f;
+                    sp.AnimationFinished = false;
+                }
             }
 
             _prevJ = curJ;
             _prevU = curU;
             _prevI = curI;
             _prevK = curK;
+        }
+
+        private static string ResolveDashAnimation(CharacterComponent ch)
+        {
+            if (ch.AvailableAnimations.Contains("Dash"))
+                return "Dash";
+            if (ch.AvailableAnimations.Contains("Run"))
+                return "Run";
+            if (ch.AvailableAnimations.Contains("Walk"))
+                return "Walk";
+
+            return string.Empty;
         }
     }
 }

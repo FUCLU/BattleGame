@@ -40,6 +40,23 @@ namespace BattleGame.Client.Game.Systems
             return CharacterHitbox.GetHorizontalGap(aMv, bMv);
         }
 
+        private static bool IsBaseAttackHit(Entity attacker, Entity target, float attackRange)
+        {
+            var attackerMv = attacker.Get<MovementComponent>();
+            var targetMv = target.Get<MovementComponent>();
+            float width = Math.Max(1f, attackRange);
+            float centerX = attackerMv.X + (attackerMv.FacingRight ? 1f : -1f) * (CharacterHitbox.Width / 2f + width / 2f);
+
+            return CharacterHitbox.IntersectsRectangle(targetMv, centerX, attackerMv.Y, width, CharacterHitbox.Height);
+        }
+
+        private static bool IsMeleeEffectHit(Entity caster, Entity target, EffectData effect)
+        {
+            var targetMv = target.Get<MovementComponent>();
+            var spawn = ResolveBarrierSpawnPosition(caster, target, effect);
+            return CharacterHitbox.IntersectsRectangle(targetMv, spawn.X, spawn.Y, effect.CollisionWidth, effect.CollisionHeight);
+        }
+
         private bool IsBlockedByBarrier(Entity attacker, Entity target, string effectType)
         {
             foreach (var barrier in _barrierProvider())
@@ -111,7 +128,7 @@ namespace BattleGame.Client.Game.Systems
                     if (_target != null)
                     {
                         // Chỉ gây damage nếu còn trong phạm vi và không bị barrier chặn
-                        if (GetHorizontalGap(entity, _target) < ch.BaseStats.AttackRange
+                        if (IsBaseAttackHit(entity, _target, ch.BaseStats.AttackRange)
                             && !IsBlockedByBarrier(entity, _target, "melee")
                             && !IsBlockedByProtection(entity, _target))
                             TakeDamage(_target, ch.BaseStats.Atk);
@@ -178,8 +195,9 @@ namespace BattleGame.Client.Game.Systems
             }
 
             // ===== COOLDOWN =====
-            if (ch.Skill1Cooldown > 0) ch.Skill1Cooldown -= deltaTime;
-            if (ch.Skill2Cooldown > 0) ch.Skill2Cooldown -= deltaTime;
+            if (ch.Skill1Cooldown > 0) ch.Skill1Cooldown = Math.Max(0f, ch.Skill1Cooldown - deltaTime);
+            if (ch.Skill2Cooldown > 0) ch.Skill2Cooldown = Math.Max(0f, ch.Skill2Cooldown - deltaTime);
+            RegenerateMana(ch, deltaTime);
 
             // ===== UPDATE BARRIERS =====
             for (int i = _barriers.Count - 1; i >= 0; i--)
@@ -210,6 +228,27 @@ namespace BattleGame.Client.Game.Systems
             }
         }
 
+        private static void RegenerateMana(CharacterComponent ch, float deltaTime)
+        {
+            int maxMana = Math.Max(0, ch.BaseStats.Mana);
+            float regen = Math.Max(0f, ch.BaseStats.ManaRegen);
+            if (ch.IsDead || maxMana == 0 || regen <= 0f || ch.Mana >= maxMana)
+            {
+                ch.ManaRegenAccumulator = 0f;
+                return;
+            }
+
+            ch.ManaRegenAccumulator += regen * deltaTime;
+            int gained = (int)Math.Floor(ch.ManaRegenAccumulator);
+            if (gained <= 0)
+                return;
+
+            ch.Mana = Math.Min(maxMana, ch.Mana + gained);
+            ch.ManaRegenAccumulator -= gained;
+            if (ch.Mana >= maxMana)
+                ch.ManaRegenAccumulator = 0f;
+        }
+
         // ================= ACTION =================
 
         public void Attack(Entity attacker)
@@ -217,10 +256,15 @@ namespace BattleGame.Client.Game.Systems
             var ch = attacker.Get<CharacterComponent>();
             if (ch.IsBusy) return;
 
-            int idx = _rng.Next(1, ch.AttackAnimCount + 1);
-            ch.CurrentAttackAnim = $"Attack_{idx}";
+            string attackAnimation = ResolveAttackAnimation(ch);
+            if (string.IsNullOrWhiteSpace(attackAnimation))
+                return;
+
+            float duration = ch.GetAnimationDuration(attackAnimation, ch.ActionDuration);
+            ch.CurrentAttackAnim = attackAnimation;
             ch.IsAttacking = true;
-            ch.ActionTimer = ch.ActionDuration;
+            ch.ActionTimer = duration;
+            ch.ActionDuration = duration;
             ch.AttackHitDone = false;
             ch.TriggeredAttackEffects.Clear();
             ch.TriggeredAttackFrames.Clear();
@@ -280,21 +324,42 @@ namespace BattleGame.Client.Game.Systems
             float cd = slot == 1 ? ch.Skill1Cooldown : ch.Skill2Cooldown;
             if (cd > 0 || ch.Mana < skill.ManaCost) return;
 
+            string animation = string.IsNullOrWhiteSpace(skill.Animation)
+                ? $"Skill{slot}"
+                : skill.Animation;
+            if (!ch.AvailableAnimations.Contains(animation))
+                return;
+
+            float duration = ch.GetAnimationDuration(animation, 0.7f);
             ch.Mana -= skill.ManaCost;
             ch.IsUsingSkill = true;
             ch.CurrentSkillSlot = slot;
-            ch.CurrentSkillAnim = skill.Animation;
+            ch.CurrentSkillAnim = animation;
+            ch.ActionTimer = duration;
+            ch.ActionDuration = duration;
             ch.TriggeredEffects.Clear();
             ch.TriggeredFrames.Clear();
 
             var sp = caster.Get<SpriteComponent>();
-            sp.CurrentAnimation = skill.Animation;
+            sp.CurrentAnimation = animation;
             sp.CurrentFrame = 0;
             sp.FrameTimer = 0;
             sp.AnimationFinished = false;
 
             if (slot == 1) ch.Skill1Cooldown = skill.Cooldown;
             else ch.Skill2Cooldown = skill.Cooldown;
+        }
+
+        private static string ResolveAttackAnimation(CharacterComponent ch)
+        {
+            var attacks = ch.AvailableAnimations
+                .Where(animation => animation.StartsWith("Attack_", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(animation => animation, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+
+            return attacks.Length == 0
+                ? string.Empty
+                : attacks[_rng.Next(attacks.Length)];
         }
 
         // ================= TRIGGER =================
@@ -387,7 +452,7 @@ namespace BattleGame.Client.Game.Systems
                         System.Diagnostics.Debug.WriteLine($"[ExecuteEffect] Melee effect triggered. Caster at X={casterMv.X}, Target at X={targetMv.X}, Range={e.Range}, Gap={horizontalGap}");
 
                         // Chỉ gây damage nếu còn trong phạm vi
-                        if (horizontalGap < e.Range)
+                        if (IsMeleeEffectHit(caster, _target, e))
                         {
                             System.Diagnostics.Debug.WriteLine($"[ExecuteEffect] Damage applied: {e.Damage}");
                             TakeDamage(_target, e.Damage, e.Stun);
@@ -496,7 +561,7 @@ namespace BattleGame.Client.Game.Systems
             var ch = target.Get<CharacterComponent>();
             if (ch.IsDead || ch.IsInvulnerable) return;
 
-            int damage = Math.Max(0, rawDamage - ch.BaseStats.Def);
+            int damage = rawDamage <= 0 ? 0 : Math.Max(1, rawDamage - ch.BaseStats.Def);
             ch.Hp = Math.Max(0, ch.Hp - damage);
 
             ch.IsHurt = true;

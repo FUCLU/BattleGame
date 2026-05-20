@@ -18,6 +18,9 @@ public class EffectState
     public bool BlockEnemyProjectile { get; set; } = true;
     public bool BlockEnemySkill { get; set; } = true;
     public int CurrentFrame { get; set; }
+    public List<int> HitFrames { get; set; } = new();
+    public HashSet<int> DamagedFrames { get; set; } = new();
+    public float Duration { get; set; }
     public float RemainingTime { get; set; }
     public bool FacingRight { get; set; }
     public int LastDamageTick { get; set; } = -1;

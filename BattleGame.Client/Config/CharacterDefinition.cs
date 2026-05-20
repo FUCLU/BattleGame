@@ -86,6 +86,7 @@ namespace BattleGame.Client.Config
                 Hp = stats.GetProperty("hp").GetInt32(),
                 Def = stats.GetProperty("def").GetInt32(),
                 Mana = stats.GetProperty("mana").GetInt32(),
+                ManaRegen = stats.TryGetProperty("manaRegen", out var manaRegen) ? manaRegen.GetSingle() : 8f,
                 Atk = stats.GetProperty("atk").GetInt32(),
                 Speed = stats.GetProperty("speed").GetSingle(),
                 AtkSpeed = stats.GetProperty("atkSpeed").GetSingle(),

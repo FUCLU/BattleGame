@@ -36,7 +36,7 @@ public class AnimationSystem
         }
         else if (ch.IsDashing)
         {
-            target = "Dash";
+            target = ResolveDashAnimation(ch);
         }
         else if (ch.IsProtecting)
         {
@@ -70,5 +70,17 @@ public class AnimationSystem
             sp.FrameTimer = 0f;
             sp.AnimationFinished = false;
         }
+    }
+
+    private static string ResolveDashAnimation(CharacterComponent ch)
+    {
+        if (ch.AvailableAnimations.Contains("Dash"))
+            return "Dash";
+        if (ch.AvailableAnimations.Contains("Run"))
+            return "Run";
+        if (ch.AvailableAnimations.Contains("Walk"))
+            return "Walk";
+
+        return "Idle";
     }
 }

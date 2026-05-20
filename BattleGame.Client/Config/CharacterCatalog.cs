@@ -58,15 +58,9 @@ namespace BattleGame.Client.Config
                 }
             }
 
-            MergeLegacyItems(items);
             items.Sort((left, right) => StringComparer.OrdinalIgnoreCase.Compare(left.DisplayName, right.DisplayName));
 
             return items;
-        }
-
-        private static void MergeLegacyItems(List<CharacterSelectionItem> items)
-        {
-            // Removed: Legacy items are no longer merged, only JSON characters are used
         }
 
         private static bool TryLoadFromConfig(string configPath, out CharacterSelectionItem item)
@@ -107,15 +101,5 @@ namespace BattleGame.Client.Config
             return CultureInfo.InvariantCulture.TextInfo.ToTitleCase(normalized.ToLowerInvariant());
         }
 
-        private static IEnumerable<CharacterSelectionItem> GetLegacyItems()
-        {
-            return new[]
-            {
-                new CharacterSelectionItem("warrior", "Warrior", "IDLE.png", 120, 40, 25, 15, "Blade Slash", "Warrior"),
-                new CharacterSelectionItem("girlnight", "GirlKnight", "Idle_KG_1.png", 100, 28, 35, 18, "Shield Bash", "GirlKnight"),
-                new CharacterSelectionItem("kabold", "Kabold", "KaboldAvt.png", 80, 50, 10, 32, "Claw Strike", "Kabold"),
-                new CharacterSelectionItem("soldier", "Soldier", "Idle.png", 110, 45, 15, 20, "Shoot", "Soldier"),
-            };
-        }
     }
 }

@@ -77,6 +77,7 @@
             BtnLeaderBoard.Size = new Size(276, 77);
             BtnLeaderBoard.TabIndex = 4;
             BtnLeaderBoard.UseVisualStyleBackColor = false;
+            BtnLeaderBoard.Click += BtnLeaderBoard_Click;
             // 
             // GameOverForm
             // 

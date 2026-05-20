@@ -113,15 +113,17 @@ namespace BattleGame.Server.Services
             {
                 using var client = new SmtpClient(_config.Host, _config.Port)
                 {
+                    DeliveryMethod = SmtpDeliveryMethod.Network,
+                    UseDefaultCredentials = false,
                     EnableSsl = _config.EnableSsl,
-                    Credentials = string.IsNullOrEmpty(_config.Password)
-                        ? null
-                        : new NetworkCredential(_config.Username, _config.Password)
+                    Credentials = _config.HasCredentials
+                        ? new NetworkCredential(_config.Username, _config.Password)
+                        : null
                 };
 
                 var mail = new MailMessage
                 {
-                    From = new MailAddress(_config.Username, _config.FromName),
+                    From = new MailAddress(_config.FromEmail, _config.FromName),
                     Subject = subject,
                     Body = body,
                     IsBodyHtml = true

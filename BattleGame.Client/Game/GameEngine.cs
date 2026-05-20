@@ -22,6 +22,10 @@ namespace BattleGame.Client.Game
     public class GameEngine
     {
         private const float GroundBottomMargin = 140f;
+        private const float DefaultMapPadding = 50f;
+        private const float MinPlayableMapWidth = 420f;
+        private const float DefaultSpawnLeftRatio = 0.15f;
+        private const float DefaultSpawnRightRatio = 0.85f;
         private const string CaveMapId = "cave";
         private const string Stage2MapId = "stage2";
         private const float CaveWorldWidth = 8000f;
@@ -40,12 +44,19 @@ namespace BattleGame.Client.Game
         private CharacterRenderer _renderer = null!;
         private BarrierRenderer _barrierRenderer = null!;
         private PlayerController _controller = null!;
-        private Dictionary<string, SpriteAnimation> _onlineEffectAnimations = new();
+        private readonly Dictionary<string, SpriteAnimation> _onlineEffectAnimations = new(StringComparer.OrdinalIgnoreCase);
         private readonly List<ProjectileState> _onlineProjectiles = new();
         private readonly List<EffectState> _onlineEffects = new();
+        private readonly Dictionary<int, OnlineProjectileVisual> _onlineProjectileVisuals = new();
+        private readonly Dictionary<int, OnlineEffectVisual> _onlineEffectVisuals = new();
         private readonly Dictionary<int, VisualFrameState> _projectileFrames = new();
         private readonly Dictionary<int, VisualFrameState> _effectFrames = new();
+        private readonly Dictionary<string, SpriteAnimation> _playerAnimations = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<string, SpriteAnimation> _enemyAnimations = new(StringComparer.OrdinalIgnoreCase);
+        private int _localOnlinePlayerId;
+        private int _remoteOnlinePlayerId;
+        private int _onlineVisualRoundNumber = -1;
+        private LocalActionPrediction? _localActionPrediction;
         private Image? _mapBackground;
         private readonly List<ParallaxLayer> _parallaxLayers = new();
         private ParallaxLayer? _foregroundLayer;
@@ -79,8 +90,7 @@ namespace BattleGame.Client.Game
             _mapWidth = GetWorldWidth(mapId, formWidth);
             _hideDefaultEnemyInDungeon = IsDungeonParallaxMapId(mapId);
 
-            _moveSystem.MapLeft = 50f;
-            _moveSystem.MapRight = _mapWidth - 50f;
+            RecomputeMapBounds();
 
             // Load map background directly
             LoadMapBackground(mapId);
@@ -89,18 +99,22 @@ namespace BattleGame.Client.Game
             // Load animations trước — ProjectileSystem cần để render
             var loader = new AnimationLoader("Assets");
             var animations = loader.Load(characterId);
+            foreach (var kv in animations)
+                _playerAnimations[kv.Key] = kv.Value;
 
             var animKeys = new Dictionary<string, object>();
-            foreach (var kv in animations)
+            foreach (var kv in _playerAnimations)
                 animKeys[kv.Key] = kv.Value;
 
             // Khởi tạo theo thứ tự dependency
-            _projectileSystem = new ProjectileSystem(animations);
+            _projectileSystem = new ProjectileSystem(_onlineEffectAnimations);
             _playerCombatSystem = new CombatSystem(_projectileSystem);
             _enemyCombatSystem = new CombatSystem(_projectileSystem);
 
             // Tạo nhân vật
-            _player = CharacterFactory.Create(characterId, 200f, _groundY, animKeys);
+            float leftSpawnX = ResolveDefaultSpawnLeft();
+            float rightSpawnX = ResolveDefaultSpawnRight(leftSpawnX);
+            _player = CharacterFactory.Create(characterId, leftSpawnX, _groundY, animKeys);
 
             // Enemy theo character đối thủ đã chọn từ RoomForm/MatchFound.
             if (!_hideDefaultEnemyInDungeon)
@@ -115,10 +129,12 @@ namespace BattleGame.Client.Game
                 var enemyAnimKeys = new Dictionary<string, object>();
                 foreach (var kv in _enemyAnimations)
                     enemyAnimKeys[kv.Key] = kv.Value;
-                float enemyStartX = IsDungeonParallaxMap ? Math.Min(_mapWidth - 300f, 7600f) : 500f;
+                float enemyStartX = IsDungeonParallaxMap
+                    ? Math.Min(_mapWidth - 300f, 7600f)
+                    : rightSpawnX;
                 _enemy = CharacterFactory.Create(resolvedEnemyCharacterId, enemyStartX, _groundY, enemyAnimKeys);
             }
-            _onlineEffectAnimations = MergeAnimations(animations, _enemyAnimations);
+            RefreshCombinedAnimations();
 
             // Đăng ký target cho projectile collision
             _projectileSystem.RegisterTarget(_player);
@@ -136,55 +152,520 @@ namespace BattleGame.Client.Game
                 _playerCombatSystem.SetTarget(_enemy);
                 _enemyCombatSystem.SetTarget(_player);
             }
-
-            _renderer = new CharacterRenderer(_player.Id, animations, _enemyAnimations);
+            _renderer = new CharacterRenderer(_player.Id, _playerAnimations, _enemyAnimations);
             _barrierRenderer = new BarrierRenderer(_onlineEffectAnimations);
             _controller = new PlayerController(_player, _enemy ?? _player, _playerCombatSystem);
             _lastTime = DateTime.Now;
             UpdateCamera();
         }
 
-        public void ApplyOnlineWorldState(BattleState state, int localPlayerId)
+        private float ResolveDefaultSpawnLeft()
+        {
+            float leftSpawnX = _mapWidth * DefaultSpawnLeftRatio;
+            float minX = _moveSystem.MapLeft + 80f;
+            float maxX = _moveSystem.MapRight - 200f;
+            return ClampSafe(leftSpawnX, minX, maxX, (_moveSystem.MapLeft + _moveSystem.MapRight) * 0.5f);
+        }
+
+        private float ResolveDefaultSpawnRight(float leftSpawnX)
+        {
+            float rightSpawnX = _mapWidth * DefaultSpawnRightRatio;
+            rightSpawnX = Math.Max(rightSpawnX, leftSpawnX + 200f);
+            float minX = leftSpawnX + 150f;
+            float maxX = _moveSystem.MapRight - 40f;
+            return ClampSafe(rightSpawnX, minX, maxX, _moveSystem.MapRight - 60f);
+        }
+
+        public void ApplyOnlineWorldState(BattleState state, int localPlayerId, bool mirrorView = false)
         {
             PlayerBattleState local = state.Player1.PlayerId == localPlayerId ? state.Player1 : state.Player2;
             PlayerBattleState remote = state.Player1.PlayerId == localPlayerId ? state.Player2 : state.Player1;
+            int incomingRound = state.RoundNumber <= 0 ? 1 : state.RoundNumber;
+            if (_onlineVisualRoundNumber != incomingRound ||
+                (_localOnlinePlayerId != 0 && _localOnlinePlayerId != local.PlayerId) ||
+                (_remoteOnlinePlayerId != 0 && _remoteOnlinePlayerId != remote.PlayerId))
+            {
+                ClearOnlineVisuals();
+                _onlineVisualRoundNumber = incomingRound;
+            }
 
-            ApplySnapshot(_player, local);
+            _localOnlinePlayerId = local.PlayerId;
+            _remoteOnlinePlayerId = remote.PlayerId;
+
+            EnsureOnlineCharacterAssets(_player, local.CharacterId, _playerAnimations);
             if (_enemy != null)
-                ApplySnapshot(_enemy, remote);
+                EnsureOnlineCharacterAssets(_enemy, remote.CharacterId, _enemyAnimations);
+            RefreshCombinedAnimations();
+
+            if (mirrorView)
+            {
+                local = MirrorSnapshot(local);
+                remote = MirrorSnapshot(remote);
+            }
+
+            ApplySnapshot(_player, local, isLocal: true);
+            if (_enemy != null)
+                ApplySnapshot(_enemy, remote, isLocal: false);
 
             _onlineProjectiles.Clear();
-            _onlineProjectiles.AddRange(state.Projectiles);
+            if (mirrorView)
+            {
+                foreach (var projectile in state.Projectiles)
+                {
+                    _onlineProjectiles.Add(new ProjectileState
+                    {
+                        ProjectileId = projectile.ProjectileId,
+                        OwnerPlayerId = projectile.OwnerPlayerId,
+                        X = MirrorX(projectile.X),
+                        Y = projectile.Y,
+                        VelocityX = -projectile.VelocityX,
+                        VelocityY = projectile.VelocityY,
+                        Damage = projectile.Damage,
+                        Stun = projectile.Stun,
+                        Range = projectile.Range,
+                        Lifetime = projectile.Lifetime,
+                        Timer = projectile.Timer,
+                        AnimationKey = projectile.AnimationKey,
+                        CurrentFrame = projectile.CurrentFrame,
+                        FacingRight = !projectile.FacingRight,
+                        RenderOffsetX = -projectile.RenderOffsetX,
+                        RenderOffsetY = projectile.RenderOffsetY,
+                        Render = MirrorRender(projectile.Render)
+                    });
+                }
+            }
+            else
+            {
+                _onlineProjectiles.AddRange(state.Projectiles);
+            }
             _onlineEffects.Clear();
-            _onlineEffects.AddRange(state.Effects);
+            if (mirrorView)
+            {
+                foreach (var effect in state.Effects)
+                {
+                    _onlineEffects.Add(new EffectState
+                    {
+                        EffectId = effect.EffectId,
+                        OwnerPlayerId = effect.OwnerPlayerId,
+                        EffectType = effect.EffectType,
+                        AnimationKey = effect.AnimationKey,
+                        X = MirrorX(effect.X),
+                        Y = effect.Y,
+                        Damage = effect.Damage,
+                        Stun = effect.Stun,
+                        CollisionWidth = effect.CollisionWidth,
+                        CollisionHeight = effect.CollisionHeight,
+                        BlockEnemyAttack = effect.BlockEnemyAttack,
+                        BlockEnemyProjectile = effect.BlockEnemyProjectile,
+                        BlockEnemySkill = effect.BlockEnemySkill,
+                        CurrentFrame = effect.CurrentFrame,
+                        HitFrames = new List<int>(effect.HitFrames),
+                        DamagedFrames = new HashSet<int>(effect.DamagedFrames),
+                        Duration = effect.Duration,
+                        RemainingTime = effect.RemainingTime,
+                        FacingRight = !effect.FacingRight,
+                        LastDamageTick = effect.LastDamageTick,
+                        Render = MirrorRender(effect.Render)
+                    });
+                }
+            }
+            else
+            {
+                _onlineEffects.AddRange(state.Effects);
+            }
 
-            SyncVisualFrames(_projectileFrames, _onlineProjectiles.Select(p => p.ProjectileId));
-            SyncVisualFrames(_effectFrames, _onlineEffects.Select(e => e.EffectId));
+            SyncOnlineProjectileVisuals(_onlineProjectiles);
+            SyncOnlineEffectVisuals(_onlineEffects);
             UpdateCamera();
         }
 
-        public void UpdateOnlineVisuals(float dt)
+        private void EnsureOnlineCharacterAssets(
+            Entity entity,
+            string characterId,
+            Dictionary<string, SpriteAnimation> animationSet)
         {
-            dt = Math.Min(dt, 0.05f);
-            foreach (var projectile in _onlineProjectiles)
+            if (string.IsNullOrWhiteSpace(characterId))
+                return;
+
+            var ch = entity.Get<CharacterComponent>();
+            if (string.Equals(ch.CharacterId, characterId, StringComparison.OrdinalIgnoreCase) &&
+                animationSet.Count > 0)
             {
-                AdvanceVisualFrame(
-                    _projectileFrames,
-                    projectile.ProjectileId,
-                    projectile.AnimationKey,
-                    _onlineEffectAnimations,
-                    dt);
+                return;
             }
 
-            foreach (var effect in _onlineEffects)
+            var loader = new AnimationLoader("Assets");
+            var loadedAnimations = loader.Load(characterId);
+            if (loadedAnimations.Count > 0)
             {
+                animationSet.Clear();
+                foreach (var kv in loadedAnimations)
+                    animationSet[kv.Key] = kv.Value;
+            }
+
+            try
+            {
+                string path = CharacterDefinitionLoader.ResolveConfigPath(_clientRoot, characterId);
+                var definition = CharacterDefinitionLoader.Load(path);
+                ch.CharacterId = definition.Id;
+                ch.BaseStats = definition.Stats;
+                ch.Render = definition.Render;
+                ch.AvailableAnimations = new HashSet<string>(animationSet.Keys, StringComparer.OrdinalIgnoreCase);
+                ch.AnimationDurations = BuildAnimationDurations(animationSet);
+                ch.Skill1 = definition.Skill1;
+                ch.Skill2 = definition.Skill2;
+                ch.AttackEffects = definition.AttackEffects;
+                ch.AttackAnimCount = Math.Max(1, animationSet.Keys.Count(k => k.StartsWith("Attack_", StringComparison.OrdinalIgnoreCase)));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[GameEngine] Failed to refresh online character assets for '{characterId}': {ex}");
+            }
+        }
+
+        private PlayerBattleState MirrorSnapshot(PlayerBattleState snapshot)
+        {
+            return new PlayerBattleState
+            {
+                PlayerId = snapshot.PlayerId,
+                CharacterId = snapshot.CharacterId,
+                Stats = snapshot.Stats,
+                X = MirrorX(snapshot.X),
+                Y = snapshot.Y,
+                VelocityX = -snapshot.VelocityX,
+                VelocityY = snapshot.VelocityY,
+                FacingRight = !snapshot.FacingRight,
+                IsGrounded = snapshot.IsGrounded,
+                Hp = snapshot.Hp,
+                Mana = snapshot.Mana,
+                IsProtecting = snapshot.IsProtecting,
+                IsAttacking = snapshot.IsAttacking,
+                IsUsingSkill = snapshot.IsUsingSkill,
+                IsDashing = snapshot.IsDashing,
+                IsHurt = snapshot.IsHurt,
+                IsStunned = snapshot.IsStunned,
+                IsDead = snapshot.IsDead,
+                ActionTimer = snapshot.ActionTimer,
+                ActionDuration = snapshot.ActionDuration,
+                ActionHitDone = snapshot.ActionHitDone,
+                CurrentSkillSlot = snapshot.CurrentSkillSlot,
+                CurrentSkillAnimation = snapshot.CurrentSkillAnimation,
+                HurtTimer = snapshot.HurtTimer,
+                StunTimer = snapshot.StunTimer,
+                DashTimer = snapshot.DashTimer,
+                Skill1Cooldown = snapshot.Skill1Cooldown,
+                Skill2Cooldown = snapshot.Skill2Cooldown,
+                CurrentAnimation = snapshot.CurrentAnimation,
+                CurrentFrame = snapshot.CurrentFrame,
+                CurrentActionId = snapshot.CurrentActionId,
+                CurrentActionTick = snapshot.CurrentActionTick
+            };
+        }
+
+        private float MirrorX(float x) => _mapWidth - x;
+
+        private static Dictionary<string, float> BuildAnimationDurations(Dictionary<string, SpriteAnimation> animations)
+        {
+            var durations = new Dictionary<string, float>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var kv in animations)
+            {
+                if (kv.Value.Frames.Length == 0)
+                    continue;
+
+                durations[kv.Key] = kv.Value.Frames.Length / Math.Max(1f, kv.Value.Fps);
+            }
+
+            return durations;
+        }
+
+    public void UpdateOnlineVisuals(float dt)
+    {
+        dt = Math.Min(dt, 0.05f);
+        UpdateLocalActionPrediction(dt);
+
+        _renderer.Update(_player, dt);
+        if (_enemy != null)
+            _renderer.Update(_enemy, dt);
+
+        foreach (var item in _onlineProjectileVisuals.ToList())
+        {
+            var visual = item.Value;
+            var projectile = visual.State;
+            if (!TryResolveOnlineAnimation(projectile.OwnerPlayerId, projectile.AnimationKey, out var anim))
+            {
+                if (!visual.IsServerActive)
+                    RemoveOnlineProjectileVisual(item.Key);
+                continue;
+            }
+
+            visual.AgeSeconds += dt;
+            if (visual.IsServerActive)
+            {
+                projectile.X += projectile.VelocityX * dt;
+                projectile.Y += projectile.VelocityY * dt;
+                projectile.Timer += dt;
+            }
+            else
+            {
+                visual.MissingSeconds += dt;
+            }
+
+            AdvanceVisualFrame(
+                _projectileFrames,
+                projectile.ProjectileId,
+                anim,
+                dt);
+
+            if (!visual.IsServerActive && ShouldRemoveOnlineVisual(_projectileFrames[item.Key], anim, visual))
+                RemoveOnlineProjectileVisual(item.Key);
+            }
+
+            foreach (var item in _onlineEffectVisuals.ToList())
+            {
+                var visual = item.Value;
+                var effect = visual.State;
+                if (!TryResolveOnlineAnimation(effect.OwnerPlayerId, effect.AnimationKey, out var anim))
+                {
+                    if (!visual.IsServerActive)
+                        RemoveOnlineEffectVisual(item.Key);
+                    continue;
+                }
+
+                visual.AgeSeconds += dt;
+                if (!visual.IsServerActive)
+                    visual.MissingSeconds += dt;
+
                 AdvanceVisualFrame(
                     _effectFrames,
                     effect.EffectId,
-                    effect.AnimationKey,
-                    _onlineEffectAnimations,
+                    anim,
                     dt);
+
+                if (!visual.IsServerActive && ShouldRemoveOnlineVisual(_effectFrames[item.Key], anim, visual))
+                    RemoveOnlineEffectVisual(item.Key);
             }
+        }
+
+        public bool TryPredictLocalAction(BattleInput input)
+        {
+            if (input.PlayerId <= 0)
+                return false;
+
+            if (_localOnlinePlayerId != 0 && input.PlayerId != _localOnlinePlayerId)
+                return false;
+
+            var ch = _player.Get<CharacterComponent>();
+            if (!input.BlockHeld)
+                ch.IsProtecting = false;
+
+            if (ch.IsDead || ch.IsBusy || ch.IsProtecting)
+                return false;
+
+            if (input.DashPressed)
+                return TryPredictLocalDash(ch, _player.Get<MovementComponent>(), _player.Get<SpriteComponent>());
+
+            if (input.SkillSlot is 1 or 2)
+                return TryPredictLocalSkill(ch, _player.Get<SpriteComponent>(), input.SkillSlot);
+
+            if (input.AttackPressed)
+                return TryPredictLocalAttack(ch, _player.Get<SpriteComponent>());
+
+            return false;
+        }
+
+        public void ClearLocalActionPrediction()
+        {
+            _localActionPrediction = null;
+        }
+
+        private bool TryPredictLocalSkill(CharacterComponent ch, SpriteComponent sp, int slot)
+        {
+            SkillData? skill = slot == 1 ? ch.Skill1 : ch.Skill2;
+            if (skill == null)
+                return false;
+
+            float cooldown = slot == 1 ? ch.Skill1Cooldown : ch.Skill2Cooldown;
+            if (cooldown > 0.05f || ch.Mana < skill.ManaCost)
+                return false;
+
+            string requestedAnimation = string.IsNullOrWhiteSpace(skill.Animation)
+                ? $"Skill{slot}"
+                : skill.Animation;
+            string animation = ResolveActionAnimation(requestedAnimation, $"Skill{slot}");
+            if (string.IsNullOrWhiteSpace(animation))
+                return false;
+
+            float duration = EstimateLocalAnimationDuration(animation, 0.7f);
+
+            ch.IsAttacking = false;
+            ch.IsDashing = false;
+            ch.IsUsingSkill = true;
+            ch.CurrentSkillSlot = slot;
+            ch.CurrentSkillAnim = animation;
+            ch.ActionTimer = duration;
+            ch.ActionDuration = duration;
+            ch.Mana = Math.Max(0, ch.Mana - skill.ManaCost);
+            if (slot == 1)
+                ch.Skill1Cooldown = skill.Cooldown;
+            else
+                ch.Skill2Cooldown = skill.Cooldown;
+            ch.TriggeredEffects.Clear();
+            ch.TriggeredFrames.Clear();
+
+            BeginPredictedAnimation(sp, animation);
+            StartLocalActionPrediction(PredictedActionKind.Skill, animation, slot, duration);
+            return true;
+        }
+
+        private bool TryPredictLocalAttack(CharacterComponent ch, SpriteComponent sp)
+        {
+            string animation = ResolvePredictedAttackAnimation(ch, sp);
+            if (string.IsNullOrWhiteSpace(animation))
+                return false;
+
+            float duration = EstimateLocalAnimationDuration(animation, ch.ActionDuration > 0f ? ch.ActionDuration : 0.7f);
+
+            ch.IsUsingSkill = false;
+            ch.IsDashing = false;
+            ch.IsAttacking = true;
+            ch.CurrentAttackAnim = animation;
+            ch.ActionTimer = duration;
+            ch.ActionDuration = duration;
+            ch.AttackHitDone = false;
+            ch.TriggeredAttackEffects.Clear();
+            ch.TriggeredAttackFrames.Clear();
+
+            BeginPredictedAnimation(sp, animation);
+            StartLocalActionPrediction(PredictedActionKind.Attack, animation, 0, duration);
+            return true;
+        }
+
+        private bool TryPredictLocalDash(CharacterComponent ch, MovementComponent mv, SpriteComponent sp)
+        {
+            string animation = ResolveActionAnimation("Dash", "Run", "Walk");
+            if (string.IsNullOrWhiteSpace(animation))
+                return false;
+
+            float duration = ch.DashDuration > 0f ? ch.DashDuration : 0.22f;
+
+            ch.IsUsingSkill = false;
+            ch.IsAttacking = false;
+            ch.IsDashing = true;
+            ch.DashTimer = duration;
+            ch.ActionTimer = duration;
+            ch.ActionDuration = duration;
+            mv.VelocityX = (mv.FacingRight ? 1f : -1f) * mv.Speed * ch.DashSpeedMultiplier;
+
+            BeginPredictedAnimation(sp, animation);
+            StartLocalActionPrediction(PredictedActionKind.Dash, animation, 0, duration);
+            return true;
+        }
+
+        private void UpdateLocalActionPrediction(float dt)
+        {
+            if (_localActionPrediction == null)
+                return;
+
+            var ch = _player.Get<CharacterComponent>();
+            ch.ActionTimer = Math.Max(0f, ch.ActionTimer - dt);
+            if (_localActionPrediction.Kind == PredictedActionKind.Dash)
+                ch.DashTimer = Math.Max(0f, ch.DashTimer - dt);
+
+            _localActionPrediction.HoldSeconds -= dt;
+            if (_localActionPrediction.HoldSeconds <= 0f)
+            {
+                EndLocalPredictedAction(ch, _player.Get<SpriteComponent>());
+                _localActionPrediction = null;
+            }
+        }
+
+        private bool ShouldKeepLocalPrediction(PlayerBattleState snapshot)
+        {
+            if (_localActionPrediction == null || _localActionPrediction.HoldSeconds <= 0f)
+                return false;
+
+            if (snapshot.IsDead || snapshot.IsHurt || snapshot.IsStunned)
+                return false;
+
+            return !IsServerDrivenAction(snapshot);
+        }
+
+        private void StartLocalActionPrediction(PredictedActionKind kind, string animation, int skillSlot, float duration)
+        {
+            _localActionPrediction = new LocalActionPrediction
+            {
+                Kind = kind,
+                Animation = animation,
+                SkillSlot = skillSlot,
+                HoldSeconds = Math.Clamp(duration, 0.12f, 2.0f)
+            };
+        }
+
+        private static void EndLocalPredictedAction(CharacterComponent ch, SpriteComponent sp)
+        {
+            ch.IsAttacking = false;
+            ch.IsUsingSkill = false;
+            ch.IsDashing = false;
+            ch.CurrentSkillSlot = 0;
+            ch.ActionTimer = 0f;
+            ch.DashTimer = 0f;
+
+            if (!ch.IsDead && !ch.IsHurt && !ch.IsStunned &&
+                !string.Equals(sp.CurrentAnimation, "Idle", StringComparison.OrdinalIgnoreCase))
+            {
+                sp.CurrentAnimation = "Idle";
+                sp.CurrentFrame = 0;
+                sp.FrameTimer = 0f;
+                sp.AnimationFinished = false;
+            }
+        }
+
+        private static void BeginPredictedAnimation(SpriteComponent sp, string animation)
+        {
+            sp.CurrentAnimation = animation;
+            sp.CurrentFrame = 0;
+            sp.FrameTimer = 0f;
+            sp.AnimationFinished = false;
+        }
+
+        private string ResolvePredictedAttackAnimation(CharacterComponent ch, SpriteComponent sp)
+        {
+            int attackCount = Math.Max(1, ch.AttackAnimCount);
+            int actionId = Math.Max(0, sp.SyncedActionId);
+
+            for (int attempt = 0; attempt < attackCount; attempt++)
+            {
+                int idx = ((actionId + attempt) % attackCount) + 1;
+                string animation = $"Attack_{idx}";
+                if (_playerAnimations.ContainsKey(animation))
+                    return animation;
+            }
+
+            return string.Empty;
+        }
+
+        private string ResolveActionAnimation(params string[] candidates)
+        {
+            foreach (string candidate in candidates)
+            {
+                if (!string.IsNullOrWhiteSpace(candidate) && _playerAnimations.ContainsKey(candidate))
+                    return candidate;
+            }
+
+            return string.Empty;
+        }
+
+        private float EstimateLocalAnimationDuration(string animation, float fallbackDuration)
+        {
+            if (_playerAnimations.TryGetValue(animation, out var anim) &&
+                anim.Frames.Length > 0 &&
+                anim.Fps > 0f)
+            {
+                return Math.Max(0.05f, anim.Frames.Length / Math.Max(1f, anim.Fps));
+            }
+
+            return Math.Max(0.05f, fallbackDuration);
         }
 
         private bool IsCaveMap => string.Equals(_mapId, CaveMapId, StringComparison.OrdinalIgnoreCase);
@@ -196,7 +677,7 @@ namespace BattleGame.Client.Game
                 ? CaveWorldWidth
                 : string.Equals(mapId, Stage2MapId, StringComparison.OrdinalIgnoreCase)
                     ? Stage2WorldWidth
-                    : formWidth;
+                    : Math.Max(MinPlayableMapWidth, formWidth);
 
         private static float GetGroundY(string mapId, int formHeight)
             => formHeight - GroundBottomMargin +
@@ -225,8 +706,7 @@ namespace BattleGame.Client.Game
             _groundY = GetGroundY(_mapId, height);
             _mapWidth = GetWorldWidth(_mapId, width);
 
-            _moveSystem.MapLeft = 50f;
-            _moveSystem.MapRight = _mapWidth - 50f;
+            RecomputeMapBounds();
 
             ResizeEntity(_player, oldGroundY, _groundY);
             if (_enemy != null)
@@ -244,7 +724,20 @@ namespace BattleGame.Client.Game
                 ? newGroundY
                 : mv.Y + groundDelta;
 
-            mv.X = Math.Clamp(mv.X, _moveSystem.MapLeft, _moveSystem.MapRight);
+            mv.X = ClampSafe(mv.X, _moveSystem.MapLeft, _moveSystem.MapRight, _moveSystem.MapLeft);
+        }
+
+        private void RecomputeMapBounds()
+        {
+            _moveSystem.MapLeft = DefaultMapPadding;
+            _moveSystem.MapRight = Math.Max(_moveSystem.MapLeft + 1f, _mapWidth - DefaultMapPadding);
+        }
+
+        private static float ClampSafe(float value, float min, float max, float fallback)
+        {
+            if (max < min)
+                return fallback;
+            return Math.Clamp(value, min, max);
         }
 
         private IEnumerable<Entity> GetAllBarriers()
@@ -260,12 +753,10 @@ namespace BattleGame.Client.Game
             if (_enemy != null)
                 _bossAiController?.Update(dt, _enemy, _player, _enemyCombatSystem);
 
-            // ===== UPDATE ANIMATION FIRST (before combat check) =====
             _renderer.Update(_player, dt);
             if (_enemy != null)
                 _renderer.Update(_enemy, dt);
 
-            // ===== COMBAT (now AnimationFinished is up-to-date) =====
             _playerCombatSystem.Update(_player, dt);
             if (_enemy != null)
                 _enemyCombatSystem.Update(_enemy, dt);
@@ -281,7 +772,6 @@ namespace BattleGame.Client.Game
             _projectileSystem.Update(dt);
             UpdateDungeonRun();
 
-            // ===== UPDATE BARRIERS =====
             foreach (var barrier in _playerCombatSystem.GetBarriers())
             {
                 _barrierRenderer.Update(barrier, dt);
@@ -357,23 +847,42 @@ namespace BattleGame.Client.Game
             }
         }
 
-        private static Dictionary<string, SpriteAnimation> MergeAnimations(
-            Dictionary<string, SpriteAnimation> playerAnimations,
-            Dictionary<string, SpriteAnimation> enemyAnimations)
+        private void RefreshCombinedAnimations()
         {
-            var merged = new Dictionary<string, SpriteAnimation>(StringComparer.OrdinalIgnoreCase);
-            foreach (var kv in playerAnimations)
-                merged[kv.Key] = kv.Value;
-            foreach (var kv in enemyAnimations)
-                merged.TryAdd(kv.Key, kv.Value);
-            return merged;
+            _onlineEffectAnimations.Clear();
+
+            foreach (var kv in _playerAnimations)
+                _onlineEffectAnimations[kv.Key] = kv.Value;
+
+            foreach (var kv in _enemyAnimations)
+                _onlineEffectAnimations.TryAdd(kv.Key, kv.Value);
         }
 
-        private static void ApplySnapshot(Entity entity, PlayerBattleState snapshot)
+        private static EffectRenderData MirrorRender(EffectRenderData render)
+            => new()
+            {
+                Scale = render.Scale,
+                OffsetX = -render.OffsetX,
+                OffsetY = render.OffsetY,
+                UseSpriteSize = render.UseSpriteSize,
+                AlignY = render.AlignY,
+                FacingSource = render.FacingSource
+            };
+
+        private void ApplySnapshot(Entity entity, PlayerBattleState snapshot, bool isLocal)
         {
             var mv = entity.Get<MovementComponent>();
             var ch = entity.Get<CharacterComponent>();
             var sp = entity.Get<SpriteComponent>();
+            bool serverAction = IsServerDrivenAction(snapshot);
+            if (isLocal &&
+                _localActionPrediction != null &&
+                (serverAction || snapshot.IsDead || snapshot.IsHurt || snapshot.IsStunned))
+            {
+                _localActionPrediction = null;
+            }
+
+            bool keepPrediction = isLocal && ShouldKeepLocalPrediction(snapshot);
 
             mv.X = snapshot.X;
             mv.Y = snapshot.Y;
@@ -383,42 +892,231 @@ namespace BattleGame.Client.Game
             mv.IsGrounded = snapshot.IsGrounded;
 
             ch.Hp = Math.Clamp(snapshot.Hp, 0, ch.BaseStats.Hp);
-            ch.Mana = Math.Clamp(snapshot.Mana, 0, ch.BaseStats.Mana);
-            ch.IsProtecting = snapshot.IsProtecting;
-            ch.IsAttacking = snapshot.IsAttacking;
-            ch.IsUsingSkill = snapshot.IsUsingSkill;
-            ch.IsHurt = snapshot.IsHurt;
-            ch.IsStunned = snapshot.IsStunned;
-            ch.StunTimer = snapshot.StunTimer;
-            ch.HurtTimer = snapshot.HurtTimer;
-            ch.IsDead = snapshot.IsDead;
+            int snapshotMana = Math.Clamp(snapshot.Mana, 0, ch.BaseStats.Mana);
+            if (keepPrediction && _localActionPrediction?.Kind == PredictedActionKind.Skill)
+                ch.Mana = Math.Min(ch.Mana, snapshotMana);
+            else
+                ch.Mana = snapshotMana;
 
-            if (!string.IsNullOrWhiteSpace(snapshot.CurrentAnimation))
+            if (!keepPrediction)
+            {
+                ch.IsProtecting = snapshot.IsProtecting;
+                ch.IsAttacking = snapshot.IsAttacking;
+                ch.IsUsingSkill = snapshot.IsUsingSkill;
+                ch.IsDashing = snapshot.IsDashing;
+                ch.IsHurt = snapshot.IsHurt;
+                ch.IsStunned = snapshot.IsStunned;
+                ch.StunTimer = snapshot.StunTimer;
+                ch.HurtTimer = snapshot.HurtTimer;
+                ch.DashTimer = snapshot.DashTimer;
+                ch.ActionTimer = snapshot.ActionTimer;
+                ch.ActionDuration = snapshot.ActionDuration;
+                ch.AttackHitDone = snapshot.ActionHitDone;
+                ch.CurrentSkillSlot = snapshot.CurrentSkillSlot;
+                if (!string.IsNullOrWhiteSpace(snapshot.CurrentSkillAnimation))
+                    ch.CurrentSkillAnim = snapshot.CurrentSkillAnimation;
+                if (snapshot.IsAttacking && !string.IsNullOrWhiteSpace(snapshot.CurrentAnimation))
+                    ch.CurrentAttackAnim = snapshot.CurrentAnimation;
+                ch.IsDead = snapshot.IsDead;
+            }
+
+            if (keepPrediction && _localActionPrediction?.Kind == PredictedActionKind.Skill)
+                ApplyPredictedCooldownSnapshot(ch, snapshot);
+            else
+                ApplyCooldownSnapshot(ch, snapshot);
+
+            bool animationChanged = !string.IsNullOrWhiteSpace(snapshot.CurrentAnimation) &&
+                !string.Equals(sp.CurrentAnimation, snapshot.CurrentAnimation, StringComparison.OrdinalIgnoreCase);
+            bool actionStarted = serverAction &&
+                snapshot.CurrentActionId > 0 &&
+                snapshot.CurrentActionId != sp.SyncedActionId;
+
+            if (!keepPrediction && animationChanged)
+            {
                 sp.CurrentAnimation = snapshot.CurrentAnimation;
+                sp.CurrentFrame = 0;
+                sp.FrameTimer = 0f;
+                sp.AnimationFinished = false;
+            }
 
-            sp.CurrentFrame = Math.Max(0, snapshot.CurrentFrame);
+            if (!keepPrediction && actionStarted)
+            {
+                int serverFrame = Math.Max(0, snapshot.CurrentFrame);
+                bool keepLocalFrame = isLocal &&
+                    !string.IsNullOrWhiteSpace(snapshot.CurrentAnimation) &&
+                    string.Equals(sp.CurrentAnimation, snapshot.CurrentAnimation, StringComparison.OrdinalIgnoreCase) &&
+                    sp.CurrentFrame >= serverFrame;
+
+                if (!keepLocalFrame)
+                {
+                    sp.CurrentFrame = serverFrame;
+                    sp.FrameTimer = 0f;
+                    sp.AnimationFinished = false;
+                }
+
+                sp.SyncedActionId = snapshot.CurrentActionId;
+            }
         }
 
-        private static void SyncVisualFrames(Dictionary<int, VisualFrameState> frames, IEnumerable<int> liveIds)
+        private static void ApplyCooldownSnapshot(CharacterComponent ch, PlayerBattleState snapshot)
         {
-            var live = liveIds.ToHashSet();
-            foreach (int id in frames.Keys.Where(id => !live.Contains(id)).ToList())
-                frames.Remove(id);
-
-            foreach (int id in live)
-                frames.TryAdd(id, new VisualFrameState());
+            ch.Skill1Cooldown = Math.Max(0f, snapshot.Skill1Cooldown);
+            ch.Skill2Cooldown = Math.Max(0f, snapshot.Skill2Cooldown);
         }
+
+        private static void ApplyPredictedCooldownSnapshot(CharacterComponent ch, PlayerBattleState snapshot)
+        {
+            ch.Skill1Cooldown = Math.Max(ch.Skill1Cooldown, Math.Max(0f, snapshot.Skill1Cooldown));
+            ch.Skill2Cooldown = Math.Max(ch.Skill2Cooldown, Math.Max(0f, snapshot.Skill2Cooldown));
+        }
+
+        private static bool IsServerDrivenAction(PlayerBattleState snapshot)
+            => snapshot.IsAttacking || snapshot.IsUsingSkill || snapshot.IsDashing;
+
+        private void ClearOnlineVisuals()
+        {
+            _onlineProjectileVisuals.Clear();
+            _onlineEffectVisuals.Clear();
+            _projectileFrames.Clear();
+            _effectFrames.Clear();
+            _player.Get<SpriteComponent>().SyncedActionId = -1;
+            if (_enemy != null)
+                _enemy.Get<SpriteComponent>().SyncedActionId = -1;
+        }
+
+        private void SyncOnlineProjectileVisuals(IEnumerable<ProjectileState> projectiles)
+        {
+            var liveIds = new HashSet<int>();
+
+            foreach (var projectile in projectiles)
+            {
+                liveIds.Add(projectile.ProjectileId);
+
+                if (!_onlineProjectileVisuals.TryGetValue(projectile.ProjectileId, out var visual))
+                    _onlineProjectileVisuals[projectile.ProjectileId] = visual = new OnlineProjectileVisual();
+
+                visual.State = CloneProjectileState(projectile);
+                visual.IsServerActive = true;
+                visual.MissingSeconds = 0f;
+                visual.AgeSeconds = Math.Max(visual.AgeSeconds, projectile.Timer);
+                EnsureVisualFrame(_projectileFrames, projectile.ProjectileId, projectile.CurrentFrame);
+            }
+
+            foreach (var item in _onlineProjectileVisuals)
+            {
+                if (!liveIds.Contains(item.Key))
+                    item.Value.IsServerActive = false;
+            }
+        }
+
+        private void SyncOnlineEffectVisuals(IEnumerable<EffectState> effects)
+        {
+            var liveIds = new HashSet<int>();
+
+            foreach (var effect in effects)
+            {
+                liveIds.Add(effect.EffectId);
+
+                if (!_onlineEffectVisuals.TryGetValue(effect.EffectId, out var visual))
+                    _onlineEffectVisuals[effect.EffectId] = visual = new OnlineEffectVisual();
+
+                visual.State = CloneEffectState(effect);
+                visual.IsServerActive = true;
+                visual.MissingSeconds = 0f;
+                float elapsed = Math.Max(0f, effect.Duration - effect.RemainingTime);
+                visual.AgeSeconds = Math.Max(visual.AgeSeconds, elapsed);
+                EnsureVisualFrame(_effectFrames, effect.EffectId, effect.CurrentFrame);
+            }
+
+            foreach (var item in _onlineEffectVisuals)
+            {
+                if (!liveIds.Contains(item.Key))
+                    item.Value.IsServerActive = false;
+            }
+        }
+
+        private static void EnsureVisualFrame(Dictionary<int, VisualFrameState> frames, int id, int frame)
+        {
+            int frameIndex = Math.Max(0, frame);
+            if (frames.TryGetValue(id, out var state))
+            {
+                if (frameIndex > state.Frame)
+                {
+                    state.Frame = frameIndex;
+                    state.Timer = 0f;
+                }
+                return;
+            }
+
+            frames[id] = new VisualFrameState { Frame = frameIndex };
+        }
+
+        private static ProjectileState CloneProjectileState(ProjectileState projectile)
+            => new()
+            {
+                ProjectileId = projectile.ProjectileId,
+                OwnerPlayerId = projectile.OwnerPlayerId,
+                X = projectile.X,
+                Y = projectile.Y,
+                VelocityX = projectile.VelocityX,
+                VelocityY = projectile.VelocityY,
+                Damage = projectile.Damage,
+                Stun = projectile.Stun,
+                Range = projectile.Range,
+                Lifetime = projectile.Lifetime,
+                Timer = projectile.Timer,
+                AnimationKey = projectile.AnimationKey,
+                CurrentFrame = projectile.CurrentFrame,
+                FacingRight = projectile.FacingRight,
+                RenderOffsetX = projectile.RenderOffsetX,
+                RenderOffsetY = projectile.RenderOffsetY,
+                Render = CloneRender(projectile.Render)
+            };
+
+        private static EffectState CloneEffectState(EffectState effect)
+            => new()
+            {
+                EffectId = effect.EffectId,
+                OwnerPlayerId = effect.OwnerPlayerId,
+                EffectType = effect.EffectType,
+                AnimationKey = effect.AnimationKey,
+                X = effect.X,
+                Y = effect.Y,
+                Damage = effect.Damage,
+                Stun = effect.Stun,
+                CollisionWidth = effect.CollisionWidth,
+                CollisionHeight = effect.CollisionHeight,
+                BlockEnemyAttack = effect.BlockEnemyAttack,
+                BlockEnemyProjectile = effect.BlockEnemyProjectile,
+                BlockEnemySkill = effect.BlockEnemySkill,
+                CurrentFrame = effect.CurrentFrame,
+                HitFrames = new List<int>(effect.HitFrames),
+                DamagedFrames = new HashSet<int>(effect.DamagedFrames),
+                Duration = effect.Duration,
+                RemainingTime = effect.RemainingTime,
+                FacingRight = effect.FacingRight,
+                LastDamageTick = effect.LastDamageTick,
+                Render = CloneRender(effect.Render)
+            };
+
+        private static EffectRenderData CloneRender(EffectRenderData render)
+            => new()
+            {
+                Scale = render.Scale,
+                OffsetX = render.OffsetX,
+                OffsetY = render.OffsetY,
+                UseSpriteSize = render.UseSpriteSize,
+                AlignY = render.AlignY,
+                FacingSource = render.FacingSource
+            };
 
         private static void AdvanceVisualFrame(
             Dictionary<int, VisualFrameState> frameStates,
             int id,
-            string animationKey,
-            Dictionary<string, SpriteAnimation> animations,
+            SpriteAnimation anim,
             float dt)
         {
             if (!frameStates.TryGetValue(id, out var state) ||
-                string.IsNullOrWhiteSpace(animationKey) ||
-                !animations.TryGetValue(animationKey, out var anim) ||
                 anim.Frames.Length == 0)
             {
                 return;
@@ -435,19 +1133,70 @@ namespace BattleGame.Client.Game
             }
         }
 
+        private void RemoveOnlineProjectileVisual(int id)
+        {
+            _onlineProjectileVisuals.Remove(id);
+            _projectileFrames.Remove(id);
+        }
+
+        private void RemoveOnlineEffectVisual(int id)
+        {
+            _onlineEffectVisuals.Remove(id);
+            _effectFrames.Remove(id);
+        }
+
+        private static bool ShouldRemoveOnlineVisual(VisualFrameState frame, SpriteAnimation anim, OnlineVisualBase visual)
+        {
+            if (visual.MissingSeconds < 0.05f)
+                return false;
+
+            float frameDuration = Math.Max(0.01f, anim.FrameDuration);
+            float animationDuration = Math.Clamp(anim.Frames.Length * frameDuration, 0.12f, 2.0f);
+            if (visual.AgeSeconds < animationDuration)
+                return false;
+
+            return anim.Loop || frame.Frame >= anim.Frames.Length - 1;
+        }
+
+        private bool TryResolveOnlineAnimation(int ownerPlayerId, string animationKey, out SpriteAnimation anim)
+        {
+            anim = null!;
+            if (string.IsNullOrWhiteSpace(animationKey))
+                return false;
+
+            Dictionary<string, SpriteAnimation> ownerAnimations =
+                ownerPlayerId == _localOnlinePlayerId || _remoteOnlinePlayerId == 0
+                    ? _playerAnimations
+                    : _enemyAnimations;
+
+            if (ownerAnimations.TryGetValue(animationKey, out var ownerAnim) && ownerAnim != null)
+            {
+                anim = ownerAnim;
+                return true;
+            }
+
+            if (_onlineEffectAnimations.TryGetValue(animationKey, out var effectAnim) && effectAnim != null)
+            {
+                anim = effectAnim;
+                return true;
+            }
+
+            return false;
+        }
+
         private void DrawOnlineProjectiles(Graphics g)
         {
-            foreach (var projectile in _onlineProjectiles)
+            foreach (var onlineVisual in _onlineProjectileVisuals.Values)
             {
-                if (string.IsNullOrWhiteSpace(projectile.AnimationKey) ||
-                    !_onlineEffectAnimations.TryGetValue(projectile.AnimationKey, out var anim) ||
+                var projectile = onlineVisual.State;
+                if (!TryResolveOnlineAnimation(projectile.OwnerPlayerId, projectile.AnimationKey, out var anim) ||
                     anim.Frames.Length == 0)
                 {
                     continue;
                 }
 
-                int frameIndex = _projectileFrames.TryGetValue(projectile.ProjectileId, out var visual)
-                    ? Math.Min(visual.Frame, anim.Frames.Length - 1)
+                int frameIndex = _projectileFrames.TryGetValue(projectile.ProjectileId, out var frameState)
+                    ? Math.Min(frameState.Frame, anim.Frames.Length - 1)
                     : Math.Min(projectile.CurrentFrame, anim.Frames.Length - 1);
                 DrawEffectFrame(g, anim.Frames[frameIndex], projectile.X, projectile.Y, projectile.FacingRight, projectile.Render);
             }
@@ -455,17 +1204,17 @@ namespace BattleGame.Client.Game
 
         private void DrawOnlineEffects(Graphics g)
         {
-            foreach (var effect in _onlineEffects)
+            foreach (var onlineVisual in _onlineEffectVisuals.Values)
             {
-                if (string.IsNullOrWhiteSpace(effect.AnimationKey) ||
-                    !_onlineEffectAnimations.TryGetValue(effect.AnimationKey, out var anim) ||
+                var effect = onlineVisual.State;
+                if (!TryResolveOnlineAnimation(effect.OwnerPlayerId, effect.AnimationKey, out var anim) ||
                     anim.Frames.Length == 0)
                 {
                     continue;
                 }
 
-                int frameIndex = _effectFrames.TryGetValue(effect.EffectId, out var visual)
-                    ? Math.Min(visual.Frame, anim.Frames.Length - 1)
+                int frameIndex = _effectFrames.TryGetValue(effect.EffectId, out var frameState)
+                    ? Math.Min(frameState.Frame, anim.Frames.Length - 1)
                     : Math.Min(effect.CurrentFrame, anim.Frames.Length - 1);
                 DrawEffectFrame(g, anim.Frames[frameIndex], effect.X, effect.Y, effect.FacingRight, effect.Render);
             }
@@ -607,7 +1356,7 @@ namespace BattleGame.Client.Game
 
             var mapNames = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                { "terrace", "Background.png" },
+                { "terrace", "terrace.png" },
                 { "castle", "castle.png" },
                 { "forest", "BackgroundForest.png" },
                 { "throneroom", "throneroom.png" }
@@ -712,10 +1461,9 @@ namespace BattleGame.Client.Game
             var enemyLoader = new AnimationLoader("Assets");
             _enemyAnimations.Clear();
             foreach (var kv in enemyLoader.Load(request.CharacterId))
-            {
                 _enemyAnimations[kv.Key] = kv.Value;
-                _onlineEffectAnimations.TryAdd(kv.Key, kv.Value);
-            }
+
+            RefreshCombinedAnimations();
 
             var enemyAnimKeys = new Dictionary<string, object>();
             foreach (var kv in _enemyAnimations)
@@ -964,6 +1712,38 @@ namespace BattleGame.Client.Game
             public float Scale { get; set; } = 1f;
             public int Width { get; set; }
             public int Height { get; set; }
+        }
+
+        private enum PredictedActionKind
+        {
+            Attack,
+            Skill,
+            Dash
+        }
+
+        private sealed class LocalActionPrediction
+        {
+            public PredictedActionKind Kind { get; init; }
+            public string Animation { get; init; } = string.Empty;
+            public int SkillSlot { get; init; }
+            public float HoldSeconds { get; set; }
+        }
+
+        private abstract class OnlineVisualBase
+        {
+            public bool IsServerActive { get; set; }
+            public float AgeSeconds { get; set; }
+            public float MissingSeconds { get; set; }
+        }
+
+        private sealed class OnlineProjectileVisual : OnlineVisualBase
+        {
+            public ProjectileState State { get; set; } = new();
+        }
+
+        private sealed class OnlineEffectVisual : OnlineVisualBase
+        {
+            public EffectState State { get; set; } = new();
         }
 
         private sealed class VisualFrameState

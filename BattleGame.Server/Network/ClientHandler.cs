@@ -2,6 +2,7 @@
 using System.Text.Json;
 using BattleGame.Server.Database;
 using BattleGame.Server.Game;
+using BattleGame.Server.Logging;
 using BattleGame.Server.Services;
 using BattleGame.Shared.Network;
 using BattleGame.Shared.Packets;
@@ -49,27 +50,27 @@ namespace BattleGame.Server.Network
                         // Load balancer health-check opens/closes short-lived sockets without sending packets.
                         // Avoid noisy error logs for unauthenticated transient disconnects.
                         if (IsAuthenticated)
-                            Console.WriteLine($"[ERROR] IOException: {ex.Message}");
+                            ServerLogger.Warn($"io disconnected: {ex.Message}", "client");
                         else
-                            Console.WriteLine($"[DEBUG] Client closed before auth: {ex.Message}");
+                            ServerLogger.Debug($"closed before auth: {ex.Message}", "client");
                         break;
                     }
                     catch (JsonException ex)
                     {
-                        Console.WriteLine($"[ERROR] JsonException: {ex.Message}");
+                        ServerLogger.Warn($"invalid json: {ex.Message}", "client");
                         break;
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"[ERROR] Unexpected: {ex.Message}");
+                        ServerLogger.Error($"unexpected: {ex.Message}", "client");
                         break;
                     }
                 }
             }
             finally
             {
-                _processor.HandleClientDisconnect();
-                Console.WriteLine($"[INFO] Client disconnected");
+                await _processor.HandleClientDisconnectAsync();
+                ServerLogger.Event("client", "disconnected", ("user", UserId), ("room", CurrentRoomId ?? "-"));
                 _socket.Close();
             }
         }

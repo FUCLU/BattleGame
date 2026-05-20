@@ -11,6 +11,7 @@ namespace BattleGame.Client.Game.Core.Components
         public int Hp { get; set; }
         public int Def { get; set; }
         public int Mana { get; set; }
+        public float ManaRegen { get; set; } = 8f;
         public int Atk { get; set; }
         public float Speed { get; set; }
         public float AtkSpeed { get; set; } = 1.0f;

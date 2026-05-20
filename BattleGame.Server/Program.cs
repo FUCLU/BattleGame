@@ -17,8 +17,11 @@ var config = new ConfigurationBuilder()
 var serverConfig = config.GetSection("Server").Get<ServerConfig>() ?? new ServerConfig();
 serverConfig.Load(config);
 
-Console.WriteLine($"[INFO] Environment: {environment}");
-Console.WriteLine($"[INFO] ConnectionString: {serverConfig.ConnectionString}");
+ServerLogger.Event("startup", "config",
+    ("env", environment),
+    ("database", MaskConnectionString(serverConfig.ConnectionString)),
+    ("logLevel", Environment.GetEnvironmentVariable("LOG_LEVEL") ?? "INFO"),
+    ("inputLogs", ServerLogger.InputPacketsEnabled));
 
 try
 {
@@ -26,9 +29,9 @@ try
 }
 catch (Exception dbEx)
 {
-    ServerLogger.Error($"[FATAL] Database init failed: {dbEx.Message}");
+    ServerLogger.Error($"fatal database init failed: {dbEx.Message}", "startup");
     if (dbEx.StackTrace != null)
-        ServerLogger.Error(dbEx.StackTrace);
+        ServerLogger.Debug(dbEx.StackTrace, "startup");
     throw;
 }
 
@@ -39,9 +42,32 @@ try
 }
 catch (Exception srvEx)
 {
-    ServerLogger.Error($"[FATAL] Server start failed: {srvEx.Message}");
+    ServerLogger.Error($"fatal server start failed: {srvEx.Message}", "startup");
     if (srvEx.StackTrace != null)
-        ServerLogger.Error(srvEx.StackTrace);
+        ServerLogger.Debug(srvEx.StackTrace, "startup");
     throw;
 }
 await Task.Delay(Timeout.Infinite);
+
+static string MaskConnectionString(string connectionString)
+{
+    if (string.IsNullOrWhiteSpace(connectionString))
+        return "-";
+
+    var parts = connectionString
+        .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+        .Select(part =>
+        {
+            int idx = part.IndexOf('=', StringComparison.Ordinal);
+            if (idx <= 0)
+                return part;
+
+            string key = part[..idx];
+            string value = part[(idx + 1)..];
+            return key.Equals("Password", StringComparison.OrdinalIgnoreCase)
+                ? $"{key}=***"
+                : $"{key}={value}";
+        });
+
+    return string.Join(';', parts);
+}

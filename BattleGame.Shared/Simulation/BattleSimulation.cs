@@ -9,10 +9,15 @@ public class BattleSimulation
     private const float DashDuration = 0.22f;
     private const float DashMultiplier = 3f;
     private const float HurtDuration = 0.3f;
-    private const float CharacterWidth = 100f;
-    private const float CharacterHeight = 100f;
     private const float ProjectileLifetime = 3f;
+    private const float ProjectileCollisionDelay = 0.08f;
+    private const int InputStaleTicks = 12;
+    private const int ActionInputBufferTicks = 15;
     private readonly Dictionary<int, BattleInput> _latestInputs = new();
+    private readonly Dictionary<int, int> _latestInputTicks = new();
+    private readonly Dictionary<int, int> _latestInputSequences = new();
+    private readonly Dictionary<int, BufferedActionInput> _bufferedActionInputs = new();
+    private readonly Dictionary<int, float> _manaRegenRemainders = new();
     private int _nextProjectileId = 1;
     private int _nextEffectId = 1;
 
@@ -35,12 +40,18 @@ public class BattleSimulation
         float groundY = 580f,
         float mapRight = 1230f)
     {
+        const float leftRatio = 0.15f;
+        const float rightRatio = 0.85f;
+        const float minGap = 200f;
+        float leftSpawnX = Math.Clamp(mapRight * leftRatio, 80f, mapRight - 240f);
+        float rightSpawnX = Math.Max(mapRight * rightRatio, leftSpawnX + minGap);
+        rightSpawnX = Math.Clamp(rightSpawnX, leftSpawnX + 150f, mapRight - 40f);
         var player1Stats = LoadStats(player1CharacterId, configRoot);
         var player2Stats = LoadStats(player2CharacterId, configRoot);
         var state = new BattleState
         {
-            Player1 = CreatePlayer(player1Id, player1CharacterId, player1Stats, 200f, groundY, true),
-            Player2 = CreatePlayer(player2Id, player2CharacterId, player2Stats, Math.Min(mapRight - 300f, 500f), groundY, false)
+            Player1 = CreatePlayer(player1Id, player1CharacterId, player1Stats, leftSpawnX, groundY, true),
+            Player2 = CreatePlayer(player2Id, player2CharacterId, player2Stats, rightSpawnX, groundY, false)
         };
 
         return new BattleSimulation(state)
@@ -55,7 +66,16 @@ public class BattleSimulation
         if (input.PlayerId <= 0)
             return;
 
-        _latestInputs[input.PlayerId] = input;
+        if (_latestInputSequences.TryGetValue(input.PlayerId, out int latestSequence) &&
+            input.Sequence <= latestSequence)
+            return;
+
+        _latestInputs[input.PlayerId] = CreateContinuousInput(input);
+        _latestInputTicks[input.PlayerId] = State.ServerTick;
+        _latestInputSequences[input.PlayerId] = input.Sequence;
+
+        if (HasOneShotInput(input))
+            _bufferedActionInputs[input.PlayerId] = new BufferedActionInput(CloneInput(input), State.ServerTick);
     }
 
     public void Update(float deltaTime)
@@ -75,22 +95,25 @@ public class BattleSimulation
 
     private static BattleCharacterStats LoadStats(string characterId, string? configRoot)
     {
-        try
+        if (string.IsNullOrWhiteSpace(configRoot))
         {
-            if (!string.IsNullOrWhiteSpace(configRoot))
-            {
-                var definition = BattleCharacterDefinitionLoader.LoadById(configRoot, characterId);
-                definition.Stats.Skill1 = definition.Skill1;
-                definition.Stats.Skill2 = definition.Skill2;
-                definition.Stats.AttackEffects = definition.AttackEffects;
-                return definition.Stats;
-            }
-        }
-        catch
-        {
+            throw new InvalidOperationException(
+                $"Missing config root when loading character '{characterId}'. Fallback catalog is disabled.");
         }
 
-        return BattleCharacterCatalog.GetStats(characterId);
+        try
+        {
+            var definition = BattleCharacterDefinitionLoader.LoadById(configRoot, characterId);
+            definition.Stats.Skill1 = definition.Skill1;
+            definition.Stats.Skill2 = definition.Skill2;
+            definition.Stats.AttackEffects = definition.AttackEffects;
+            return definition.Stats;
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(
+                $"Failed to load battle config for '{characterId}' from '{configRoot}'.", ex);
+        }
     }
 
     private static PlayerBattleState CreatePlayer(
@@ -118,18 +141,55 @@ public class BattleSimulation
 
     private void UpdatePlayer(PlayerBattleState player, PlayerBattleState opponent, float dt)
     {
-        if (!_latestInputs.TryGetValue(player.PlayerId, out var input))
+        BattleInput input;
+        bool hasFreshInput = _latestInputs.TryGetValue(player.PlayerId, out var latestInput);
+        if (!hasFreshInput)
+        {
             input = new BattleInput { PlayerId = player.PlayerId, FacingRight = player.FacingRight };
+        }
+        else if (_latestInputTicks.TryGetValue(player.PlayerId, out int lastTick) &&
+                 State.ServerTick - lastTick > InputStaleTicks)
+        {
+            input = new BattleInput { PlayerId = player.PlayerId, FacingRight = player.FacingRight };
+            hasFreshInput = false;
+        }
+        else
+        {
+            input = latestInput!;
+        }
 
         UpdateTimers(player, dt);
-        StartActions(player, input);
+        BattleInput actionInput = TryGetBufferedActionInput(player.PlayerId, input, out var bufferedAction)
+            ? CreateActionInput(input, bufferedAction)
+            : input;
+        bool consumedOneShot = StartActions(player, actionInput);
+        if (consumedOneShot)
+            ConsumeOneShotInput(player.PlayerId);
         UpdateMovement(player, input, dt);
         ResolveActionEffects(player, opponent);
         UpdateAnimation(player);
     }
 
-    private static void UpdateTimers(PlayerBattleState player, float dt)
+    private static bool HasOneShotInput(BattleInput input)
+        => input.JumpPressed || input.AttackPressed || input.SkillSlot > 0 || input.DashPressed;
+
+    private void ConsumeOneShotInput(int playerId)
     {
+        _bufferedActionInputs.Remove(playerId);
+
+        if (!_latestInputs.TryGetValue(playerId, out var input))
+            return;
+
+        input.JumpPressed = false;
+        input.AttackPressed = false;
+        input.SkillSlot = 0;
+        input.DashPressed = false;
+    }
+
+    private void UpdateTimers(PlayerBattleState player, float dt)
+    {
+        RegenerateMana(player, dt);
+
         if (player.HurtTimer > 0f)
         {
             player.HurtTimer -= dt;
@@ -145,40 +205,68 @@ public class BattleSimulation
         }
 
         if (player.Skill1Cooldown > 0f)
-            player.Skill1Cooldown -= dt;
+            player.Skill1Cooldown = Math.Max(0f, player.Skill1Cooldown - dt);
         if (player.Skill2Cooldown > 0f)
-            player.Skill2Cooldown -= dt;
+            player.Skill2Cooldown = Math.Max(0f, player.Skill2Cooldown - dt);
 
         if (player.IsDashing)
         {
-            player.DashTimer -= dt;
+            player.DashTimer = Math.Max(0f, player.DashTimer - dt);
             if (player.DashTimer <= 0f)
-            {
-                player.IsDashing = false;
                 player.VelocityX = 0f;
-            }
         }
 
-        if (player.IsAttacking || player.IsUsingSkill)
+        if (player.IsAttacking || player.IsUsingSkill || player.IsDashing)
         {
             player.ActionTimer -= dt;
+            UpdateActionFrame(player);
             if (player.ActionTimer <= 0f)
             {
                 player.IsAttacking = false;
                 player.IsUsingSkill = false;
+                player.IsDashing = false;
+                player.VelocityX = 0f;
                 player.CurrentSkillSlot = 0;
                 player.CurrentSkillAnimation = "";
                 player.ActionHitDone = false;
                 player.TriggeredEffects.Clear();
                 player.TriggeredAttackEffects.Clear();
+                player.TriggeredEffectFrames.Clear();
+                player.TriggeredAttackEffectFrames.Clear();
             }
         }
     }
 
-    private void StartActions(PlayerBattleState player, BattleInput input)
+    private void RegenerateMana(PlayerBattleState player, float dt)
+    {
+        int maxMana = Math.Max(0, player.Stats.Mana);
+        float regen = Math.Max(0f, player.Stats.ManaRegen);
+        if (player.IsDead || maxMana == 0 || regen <= 0f || player.Mana >= maxMana)
+        {
+            _manaRegenRemainders[player.PlayerId] = 0f;
+            return;
+        }
+
+        _manaRegenRemainders.TryGetValue(player.PlayerId, out float remainder);
+        remainder += regen * dt;
+
+        int gained = (int)MathF.Floor(remainder);
+        if (gained > 0)
+        {
+            player.Mana = Math.Min(maxMana, player.Mana + gained);
+            remainder -= gained;
+        }
+
+        if (player.Mana >= maxMana)
+            remainder = 0f;
+
+        _manaRegenRemainders[player.PlayerId] = remainder;
+    }
+
+    private bool StartActions(PlayerBattleState player, BattleInput input)
     {
         if (player.IsDead)
-            return;
+            return false;
 
         if (!player.IsBusy)
             player.IsProtecting = input.BlockHeld;
@@ -186,16 +274,20 @@ public class BattleSimulation
             player.IsProtecting = false;
 
         if (player.IsBusy || player.IsProtecting)
-            return;
+            return false;
 
         player.FacingRight = input.FacingRight;
 
         if (input.DashPressed)
         {
+            string dashAnimation = ResolveDashAnimation(player);
+            if (string.IsNullOrWhiteSpace(dashAnimation))
+                return false;
+
             player.IsDashing = true;
             player.DashTimer = DashDuration;
-            StartAction(player, "Dash", DashDuration);
-            return;
+            StartAction(player, dashAnimation, DashDuration);
+            return true;
         }
 
         if (input.SkillSlot is 1 or 2)
@@ -204,25 +296,66 @@ public class BattleSimulation
             float cooldown = input.SkillSlot == 1 ? player.Skill1Cooldown : player.Skill2Cooldown;
             if (skill != null && cooldown <= 0f && player.Mana >= skill.ManaCost)
             {
+                string actionAnimation = string.IsNullOrWhiteSpace(skill.Animation) ? $"Skill{input.SkillSlot}" : skill.Animation;
+                if (!player.Stats.Animations.ContainsKey(actionAnimation))
+                    return false;
+
                 player.Mana -= skill.ManaCost;
                 player.IsUsingSkill = true;
                 player.CurrentSkillSlot = input.SkillSlot;
                 player.CurrentSkillAnimation = skill.Animation;
-                StartAction(player, string.IsNullOrWhiteSpace(skill.Animation) ? $"Skill{input.SkillSlot}" : skill.Animation, EstimateActionDuration(skill));
+                StartAction(player, actionAnimation, EstimateActionDuration(player, skill, actionAnimation));
 
                 if (input.SkillSlot == 1)
                     player.Skill1Cooldown = skill.Cooldown;
                 else
                     player.Skill2Cooldown = skill.Cooldown;
+
+                return true;
             }
-            return;
+            return false;
         }
 
         if (input.AttackPressed)
         {
+            string attackAnimation = ResolveAttackAnimation(player);
+            if (string.IsNullOrWhiteSpace(attackAnimation))
+                return false;
+
             player.IsAttacking = true;
-            StartAction(player, "Attack_1", player.Stats.AttackDuration);
+            StartAction(player, attackAnimation, EstimateActionDuration(player, null, attackAnimation, player.Stats.AttackDuration));
+            return true;
         }
+
+        return false;
+    }
+
+    private static string ResolveAttackAnimation(PlayerBattleState player)
+    {
+        int attackCount = Math.Max(1, player.Stats.AttackAnimCount);
+        for (int attempt = 0; attempt < attackCount; attempt++)
+        {
+            int idx = ((player.CurrentActionId + attempt) % attackCount) + 1;
+            string animation = $"Attack_{idx}";
+            if (player.Stats.Animations.ContainsKey(animation))
+                return animation;
+        }
+
+        return string.Empty;
+    }
+
+    private static string ResolveDashAnimation(PlayerBattleState player)
+        => ResolveFirstAvailableAnimation(player, "Dash", "Run", "Walk");
+
+    private static string ResolveFirstAvailableAnimation(PlayerBattleState player, params string[] candidates)
+    {
+        foreach (string candidate in candidates)
+        {
+            if (player.Stats.Animations.ContainsKey(candidate))
+                return candidate;
+        }
+
+        return string.Empty;
     }
 
     private void StartAction(PlayerBattleState player, string animation, float duration)
@@ -236,11 +369,37 @@ public class BattleSimulation
         player.CurrentFrame = 0;
         player.TriggeredEffects.Clear();
         player.TriggeredAttackEffects.Clear();
+        player.TriggeredEffectFrames.Clear();
+        player.TriggeredAttackEffectFrames.Clear();
     }
 
-    private static float EstimateActionDuration(SkillData skill)
+    private static float EstimateActionDuration(PlayerBattleState player, SkillData? skill, string actionAnimation, float fallbackDuration = 0.7f)
     {
-        return skill.Effects.Count == 0 ? 0.7f : Math.Max(0.35f, skill.Cooldown > 0f ? Math.Min(skill.Cooldown, 1.2f) : 0.7f);
+        if (player.Stats.Animations.TryGetValue(actionAnimation, out var meta))
+        {
+            float fps = Math.Max(1f, meta.Fps);
+            int frameCount = Math.Max(1, meta.FrameCount);
+            return Math.Max(0.05f, frameCount / fps);
+        }
+
+        if (skill == null)
+            return Math.Max(0.05f, fallbackDuration);
+
+        return skill.Effects.Count == 0 ? Math.Max(0.05f, fallbackDuration) : Math.Max(0.35f, skill.Cooldown > 0f ? Math.Min(skill.Cooldown, 1.2f) : fallbackDuration);
+    }
+
+    private static void UpdateActionFrame(PlayerBattleState player)
+    {
+        if (string.IsNullOrWhiteSpace(player.CurrentAnimation))
+            return;
+
+        if (!player.Stats.Animations.TryGetValue(player.CurrentAnimation, out var meta))
+            return;
+
+        int frameCount = Math.Max(1, meta.FrameCount);
+        float elapsed = Math.Max(0f, player.ActionDuration - player.ActionTimer);
+        int frameIndex = Math.Clamp((int)MathF.Floor(elapsed * Math.Max(1f, meta.Fps)), 0, frameCount - 1);
+        player.CurrentFrame = frameIndex;
     }
 
     private void UpdateMovement(PlayerBattleState player, BattleInput input, float dt)
@@ -253,7 +412,7 @@ public class BattleSimulation
             else if (input.MoveX > 0f)
                 player.FacingRight = true;
         }
-        else if (player.IsDashing)
+        else if (player.IsDashing && player.DashTimer > 0f)
         {
             player.VelocityX = (player.FacingRight ? 1f : -1f) * player.Stats.Speed * DashMultiplier;
         }
@@ -283,7 +442,13 @@ public class BattleSimulation
 
         if (attacker.IsAttacking)
         {
-            ResolveEffects(attacker, target, attacker.Stats.AttackEffects, attacker.TriggeredAttackEffects, fallbackToBaseAttack: true);
+            ResolveEffects(
+                attacker,
+                target,
+                attacker.Stats.AttackEffects,
+                attacker.TriggeredAttackEffects,
+                attacker.TriggeredAttackEffectFrames,
+                fallbackToBaseAttack: true);
             return;
         }
 
@@ -291,7 +456,13 @@ public class BattleSimulation
         {
             var skill = attacker.CurrentSkillSlot == 1 ? attacker.Stats.Skill1 : attacker.Stats.Skill2;
             if (skill != null)
-                ResolveEffects(attacker, target, skill.Effects, attacker.TriggeredEffects, fallbackToBaseAttack: false);
+                ResolveEffects(
+                    attacker,
+                    target,
+                    skill.Effects,
+                    attacker.TriggeredEffects,
+                    attacker.TriggeredEffectFrames,
+                    fallbackToBaseAttack: false);
         }
     }
 
@@ -300,6 +471,7 @@ public class BattleSimulation
         PlayerBattleState target,
         List<EffectData> effects,
         HashSet<int> triggered,
+        HashSet<string> triggeredFrames,
         bool fallbackToBaseAttack)
     {
         if (effects.Count == 0)
@@ -312,27 +484,67 @@ public class BattleSimulation
         for (int i = 0; i < effects.Count; i++)
         {
             var effect = effects[i];
-            if (triggered.Contains(i) || !ShouldTrigger(attacker, effect))
+            if (!ShouldTrigger(attacker, i, effect, triggered, triggeredFrames, out string? frameMarker))
                 continue;
 
-            triggered.Add(i);
+            if (frameMarker == null)
+                triggered.Add(i);
+            else
+                triggeredFrames.Add(frameMarker);
             ApplyEffect(attacker, target, effect);
         }
     }
 
-    private static bool ShouldTrigger(PlayerBattleState player, EffectData effect)
+    private static bool ShouldTrigger(
+        PlayerBattleState player,
+        int effectIndex,
+        EffectData effect,
+        HashSet<int> triggered,
+        HashSet<string> triggeredFrames,
+        out string? frameMarker)
     {
+        frameMarker = null;
         float elapsed = player.ActionDuration - player.ActionTimer;
-        float progress = player.ActionDuration <= 0f ? 1f : elapsed / player.ActionDuration;
+        int frameCount = GetCurrentAnimationFrameCount(player);
+        int currentFrame = Math.Clamp(player.CurrentFrame, 0, frameCount - 1);
         string trigger = (effect.Trigger ?? "").Trim().ToLowerInvariant();
 
-        return trigger switch
+        switch (trigger)
         {
-            "onstart" => elapsed <= 0.08f,
-            "onend" => progress >= 0.9f,
-            "onframe" or "onframes" or "onmiddle" => progress >= 0.5f,
-            _ => progress >= 0.5f
-        };
+            case "onstart":
+                return elapsed <= 0.08f && !triggered.Contains(effectIndex);
+            case "onend":
+                return currentFrame >= frameCount - 1 && !triggered.Contains(effectIndex);
+            case "onframe":
+                if (effect.Frames == null || effect.Frames.Count == 0)
+                    return currentFrame >= frameCount / 2 && !triggered.Contains(effectIndex);
+
+                return effect.Frames[0] == currentFrame && !triggered.Contains(effectIndex);
+            case "onframes":
+                if (effect.Frames == null || effect.Frames.Count == 0)
+                    return currentFrame >= frameCount / 2 && !triggered.Contains(effectIndex);
+
+                bool matched = effect.Frames.Contains(currentFrame);
+                if (!matched)
+                    return false;
+
+                frameMarker = $"{effectIndex}:{currentFrame}";
+                return !triggeredFrames.Contains(frameMarker);
+            case "onmiddle":
+            default:
+                return currentFrame >= frameCount / 2 && !triggered.Contains(effectIndex);
+        }
+    }
+
+    private static int GetCurrentAnimationFrameCount(PlayerBattleState player)
+    {
+        if (!string.IsNullOrWhiteSpace(player.CurrentAnimation) &&
+            player.Stats.Animations.TryGetValue(player.CurrentAnimation, out var meta))
+        {
+            return Math.Max(1, meta.FrameCount);
+        }
+
+        return 1;
     }
 
     private void ResolveBaseAttack(PlayerBattleState attacker, PlayerBattleState target)
@@ -346,13 +558,43 @@ public class BattleSimulation
 
         attacker.ActionHitDone = true;
 
-        if (!IsInMeleeRange(attacker, target, attacker.Stats.AttackRange))
+        if (!string.IsNullOrWhiteSpace(attacker.Stats.AttackProjectile)
+            && attacker.Stats.AttackProjectileSpeed > 0f)
+        {
+            SpawnBasicAttackProjectile(attacker);
+            return;
+        }
+
+        if (!IsBaseAttackHit(attacker, target))
             return;
 
         if (IsBlockedByBarrier(attacker, target, "melee") || IsBlockedByProtection(attacker, target))
             return;
 
         ApplyDamage(target, attacker.Stats.Atk, 0f);
+    }
+
+    private void SpawnBasicAttackProjectile(PlayerBattleState owner)
+    {
+        float direction = owner.FacingRight ? 1f : -1f;
+        State.Projectiles.Add(new ProjectileState
+        {
+            ProjectileId = _nextProjectileId++,
+            OwnerPlayerId = owner.PlayerId,
+            X = owner.X + (owner.FacingRight ? 30f : -80f),
+            Y = owner.Y - 50f,
+            VelocityX = direction * owner.Stats.AttackProjectileSpeed,
+            VelocityY = 0f,
+            Damage = owner.Stats.Atk,
+            Stun = 0f,
+            Range = 45f,
+            Lifetime = ProjectileLifetime,
+            AnimationKey = owner.Stats.AttackProjectile ?? string.Empty,
+            FacingRight = owner.FacingRight,
+            RenderOffsetX = 0f,
+            RenderOffsetY = 0f,
+            Render = new EffectRenderData()
+        });
     }
 
     private void ApplyEffect(PlayerBattleState attacker, PlayerBattleState target, EffectData effect)
@@ -363,11 +605,11 @@ public class BattleSimulation
         switch ((effect.Type ?? "").Trim().ToLowerInvariant())
         {
             case "melee":
-                if (IsInMeleeRange(attacker, target, effect.Range))
+                if (IsMeleeEffectHit(attacker, target, effect))
                     ApplyDamage(target, effect.Damage, effect.Stun);
                 break;
             case "projectile":
-                SpawnProjectile(attacker, effect);
+                SpawnProjectile(attacker, target, effect);
                 break;
             case "barrier":
                 SpawnBarrier(attacker, target, effect);
@@ -375,17 +617,18 @@ public class BattleSimulation
         }
     }
 
-    private void SpawnProjectile(PlayerBattleState owner, EffectData effect)
+    private void SpawnProjectile(PlayerBattleState owner, PlayerBattleState target, EffectData effect)
     {
-        float direction = owner.FacingRight ? 1f : -1f;
+        var spawn = ResolveProjectileSpawn(owner, target, effect);
+        var velocity = ResolveProjectileVelocity(owner, effect);
         State.Projectiles.Add(new ProjectileState
         {
             ProjectileId = _nextProjectileId++,
             OwnerPlayerId = owner.PlayerId,
-            X = owner.X + direction * 45f,
-            Y = owner.Y + effect.SpawnOffsetY,
-            VelocityX = direction * effect.Speed,
-            VelocityY = 0f,
+            X = spawn.X,
+            Y = spawn.Y,
+            VelocityX = velocity.X,
+            VelocityY = velocity.Y,
             Damage = effect.Damage,
             Stun = effect.Stun,
             Range = effect.Range,
@@ -396,6 +639,24 @@ public class BattleSimulation
             RenderOffsetY = effect.Render.OffsetY,
             Render = effect.Render
         });
+    }
+
+    private static (float X, float Y) ResolveProjectileSpawn(PlayerBattleState owner, PlayerBattleState target, EffectData effect)
+    {
+        string mode = (effect.SpawnMode ?? string.Empty).Trim().ToLowerInvariant();
+        if (mode is "targettop" or "targetabove" or "targettopdown")
+            return (target.X + effect.SpawnOffsetX, target.Y + effect.SpawnOffsetY);
+
+        return (owner.X + (owner.FacingRight ? 80f : -80f), owner.Y - 50f);
+    }
+
+    private static (float X, float Y) ResolveProjectileVelocity(PlayerBattleState owner, EffectData effect)
+    {
+        string mode = (effect.SpawnMode ?? string.Empty).Trim().ToLowerInvariant();
+        if (mode is "targettop" or "targetabove" or "targettopdown")
+            return (0f, MathF.Abs(effect.Speed));
+
+        return (owner.FacingRight ? effect.Speed : -effect.Speed, 0f);
     }
 
     private void SpawnBarrier(PlayerBattleState owner, PlayerBattleState target, EffectData effect)
@@ -417,7 +678,9 @@ public class BattleSimulation
             BlockEnemyProjectile = effect.BlockEnemyProjectile,
             BlockEnemySkill = effect.BlockEnemySkill,
             RemainingTime = effect.Duration,
+            Duration = effect.Duration,
             FacingRight = ResolveEffectFacing(owner, target, effect),
+            HitFrames = effect.Frames?.ToList() ?? new List<int>(),
             Render = effect.Render
         });
     }
@@ -431,14 +694,17 @@ public class BattleSimulation
             projectile.Y += projectile.VelocityY * dt;
             projectile.Timer += dt;
 
-            if (projectile.Timer >= projectile.Lifetime || IsProjectileBlockedByBarrier(projectile))
+            if (projectile.Timer >= projectile.Lifetime ||
+                (projectile.Timer >= ProjectileCollisionDelay && IsProjectileBlockedByBarrier(projectile)))
             {
                 State.Projectiles.RemoveAt(i);
                 continue;
             }
 
             PlayerBattleState target = projectile.OwnerPlayerId == State.Player1.PlayerId ? State.Player2 : State.Player1;
-            if (!target.IsDead && ContainsPoint(target, projectile.X + projectile.RenderOffsetX, projectile.Y + projectile.RenderOffsetY))
+            if (projectile.Timer >= ProjectileCollisionDelay
+                && !target.IsDead
+                && ProjectileIntersectsTarget(projectile, target))
             {
                 if (!IsProjectileBlockedByProtection(projectile, target))
                     ApplyDamage(target, projectile.Damage, projectile.Stun);
@@ -460,13 +726,51 @@ public class BattleSimulation
                 continue;
             }
 
+            PlayerBattleState owner = effect.OwnerPlayerId == State.Player1.PlayerId ? State.Player1 : State.Player2;
+            UpdateEffectFrame(effect, owner);
             PlayerBattleState target = effect.OwnerPlayerId == State.Player1.PlayerId ? State.Player2 : State.Player1;
-            if (effect.Damage > 0 && effect.LastDamageTick != State.ServerTick && IntersectsRectangle(target, effect.X, effect.Y, effect.CollisionWidth, effect.CollisionHeight))
+            if (effect.Damage > 0
+                && ShouldApplyEffectDamage(effect)
+                && IntersectsRectangle(target, effect.X, effect.Y, effect.CollisionWidth, effect.CollisionHeight))
             {
                 ApplyDamage(target, effect.Damage, effect.Stun);
-                effect.LastDamageTick = State.ServerTick;
+                MarkEffectDamageApplied(effect);
             }
         }
+    }
+
+    private static void UpdateEffectFrame(EffectState effect, PlayerBattleState owner)
+    {
+        if (effect.Duration <= 0f ||
+            !owner.Stats.Animations.TryGetValue(effect.AnimationKey, out var meta))
+        {
+            return;
+        }
+
+        float elapsed = Math.Max(0f, effect.Duration - effect.RemainingTime);
+        int frameCount = Math.Max(1, meta.FrameCount);
+        int frame = (int)MathF.Floor(elapsed * Math.Max(1f, meta.Fps));
+        effect.CurrentFrame = Math.Clamp(frame, 0, frameCount - 1);
+    }
+
+    private static bool ShouldApplyEffectDamage(EffectState effect)
+    {
+        if (effect.LastDamageTick >= 0 && effect.HitFrames.Count == 0)
+            return false;
+
+        if (effect.HitFrames.Count == 0)
+            return true;
+
+        int hitFrame = effect.CurrentFrame + 1;
+        return effect.HitFrames.Contains(hitFrame)
+            && !effect.DamagedFrames.Contains(hitFrame);
+    }
+
+    private void MarkEffectDamageApplied(EffectState effect)
+    {
+        effect.LastDamageTick = State.ServerTick;
+        if (effect.HitFrames.Count > 0)
+            effect.DamagedFrames.Add(effect.CurrentFrame + 1);
     }
 
     private bool IsBlockedByBarrier(PlayerBattleState attacker, PlayerBattleState target, string effectType)
@@ -528,25 +832,40 @@ public class BattleSimulation
         return target.FacingRight ? hitX >= target.X : hitX <= target.X;
     }
 
-    private static bool IsInMeleeRange(PlayerBattleState attacker, PlayerBattleState target, float range)
+    private static bool IsBaseAttackHit(PlayerBattleState attacker, PlayerBattleState target)
     {
-        float centerDistance = Math.Abs(attacker.X - target.X);
-        float horizontalGap = Math.Max(0f, centerDistance - CharacterWidth);
-        return horizontalGap < range;
+        float width = Math.Max(1f, attacker.Stats.AttackRange);
+        float centerX = attacker.X + (attacker.FacingRight ? 1f : -1f) * (BattleHitbox.CharacterWidth / 2f + width / 2f);
+        return BattleHitbox.IntersectsRectangle(
+            target.X,
+            target.Y,
+            centerX,
+            attacker.Y,
+            width,
+            BattleHitbox.CharacterHeight);
     }
 
-    private static bool ContainsPoint(PlayerBattleState target, float x, float y)
+    private static bool IsMeleeEffectHit(PlayerBattleState attacker, PlayerBattleState target, EffectData effect)
     {
-        return x >= target.X - CharacterWidth / 2f
-            && x <= target.X + CharacterWidth / 2f
-            && y >= target.Y - CharacterHeight / 2f
-            && y <= target.Y + CharacterHeight / 2f;
+        var (x, y) = ResolveEffectSpawn(attacker, target, effect);
+        return IntersectsRectangle(target, x, y, effect.CollisionWidth, effect.CollisionHeight);
+    }
+
+    private static bool ProjectileIntersectsTarget(ProjectileState projectile, PlayerBattleState target)
+    {
+        float collisionSize = Math.Max(1f, projectile.Range * 2f);
+        return BattleHitbox.IntersectsRectangle(
+            target.X,
+            target.Y,
+            projectile.X + projectile.RenderOffsetX,
+            projectile.Y + projectile.RenderOffsetY,
+            collisionSize,
+            collisionSize);
     }
 
     private static bool IntersectsRectangle(PlayerBattleState target, float centerX, float centerY, float width, float height)
     {
-        return Math.Abs(target.X - centerX) <= CharacterWidth / 2f + width / 2f
-            && Math.Abs(target.Y - centerY) <= CharacterHeight / 2f + height / 2f;
+        return BattleHitbox.IntersectsRectangle(target.X, target.Y, centerX, centerY, width, height);
     }
 
     private static bool IsPointInRectangle(float x, float y, float centerX, float centerY, float width, float height)
@@ -586,7 +905,7 @@ public class BattleSimulation
 
     private static void ApplyDamage(PlayerBattleState target, int rawDamage, float stun)
     {
-        int damage = Math.Max(0, rawDamage - target.Stats.Def);
+        int damage = rawDamage <= 0 ? 0 : Math.Max(1, rawDamage - target.Stats.Def);
         if (damage <= 0 && stun <= 0f)
             return;
 
@@ -628,11 +947,96 @@ public class BattleSimulation
             return;
 
         if (player.IsProtecting)
-            player.CurrentAnimation = "Protection";
+        {
+            player.CurrentAnimation = ResolveAnimation(player, "Protection", "Idle");
+        }
+        else if (!player.IsGrounded)
+        {
+            player.CurrentAnimation = ResolveAnimation(player, "Jump", "Idle");
+        }
+        else if (Math.Abs(player.VelocityX) > 150f)
+        {
+            player.CurrentAnimation = ResolveAnimation(player, "Run", "Walk", "Idle");
+        }
         else if (Math.Abs(player.VelocityX) > 1f)
-            player.CurrentAnimation = "Run";
+        {
+            player.CurrentAnimation = ResolveAnimation(player, "Walk", "Run", "Idle");
+        }
         else
+        {
             player.CurrentAnimation = "Idle";
+        }
+    }
+
+    private static string ResolveAnimation(PlayerBattleState player, params string[] candidates)
+    {
+        foreach (string candidate in candidates)
+        {
+            if (player.Stats.Animations.ContainsKey(candidate))
+                return candidate;
+        }
+
+        return "Idle";
+    }
+
+    private bool TryGetBufferedActionInput(int playerId, BattleInput continuousInput, out BattleInput actionInput)
+    {
+        actionInput = continuousInput;
+        if (!_bufferedActionInputs.TryGetValue(playerId, out var buffered))
+            return false;
+
+        if (State.ServerTick - buffered.ServerTick > ActionInputBufferTicks)
+        {
+            _bufferedActionInputs.Remove(playerId);
+            return false;
+        }
+
+        actionInput = buffered.Input;
+        return true;
+    }
+
+    private static BattleInput CreateActionInput(BattleInput continuousInput, BattleInput bufferedInput)
+    {
+        return new BattleInput
+        {
+            PlayerId = continuousInput.PlayerId,
+            Sequence = continuousInput.Sequence,
+            ClientTick = bufferedInput.ClientTick,
+            MoveX = bufferedInput.MoveX,
+            JumpPressed = bufferedInput.JumpPressed,
+            BlockHeld = bufferedInput.BlockHeld,
+            AttackPressed = bufferedInput.AttackPressed,
+            SkillSlot = bufferedInput.SkillSlot,
+            DashPressed = bufferedInput.DashPressed,
+            FacingRight = bufferedInput.FacingRight
+        };
+    }
+
+    private static BattleInput CreateContinuousInput(BattleInput input)
+    {
+        var continuous = CloneInput(input);
+        continuous.JumpPressed = false;
+        continuous.AttackPressed = false;
+        continuous.SkillSlot = 0;
+        continuous.DashPressed = false;
+        return continuous;
+    }
+
+    private static BattleInput CloneInput(BattleInput input)
+    {
+        return new BattleInput
+        {
+            PlayerId = input.PlayerId,
+            Sequence = input.Sequence,
+            ClientTick = input.ClientTick,
+            MoveX = input.MoveX,
+            JumpPressed = input.JumpPressed,
+            BlockHeld = input.BlockHeld,
+            AttackPressed = input.AttackPressed,
+            SkillSlot = input.SkillSlot,
+            DashPressed = input.DashPressed,
+            FacingRight = input.FacingRight
+        };
     }
 
     private void CheckGameOver()
@@ -644,5 +1048,17 @@ public class BattleSimulation
                 ? State.Player2.PlayerId
                 : State.Player1.PlayerId;
         }
+    }
+
+    private sealed class BufferedActionInput
+    {
+        public BufferedActionInput(BattleInput input, int serverTick)
+        {
+            Input = input;
+            ServerTick = serverTick;
+        }
+
+        public BattleInput Input { get; }
+        public int ServerTick { get; }
     }
 }

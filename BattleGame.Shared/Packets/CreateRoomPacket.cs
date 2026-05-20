@@ -8,6 +8,7 @@ namespace BattleGame.Shared.Packets
     {
         public string? RoomName { get; set; }
         public string? Password { get; set; }
+        public int TimeLimitMinutes { get; set; } = 3;
         
         public CreateRoomPacket() : base(PacketType.CreateRoom) { }
     }

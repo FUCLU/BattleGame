@@ -30,15 +30,11 @@ namespace BattleGame.LoadBalancer.Health
 
         private async Task CheckAllAsync()
         {
-            var servers = router.GetAll();
+            var servers = await router.GetAllAsync();
             foreach (var server in servers)
             {
                 bool alive = await PingAsync(server);
-                if (!alive)
-                {
-                    router.Remove(server);
-                    Console.WriteLine($"Server {server} is down and removed from routing.");
-                }
+                await router.SetHealthAsync(server, alive);
             }
         }
 

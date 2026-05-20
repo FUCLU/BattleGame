@@ -5,6 +5,12 @@ namespace BattleGame.Server.Config
     public class ServerConfig
     {
         public int Port { get; private set; }
+        public string ServerId { get; private set; } = "server-1";
+        public string PublicHost { get; private set; } = "127.0.0.1";
+        public int PublicPort { get; private set; } = 9001;
+        public string RedisConnection { get; private set; } = "localhost:6379";
+        public int HeartbeatIntervalSeconds { get; private set; } = 2;
+        public int HeartbeatTtlSeconds { get; private set; } = 6;
         public string ConnectionString { get; private set; } = string.Empty;
         public SmtpConfig Smtp { get; private set; } = new();
 
@@ -13,33 +19,29 @@ namespace BattleGame.Server.Config
             Port = config.GetValue<int?>("SERVER_PORT")
                 ?? config.GetValue<int?>("Server:Port")
                 ?? 9000;
+            ServerId = config["SERVER_ID"]
+                ?? config["Server:ServerId"]
+                ?? $"server-{Port}";
+            PublicHost = config["SERVER_PUBLIC_HOST"]
+                ?? config["Server:PublicHost"]
+                ?? "127.0.0.1";
+            PublicPort = config.GetValue<int?>("SERVER_PUBLIC_PORT")
+                ?? config.GetValue<int?>("Server:PublicPort")
+                ?? Port;
+            RedisConnection = config["REDIS_CONNECTION"]
+                ?? config["Server:RedisConnection"]
+                ?? "localhost:6379";
+            HeartbeatIntervalSeconds = config.GetValue<int?>("HEARTBEAT_INTERVAL_SECONDS")
+                ?? config.GetValue<int?>("Server:HeartbeatIntervalSeconds")
+                ?? 2;
+            HeartbeatTtlSeconds = config.GetValue<int?>("HEARTBEAT_TTL_SECONDS")
+                ?? config.GetValue<int?>("Server:HeartbeatTtlSeconds")
+                ?? 6;
             ConnectionString =
                 config["DB_CONNECTION"]
                 ?? config.GetConnectionString("DefaultConnection")
                 ?? "Host=localhost;Port=5433;Database=battlegame;Username=admin;Password=admin";
-            Smtp = new SmtpConfig
-            {
-                Host = config["SMTP_HOST"] ?? config["Smtp:Host"] ?? "localhost",
-                Port = config.GetValue<int?>("SMTP_PORT")
-                           ?? config.GetValue<int?>("Smtp:Port")
-                           ?? 1025,
-                Username = config["SMTP_USERNAME"] ?? config["Smtp:Username"] ?? "",
-                Password = config["SMTP_PASSWORD"] ?? config["Smtp:Password"] ?? "",
-                FromName = config["SMTP_FROM_NAME"] ?? config["Smtp:FromName"] ?? "BattleGame",
-                EnableSsl = config.GetValue<bool?>("SMTP_ENABLE_SSL")
-                            ?? config.GetValue<bool?>("Smtp:EnableSsl")
-                            ?? false
-            };
+            Smtp = SmtpConfig.Load(config);
         }
-    }
-
-    public class SmtpConfig
-    {
-        public string Host { get; set; } = string.Empty;
-        public int Port { get; set; } = 1025;
-        public string Username { get; set; } = string.Empty;
-        public string Password { get; set; } = string.Empty;
-        public string FromName { get; set; } = "BattleGame";
-        public bool EnableSsl { get; set; } = false;
     }
 }

@@ -85,6 +85,8 @@ namespace BattleGame.Client.Forms
 
                 if (result.Success)
                 {
+                    PlayerSession.Username = username;
+                    NetworkManager.Instance.RememberLogin(username, password, result.UserId);
                     JoinRoom.ResetOwnedRoomState();
                     new MenuForm().Show();
                     this.Hide();

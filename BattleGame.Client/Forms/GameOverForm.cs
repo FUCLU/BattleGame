@@ -23,7 +23,9 @@ namespace BattleGame.Client.Forms
 
         private void btnBackLobby_Click(object sender, EventArgs e)
         {
-
+            this.Close();
+            JoinRoom joinRoom = new JoinRoom();
+            joinRoom.Show();
         }
 
         private void btnBackLobby_MouseHover(object sender, EventArgs e)
@@ -34,6 +36,13 @@ namespace BattleGame.Client.Forms
         private void panel1_Paint(object sender, PaintEventArgs e)
         {
 
+        }
+
+        private void BtnLeaderBoard_Click(object sender, EventArgs e)
+        {
+            this.Close();
+            LeaderboardForm leaderboardForm = new LeaderboardForm();
+            leaderboardForm.Show();
         }
     }
 }

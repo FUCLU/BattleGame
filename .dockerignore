@@ -1,6 +1,6 @@
-# Không copy những thứ này vào Docker build context
+﻿# Do not copy these into Docker build context
 
-# Build outputs (sẽ được build lại trong container)
+# Build outputs
 **/bin/
 **/obj/
 
@@ -18,15 +18,21 @@
 logs/
 *.log
 
-# Test project (không cần trong production image)
+# Test project
 BattleGame.Test/
+
+# Exclude full client by default, then allow only runtime battle config
 BattleGame.Client/
+!BattleGame.Client/
+BattleGame.Client/*
+!BattleGame.Client/Config/
+!BattleGame.Client/Config/**
 
 # IDE
 .idea/
 .vscode/
 
-# Docker files (tránh copy lẫn nhau)
+# Docker files
 **/Dockerfile
 docker-compose*.yml
 .dockerignore

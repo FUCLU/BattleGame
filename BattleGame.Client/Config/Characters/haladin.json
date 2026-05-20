@@ -7,14 +7,15 @@
     "assetFolder": "Haladin"
   },
   "stats": {
-    "hp": 120,
-    "def": 12,
+    "hp": 135,
+    "def": 14,
     "mana": 120,
-    "atk": 24,
-    "speed": 240,
-    "atkSpeed": 1.4,
+    "manaRegen": 8.0,
+    "atk": 22,
+    "speed": 230,
+    "atkSpeed": 1.15,
     "stunDuration": 0.0,
-    "attackRange": 80
+    "attackRange": 90
   },
 
   "render": {
@@ -31,17 +32,22 @@
       "id": "judgement_slash",
       "animation": "Skill1",
       "invulnerableWhileCasting": true,
-      "manaCost": 0,
-      "cooldown": 0.0,
+      "manaCost": 35,
+      "cooldown": 6.0,
 
       "effects": [
         {
           "type": "melee",
           "trigger": "onFrames",
           "frames": [ 10, 11, 12, 18, 19, 20 ],
-          "damage": 6,
+          "damage": 17,
           "stun": 0.0,
-          "range": 100
+          "range": 100,
+          "spawnMode": "casterFront",
+          "spawnOffsetX": 100,
+          "spawnOffsetY": 0,
+          "collisionWidth": 100,
+          "collisionHeight": 100
         }
       ]
     },
@@ -50,17 +56,22 @@
       "id": "holy_wrath",
       "animation": "Skill2",
       "invulnerableWhileCasting": true,
-      "manaCost": 0,
-      "cooldown": 0.0,
+      "manaCost": 45,
+      "cooldown": 8.0,
 
       "effects": [
         {
           "type": "melee",
           "trigger": "onFrames",
           "frames": [ 14, 15, 16, 24, 25, 26 ],
-          "damage": 6,
-          "stun": 0.4,
-          "range": 170
+          "damage": 18,
+          "stun": 0.3,
+          "range": 170,
+          "spawnMode": "casterFront",
+          "spawnOffsetX": 135,
+          "spawnOffsetY": 0,
+          "collisionWidth": 170,
+          "collisionHeight": 100
         }
       ]
     }

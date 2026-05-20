@@ -3,6 +3,11 @@
     image: postgres:15-alpine
     container_name: battlegame_db
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     environment:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
@@ -22,13 +27,28 @@
     image: axllent/mailpit:latest
     container_name: battlegame_mailpit
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     ports:
       - "8025:8025"
       - "1025:1025"
     environment:
       MP_MAX_MESSAGES: 100
-      MP_SMTP_AUTH_ACCEPT_ANY: 1
-      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+  redis:
+    image: redis:7-alpine
+    container_name: battlegame_redis
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    ports:
+      - "6379:6379"
 
   server:
     build:
@@ -36,20 +56,68 @@
       dockerfile: BattleGame.Server/Dockerfile
     container_name: battlegame_server
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    env_file:
+      - .env
     ports:
-      - "9999:9001" 
+      - "${GAME_PUBLIC_PORT:-9999}:9001" 
     environment:
       - DB_CONNECTION=Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
       - SERVER_PORT=9001 
-      - SMTP_HOST=mailpit
-      - SMTP_PORT=1025
-      - SMTP_USERNAME=test@battlegame.local
-      - SMTP_PASSWORD=
-      - SMTP_ENABLE_SSL=false
+      - SERVER_ID=server-1
+      - SERVER_PUBLIC_HOST=${PUBLIC_HOST:-127.0.0.1}
+      - SERVER_PUBLIC_PORT=${GAME_PUBLIC_PORT:-9999}
+      - REDIS_CONNECTION=redis:6379
+      - HEARTBEAT_INTERVAL_SECONDS=2
+      - HEARTBEAT_TTL_SECONDS=6
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LOG_INPUT_PACKETS=${LOG_INPUT_PACKETS:-false}
     depends_on:
       db:
         condition: service_healthy
       mailpit:
+        condition: service_started
+      redis:
+        condition: service_started
+    volumes:
+      - ./logs:/app/logs
+
+  server2:
+    build:
+      context: .
+      dockerfile: BattleGame.Server/Dockerfile
+    container_name: battlegame_server_2
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    env_file:
+      - .env
+    ports:
+      - "${GAME2_PUBLIC_PORT:-10000}:9001"
+    environment:
+      - DB_CONNECTION=Host=db;Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}
+      - SERVER_PORT=9001
+      - SERVER_ID=server-2
+      - SERVER_PUBLIC_HOST=${PUBLIC_HOST:-127.0.0.1}
+      - SERVER_PUBLIC_PORT=${GAME2_PUBLIC_PORT:-10000}
+      - REDIS_CONNECTION=redis:6379
+      - HEARTBEAT_INTERVAL_SECONDS=2
+      - HEARTBEAT_TTL_SECONDS=6
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LOG_INPUT_PACKETS=${LOG_INPUT_PACKETS:-false}
+    depends_on:
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+      redis:
         condition: service_started
     volumes:
       - ./logs:/app/logs
@@ -60,13 +128,25 @@
       dockerfile: BattleGame.LoadBalancer/Dockerfile
     container_name: battlegame_lb
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
     ports:
-      - "9090:9000"
+      - "${LB_PUBLIC_PORT:-9090}:9000"
     environment:
       - LB_PORT=9000
-      - SERVERS=battlegame_server:9001
+      - SERVERS=battlegame_server:9001:${PUBLIC_HOST:-127.0.0.1}:${GAME_PUBLIC_PORT:-9999}:server-1,battlegame_server_2:9001:${PUBLIC_HOST:-127.0.0.1}:${GAME2_PUBLIC_PORT:-10000}:server-2
+      - REDIS_CONNECTION=redis:6379
+      - REDIS_PREFIX=battlegame:lb
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
     depends_on:
+      redis:
+        condition: service_started
       server:
+        condition: service_started
+      server2:
         condition: service_started
 
 volumes:
