@@ -105,6 +105,7 @@ namespace BattleGame.Client.Forms
             ConfigureOnlineLayout();
             UpdateRoomStatus();
             UpdateReadyState();
+      
 
             if (NetworkManager.Instance.IsConnected)
             {

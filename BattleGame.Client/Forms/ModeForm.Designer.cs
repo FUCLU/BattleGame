@@ -35,6 +35,7 @@
             pictureBox2 = new PictureBox();
             button4 = new Button();
             pictureBox3 = new PictureBox();
+            button1 = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
@@ -45,7 +46,7 @@
             button2.BackgroundImage = (Image)resources.GetObject("button2.BackgroundImage");
             button2.BackgroundImageLayout = ImageLayout.Stretch;
             button2.FlatStyle = FlatStyle.Popup;
-            button2.Location = new Point(615, 404);
+            button2.Location = new Point(634, 436);
             button2.Name = "button2";
             button2.Size = new Size(326, 65);
             button2.TabIndex = 1;
@@ -68,9 +69,9 @@
             button3.BackgroundImage = (Image)resources.GetObject("button3.BackgroundImage");
             button3.BackgroundImageLayout = ImageLayout.Stretch;
             button3.FlatStyle = FlatStyle.Flat;
-            button3.Location = new Point(91, 504);
+            button3.Location = new Point(868, 36);
             button3.Name = "button3";
-            button3.Size = new Size(145, 65);
+            button3.Size = new Size(145, 55);
             button3.TabIndex = 3;
             button3.UseVisualStyleBackColor = true;
             button3.Click += button3_Click;
@@ -79,7 +80,7 @@
             // 
             pictureBox2.BackgroundImage = (Image)resources.GetObject("pictureBox2.BackgroundImage");
             pictureBox2.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox2.Location = new Point(91, 137);
+            pictureBox2.Location = new Point(110, 169);
             pictureBox2.Name = "pictureBox2";
             pictureBox2.Size = new Size(381, 251);
             pictureBox2.TabIndex = 4;
@@ -90,7 +91,7 @@
             button4.BackgroundImage = (Image)resources.GetObject("button4.BackgroundImage");
             button4.BackgroundImageLayout = ImageLayout.Stretch;
             button4.FlatStyle = FlatStyle.Popup;
-            button4.Location = new Point(114, 404);
+            button4.Location = new Point(133, 436);
             button4.Name = "button4";
             button4.Size = new Size(328, 65);
             button4.TabIndex = 5;
@@ -101,11 +102,22 @@
             // 
             pictureBox3.BackgroundImage = (Image)resources.GetObject("pictureBox3.BackgroundImage");
             pictureBox3.BackgroundImageLayout = ImageLayout.Stretch;
-            pictureBox3.Location = new Point(584, 137);
+            pictureBox3.Location = new Point(603, 169);
             pictureBox3.Name = "pictureBox3";
             pictureBox3.Size = new Size(381, 251);
             pictureBox3.TabIndex = 6;
             pictureBox3.TabStop = false;
+            // 
+            // button1
+            // 
+            button1.BackgroundImage = (Image)resources.GetObject("button1.BackgroundImage");
+            button1.BackgroundImageLayout = ImageLayout.Stretch;
+            button1.FlatStyle = FlatStyle.Flat;
+            button1.Location = new Point(53, 36);
+            button1.Name = "button1";
+            button1.Size = new Size(145, 55);
+            button1.TabIndex = 7;
+            button1.UseVisualStyleBackColor = true;
             // 
             // ModeForm
             // 
@@ -115,6 +127,7 @@
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1057, 581);
+            Controls.Add(button1);
             Controls.Add(button2);
             Controls.Add(pictureBox3);
             Controls.Add(button4);
@@ -138,5 +151,6 @@
         private PictureBox pictureBox2;
         private Button button4;
         private PictureBox pictureBox3;
+        private Button button1;
     }
 }

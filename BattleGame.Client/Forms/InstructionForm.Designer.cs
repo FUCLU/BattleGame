@@ -55,10 +55,10 @@
             tabControl.Controls.Add(tabOffline);
             tabControl.Controls.Add(tabOnline);
             tabControl.Font = new Font("Lucida Bright", 12F, FontStyle.Italic, GraphicsUnit.Point, 0);
-            tabControl.Location = new Point(25, 30);
+            tabControl.Location = new Point(28, 14);
             tabControl.Name = "tabControl";
             tabControl.SelectedIndex = 0;
-            tabControl.Size = new Size(753, 382);
+            tabControl.Size = new Size(753, 400);
             tabControl.TabIndex = 1;
             // 
             // tabOffline
@@ -66,9 +66,9 @@
             tabOffline.Location = new Point(4, 32);
             tabOffline.Name = "tabOffline";
             tabOffline.Padding = new Padding(3);
-            tabOffline.Size = new Size(745, 346);
+            tabOffline.Size = new Size(745, 364);
             tabOffline.TabIndex = 0;
-            tabOffline.Text = "Off Controls";
+            tabOffline.Text = "Offline";
             tabOffline.UseVisualStyleBackColor = true;
             // 
             // tabOnline
@@ -77,9 +77,9 @@
             tabOnline.Location = new Point(4, 32);
             tabOnline.Name = "tabOnline";
             tabOnline.Padding = new Padding(3);
-            tabOnline.Size = new Size(745, 346);
+            tabOnline.Size = new Size(745, 364);
             tabOnline.TabIndex = 1;
-            tabOnline.Text = "Onl Controls";
+            tabOnline.Text = "Online";
             // 
             // btnBack
             // 

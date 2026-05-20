@@ -28,6 +28,7 @@ namespace BattleGame.Client.Forms
         private DateTime _lastRefreshUtc = DateTime.MinValue;
         private static readonly TimeSpan ActivationRefreshCooldown = TimeSpan.FromMilliseconds(900);
 
+        private bool _isMuted = false;
         public JoinRoom()
         {
             InitializeComponent();
@@ -279,6 +280,9 @@ namespace BattleGame.Client.Forms
 
         private async void JoinRoom_Load(object sender, EventArgs e)
         {
+            SoundManager.PlayBGM("xtremefreddy.mp3");
+            SoundManager.SetVolume(1.0f);
+            UpdateMusicButtonText();
             textBox1.Text = DefaultTimeLimitMinutes.ToString();
             UpdateSelectedMapText();
             if (!NetworkManager.Instance.IsConnected)
@@ -1004,6 +1008,31 @@ namespace BattleGame.Client.Forms
             }
 
             return sb.ToString();
+        }
+
+        private void btnMusic_Click(object sender, EventArgs e)
+        {
+            _isMuted = !_isMuted;
+
+            SoundManager.SetVolume(_isMuted ? 0.0f : 1.0f);
+
+            UpdateMusicButtonText();
+        }
+
+        private void UpdateMusicButtonText()
+        {
+            if (_isMuted)
+            {
+                btnMusic.Text = "♪ Music: Off";
+                btnMusic.BackColor = Color.FromArgb(15, 23, 42);
+                btnMusic.ForeColor = Color.FromArgb(147, 197, 253);
+            }
+            else
+            {
+                btnMusic.Text = "♫ Music: On";
+                btnMusic.BackColor = Color.FromArgb(37, 99, 235);
+                btnMusic.ForeColor = Color.White;
+            }
         }
     }
 }

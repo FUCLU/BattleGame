@@ -168,6 +168,8 @@ namespace BattleGame.Client.Forms
 
         private void GameForm_Load(object? sender, EventArgs e)
         {
+            SoundManager.PlayBGM("darren_hirst.mp3");
+            SoundManager.SetVolume(0.1f);
             InputManager.Clear();
             LayoutHud();
             panelStatus.BackColor = Color.FromArgb(180, 0, 0, 0);

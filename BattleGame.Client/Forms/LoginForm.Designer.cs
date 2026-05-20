@@ -38,7 +38,7 @@
             textBox1 = new TextBox();
             label2 = new Label();
             label1 = new Label();
-            button2 = new Button();
+            btnMusic = new Button();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -155,16 +155,15 @@
             label1.TabIndex = 0;
             label1.Text = "Username";
             // 
-            // button2
+            // btnMusic
             // 
-            button2.BackgroundImage = Properties.Resources.loa;
-            button2.BackgroundImageLayout = ImageLayout.Zoom;
-            button2.Location = new Point(996, 520);
-            button2.Name = "button2";
-            button2.Size = new Size(35, 33);
-            button2.TabIndex = 1;
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += button2_Click;
+            btnMusic.Location = new Point(907, 524);
+            btnMusic.Name = "btnMusic";
+            btnMusic.Size = new Size(94, 29);
+            btnMusic.TabIndex = 1;
+            btnMusic.Text = "Music";
+            btnMusic.UseVisualStyleBackColor = true;
+            btnMusic.Click += btnMusic_Click;
             // 
             // LoginForm
             // 
@@ -173,7 +172,7 @@
             BackgroundImage = Properties.Resources.login;
             BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1057, 581);
-            Controls.Add(button2);
+            Controls.Add(btnMusic);
             Controls.Add(panel1);
             DoubleBuffered = true;
             Name = "LoginForm";
@@ -194,7 +193,7 @@
         private Label label2;
         private Label label1;
         private LinkLabel linkLabel2;
-        private Button button2;
         private Button button3;
+        private Button btnMusic;
     }
 }

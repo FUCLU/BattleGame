@@ -13,26 +13,23 @@ namespace BattleGame.Client.Forms
         private readonly Dictionary<Panel, CharacterSelectionItem> _panelCharacterMap = new();
         private readonly List<CharacterSelectionItem> _availableCharacters = new();
         private readonly List<Panel> _slotPanels = new();
+
         private CharacterSelectionItem? _selectedCharacter;
+
         private int _maxHp = 1;
         private int _maxAtk = 1;
         private int _maxDef = 1;
         private int _maxSpd = 1;
 
         // ─── Màu nền slot ────────────────────────────────────────────────────
-        private static readonly Color SlotNormalColor = Color.FromArgb(44, 74, 110); // Bình thường
-        private static readonly Color SlotHoverColor = Color.FromArgb(55, 95, 140); // Hover (sáng hơn)
-        private static readonly Color SlotSelectedColor = Color.FromArgb(63, 110, 165); // Đang chọn
+        private static readonly Color SlotNormalColor = Color.FromArgb(44, 74, 110);
+        private static readonly Color SlotHoverColor = Color.FromArgb(55, 95, 140);
+        private static readonly Color SlotSelectedColor = Color.FromArgb(63, 110, 165);
 
-        // Padding cách khung viền của panel2 (tránh lấp lên border vàng)
-        private const int PanelPadding = 18;
-
-        // SlotWidth tối đa — clamp theo panel2.Width thực tế
-        private const int SlotWidth = 330;
-        // SlotHeight & SlotSpacing được tính ĐỘNG trong BindCharacterSlots()
-        private const int SlotHeightMax = 78;
-        private const int SlotHeightMin = 50;
-        private const int SlotSpacingMax = 8;
+        // ─── Giao diện slot trong FlowLayoutPanel ────────────────────────────
+        private const int PanelPadding = 14;
+        private const int SlotHeight = 92;
+        private const int SlotSpacing = 10;
 
         private static readonly string AssetsRoot = Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory,
@@ -41,31 +38,99 @@ namespace BattleGame.Client.Forms
         private static readonly string PortraitRoot = Path.Combine(AssetsRoot, "PotraitPic");
         private static readonly string CharactersRoot = Path.Combine(AssetsRoot, "Characters");
 
-        // Dữ liệu 6 nhân vật (fallback nếu không load được từ config)
-        private static readonly List<(string Id, string DisplayName, string Role, int Hp, int Dmg, int Spd)> DefaultCharacters = new()
-        {
-            ("wizard",       "Wizard",       "🔮 Mage",           100, 20, 200),
-            ("samurai",      "Samurai",      "⚔️ Damage Dealer",  100, 20, 200),
-            ("lord",         "Lord",         "🛡️ Tank",           130, 26, 190),
-            ("kitsune",      "Kitsune",      "⚡ Speedster",       110, 18, 210),
-            ("haladin",      "Haladin",      "⚔️ Damage Dealer",  120, 24, 240),
-            ("heavycrystal", "HeavyCrystal", "🛡️ Tank",           150, 28, 190),
-        };
-
         public CharacterSelection()
         {
             InitializeComponent();
             StartPosition = FormStartPosition.CenterScreen;
-        }
 
+            // Khi FlowLayoutPanel đổi kích thước thì slot tự giãn theo
+            flpnlSelChar.Resize += flpnlSelChar_Resize;
+
+        }
+      
         public string SelectedCharacterId { get; private set; } = string.Empty;
         public string SelectedCharacterName => SelectedCharacterId;
 
         private void CharacterSelection_Load(object sender, EventArgs e)
         {
+           
+            SetupCharacterListFlowPanel();
+
             LoadCharacters();
-            BindCharacterSlots();
+
+            // Đợi Form layout xong rồi mới bind slot
+            BeginInvoke(new Action(() =>
+            {
+                BindCharacterSlots();
+                ApplySlotWidthToAll();
+            }));
         }
+
+        // ─── Setup FlowLayoutPanel ────────────────────────────────────────────
+
+        private void SetupCharacterListFlowPanel()
+        {
+            flpnlSelChar.AutoScroll = true;
+            flpnlSelChar.FlowDirection = FlowDirection.TopDown;
+            flpnlSelChar.WrapContents = false;
+            flpnlSelChar.Padding = new Padding(PanelPadding);
+        }
+
+        private void flpnlSelChar_Resize(object? sender, EventArgs e)
+        {
+            if (_slotPanels.Count == 0) return;
+
+            ApplySlotWidthToAll();
+        }
+        private int GetSlotWidth()
+        {
+            int scrollBarWidth = SystemInformation.VerticalScrollBarWidth;
+
+            int slotW = flpnlSelChar.ClientSize.Width
+                        - flpnlSelChar.Padding.Left
+                        - flpnlSelChar.Padding.Right
+                        - scrollBarWidth
+                        - 4;
+
+            return Math.Max(350, slotW);
+        }
+
+       
+        
+        private void ApplySlotWidthToAll()
+        {
+            int slotW = GetSlotWidth();
+
+            foreach (var slot in _slotPanels)
+            {
+                slot.Width = slotW;
+                slot.Height = SlotHeight;
+                slot.Margin = new Padding(0, 0, 0, SlotSpacing);
+
+                ResizeSlotChildren(slot);
+            }
+        }
+
+        private void ResizeSlotChildren(Panel slot)
+        {
+            if (slot.Controls.Count == 0) return;
+
+            PictureBox? picture = slot.Controls.OfType<PictureBox>().FirstOrDefault();
+            if (picture == null) return;
+
+            int textX = picture.Right + 10;
+            int textAreaWidth = slot.Width - textX - 10;
+
+            foreach (Control child in slot.Controls)
+            {
+                if (child is Label lbl)
+                {
+                    lbl.Width = textAreaWidth;
+                }
+            }
+        }
+
+        // ─── Load dữ liệu nhân vật ────────────────────────────────────────────
 
         private void LoadCharacters()
         {
@@ -96,64 +161,43 @@ namespace BattleGame.Client.Forms
             }
         }
 
+        // ─── Bind danh sách nhân vật vào FlowLayoutPanel ─────────────────────
+
         private void BindCharacterSlots()
         {
             _panelCharacterMap.Clear();
             _slotPanels.Clear();
 
-            // Xóa các slot cũ trong panel chứa danh sách (panel2)
-            var oldSlots = panel2.Controls.OfType<Panel>().ToList();
-            foreach (var old in oldSlots)
-                panel2.Controls.Remove(old);
+            flpnlSelChar.Controls.Clear();
 
             int count = _availableCharacters.Count;
             if (count == 0) return;
 
-            // Vùng khả dụng sau khi trừ padding hai phía
-            int availableWidth = panel2.Width - PanelPadding * 2;
-            int availableHeight = panel2.Height - PanelPadding * 2;
-
-            // Clamp SlotWidth không vượt quá vùng khả dụng
-            int slotW = Math.Min(SlotWidth, availableWidth);
-
-            // Tính SlotHeight và SlotSpacing ĐỘNG để tất cả slot luôn vừa khít
-            int spacing = SlotSpacingMax;
-            int slotH = (availableHeight - (count - 1) * spacing) / count;
-            if (slotH < SlotHeightMin)
-            {
-                spacing = 0;
-                slotH = availableHeight / count;
-            }
-            slotH = Math.Clamp(slotH, SlotHeightMin, SlotHeightMax);
-
-            // Tổng chiều cao thực tế
-            int totalHeight = count * slotH + (count - 1) * spacing;
-
-            // Căn giữa theo chiều dọc trong vùng khả dụng
-            int startY = PanelPadding + Math.Max(0, (availableHeight - totalHeight) / 2);
-            int startX = PanelPadding + Math.Max(0, (availableWidth - slotW) / 2);
+            int slotW = GetSlotWidth();
 
             for (int i = 0; i < count; i++)
             {
                 CharacterSelectionItem character = _availableCharacters[i];
                 string role = GetRoleLabel(character.Id);
-                int y = startY + i * (slotH + spacing);
-                var slot = CreateCharacterSlot(character, role, startX, y, slotW, slotH);
+
+                var slot = CreateCharacterSlot(
+                    character,
+                    role,
+                    slotW,
+                    SlotHeight
+                );
 
                 _panelCharacterMap[slot.Panel] = character;
                 _slotPanels.Add(slot.Panel);
 
                 AttachClickRecursive(slot.Panel);
-                AttachHoverRecursive(slot.Panel); // ← Thêm hover
+                AttachHoverRecursive(slot.Panel);
             }
 
-            if (_availableCharacters.Count > 0 && _slotPanels.Count > 0)
+            if (_slotPanels.Count > 0)
                 SelectByPanel(_slotPanels[0]);
         }
 
-        /// <summary>
-        /// Trả về nhãn vai trò cho từng nhân vật.
-        /// </summary>
         private static string GetRoleLabel(string characterId)
         {
             return characterId.ToLower() switch
@@ -171,21 +215,22 @@ namespace BattleGame.Client.Forms
         private CharacterSlot CreateCharacterSlot(
             CharacterSelectionItem character,
             string role,
-            int x, int y, int slotW, int slotH)
+            int slotW,
+            int slotH)
         {
-            // --- Panel ngoài (slot container) ---
             var panel = new Panel
             {
                 BackColor = SlotNormalColor,
-                Location = new Point(x, y),
                 Size = new Size(slotW, slotH),
                 TabIndex = 0,
                 Cursor = Cursors.Hand,
+                Margin = new Padding(0, 0, 0, SlotSpacing)
             };
 
-            // --- Ảnh nhân vật ---
-            int picPad = 6;
+            // Ảnh nhân vật
+            int picPad = 8;
             int picSize = slotH - picPad * 2;
+
             var picture = new PictureBox
             {
                 BackColor = Color.Transparent,
@@ -193,66 +238,64 @@ namespace BattleGame.Client.Forms
                 Size = new Size(picSize, picSize),
                 SizeMode = PictureBoxSizeMode.Zoom,
                 TabStop = false,
+                Cursor = Cursors.Hand
             };
 
             string imgPath = GetPortraitPath(character.Id);
-            picture.Image = LoadImage(imgPath) ?? LoadImage(character.GetPreviewPath(CharactersRoot));
+            picture.Image = LoadImage(imgPath)
+                         ?? LoadImage(character.GetPreviewPath(CharactersRoot));
 
-            // --- Vùng text bên phải ảnh ---
-            int textX = picture.Right + 8;
-            int textAreaWidth = slotW - textX - 6;
+            // Vùng text bên phải ảnh
+            int textX = picture.Right + 10;
+            int textAreaWidth = slotW - textX - 10;
 
-            // ── Phân chia chiều cao: tên 45% | role 30% | stats 25% ──────────
-            // Tăng roleH lên 30% (từ 26%) để chữ role không bị cắt
-            int nameH = (int)(slotH * 0.45);
-            int roleH = (int)(slotH * 0.30);   // ← tăng từ 0.26 lên 0.30
-            int statsH = slotH - nameH - roleH;
+            int nameH = 34;
+            int roleH = 24;
+            int statsH = slotH - nameH - roleH - 4;
 
-            // Font size tên co giãn theo slotH
-            float nameFontSize = Math.Clamp(slotH * 0.24f, 11f, 18f);
-
-            // Tên nhân vật
             var lblName = new Label
             {
                 Text = character.DisplayName,
-                Font = new Font("Book Antiqua", nameFontSize, FontStyle.Bold | FontStyle.Italic),
+                Font = new Font("Book Antiqua", 15F, FontStyle.Bold | FontStyle.Italic),
                 ForeColor = Color.FromArgb(255, 235, 156),
                 AutoSize = false,
                 Size = new Size(textAreaWidth, nameH),
-                Location = new Point(textX, 0),
+                Location = new Point(textX, 4),
                 TextAlign = ContentAlignment.MiddleLeft,
+                Cursor = Cursors.Hand
             };
 
-            // Dòng vai trò — padding trên nhỏ để không bị che
             var lblRole = new Label
             {
                 Text = role,
-                Font = new Font("Segoe UI", 8.5F, FontStyle.Regular),
+                Font = new Font("Segoe UI", 9F, FontStyle.Regular),
                 ForeColor = Color.FromArgb(160, 200, 240),
                 AutoSize = false,
                 Size = new Size(textAreaWidth, roleH),
-                Location = new Point(textX, nameH),
-                TextAlign = ContentAlignment.TopLeft, // ← TopLeft thay vì MiddleLeft
-                Padding = new Padding(0, 2, 0, 0),  // ← đẩy chữ xuống 2px để tránh đè lên tên
+                Location = new Point(textX, lblName.Bottom),
+                TextAlign = ContentAlignment.MiddleLeft,
+                Cursor = Cursors.Hand
             };
 
-            // Dòng stats: HP | DMG | SPD
             var lblStats = new Label
             {
                 Text = $"HP:{character.Hp}  |  DMG:{character.Atk}  |  SPD:{character.Speed}",
-                Font = new Font("Consolas", 7.5F, FontStyle.Regular),
+                Font = new Font("Consolas", 8F, FontStyle.Regular),
                 ForeColor = Color.FromArgb(120, 160, 200),
                 AutoSize = false,
                 Size = new Size(textAreaWidth, statsH),
-                Location = new Point(textX, nameH + roleH),
+                Location = new Point(textX, lblRole.Bottom),
                 TextAlign = ContentAlignment.MiddleLeft,
+                Cursor = Cursors.Hand
             };
 
             panel.Controls.Add(picture);
             panel.Controls.Add(lblName);
             panel.Controls.Add(lblRole);
             panel.Controls.Add(lblStats);
-            panel2.Controls.Add(panel);
+
+            // Quan trọng: add vào FlowLayoutPanel
+            flpnlSelChar.Controls.Add(panel);
 
             return new CharacterSlot(panel, lblName, picture);
         }
@@ -276,6 +319,7 @@ namespace BattleGame.Client.Forms
         private void AttachClickRecursive(Control control)
         {
             control.Click += CharacterSlot_Click;
+
             foreach (Control child in control.Controls)
                 AttachClickRecursive(child);
         }
@@ -283,38 +327,46 @@ namespace BattleGame.Client.Forms
         private void CharacterSlot_Click(object? sender, EventArgs e)
         {
             if (sender is not Control control) return;
+
             var panel = FindMappedPanel(control);
-            if (panel != null) SelectByPanel(panel);
+
+            if (panel != null)
+                SelectByPanel(panel);
         }
 
         private Panel? FindMappedPanel(Control control)
         {
             Control? current = control;
+
             while (current != null)
             {
-                if (current is Panel p && _panelCharacterMap.ContainsKey(p)) return p;
+                if (current is Panel p && _panelCharacterMap.ContainsKey(p))
+                    return p;
+
                 current = current.Parent;
             }
+
             return null;
         }
 
         private void SelectByPanel(Panel panel)
         {
-            if (!_panelCharacterMap.TryGetValue(panel, out CharacterSelectionItem? character)) return;
+            if (!_panelCharacterMap.TryGetValue(panel, out CharacterSelectionItem? character))
+                return;
+
             _selectedCharacter = character;
+
             UpdateDisplay(character);
             HighlightSelected(panel);
         }
 
         // ─── Hover Effect ─────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Gắn sự kiện MouseEnter / MouseLeave cho control và toàn bộ control con bên trong slot.
-        /// </summary>
         private void AttachHoverRecursive(Control control)
         {
             control.MouseEnter += SlotControl_MouseEnter;
             control.MouseLeave += SlotControl_MouseLeave;
+
             foreach (Control child in control.Controls)
                 AttachHoverRecursive(child);
         }
@@ -322,10 +374,10 @@ namespace BattleGame.Client.Forms
         private void SlotControl_MouseEnter(object? sender, EventArgs e)
         {
             if (sender is not Control control) return;
+
             var panel = FindMappedPanel(control);
             if (panel == null) return;
 
-            // Không đổi màu nếu panel đang được chọn
             if (panel.BackColor != SlotSelectedColor)
                 panel.BackColor = SlotHoverColor;
         }
@@ -333,17 +385,25 @@ namespace BattleGame.Client.Forms
         private void SlotControl_MouseLeave(object? sender, EventArgs e)
         {
             if (sender is not Control control) return;
+
             var panel = FindMappedPanel(control);
             if (panel == null) return;
 
-            // Khi chuột rời đi, kiểm tra xem chuột có thực sự rời khỏi toàn bộ panel không
-            // (tránh trigger khi chuột chuyển sang control con bên trong slot)
             Point cursorPos = panel.PointToClient(Cursor.Position);
+
             if (!panel.ClientRectangle.Contains(cursorPos))
             {
                 if (panel.BackColor != SlotSelectedColor)
                     panel.BackColor = SlotNormalColor;
             }
+        }
+
+        private void HighlightSelected(Panel selected)
+        {
+            foreach (var panel in _slotPanels)
+                panel.BackColor = SlotNormalColor;
+
+            selected.BackColor = SlotSelectedColor;
         }
 
         // ─── Info Panel bên phải ─────────────────────────────────────────────
@@ -356,24 +416,19 @@ namespace BattleGame.Client.Forms
                          ?? LoadImage(character.GetPreviewPath(CharactersRoot));
 
             label2.Text = character.DisplayName;
+
             lblHP.Text = "❤️ HP";
             lblATK.Text = "⚔️ ATK";
             lblDEF.Text = "🛡️ DEF";
             lblSPD.Text = "⚡ SPD";
             lblSkill.Text = $"✨ SKILL  : {character.SkillLabel}";
 
-            // Cập nhật thanh fill + chỉ số
-            // Thứ tự tham số: (panelBack, panelFill, giá trị, max, labelChỉSố)
             SetStatBar(panelHpBack, panelHpFill, character.Hp, _maxHp, lblHpValue);
             SetStatBar(panelAtkBack, panelAtkFill, character.Atk, _maxAtk, lblAtkValue);
             SetStatBar(panelDefBack, panelDefFill, character.Def, _maxDef, lblDefValue);
             SetStatBar(panelSpdBack, panelSpdFill, character.Speed, _maxSpd, lblSpdValue);
         }
 
-        /// <summary>
-        /// Cập nhật độ rộng thanh fill và text chỉ số.
-        /// Vị trí của valueLabel giữ nguyên theo Designer — KHÔNG tính lại Location.
-        /// </summary>
         private void SetStatBar(
             Panel backPanel,
             Panel fillPanel,
@@ -381,47 +436,47 @@ namespace BattleGame.Client.Forms
             int maxValue,
             Label valueLabel)
         {
-            // Cập nhật thanh fill
             fillPanel.Width = GetBarWidth(backPanel, value, maxValue);
 
-            // Cập nhật chỉ số text
             valueLabel.Text = value.ToString();
-
-            // ══════════════════════════════════════════════════════════════════
-            // CÀI ĐẶT FONT / SIZE / MÀU CHỮ CHO LABEL CHỈ SỐ THANH STATS
-            // Thay đổi tại đây để tuỳ chỉnh giao diện:
-            // ────────────────────────────────────────────────────────────────
-            valueLabel.Font = new Font("Consolas", 9F, FontStyle.Bold);  // Font & cỡ chữ
-            valueLabel.ForeColor = Color.FromArgb(200, 230, 255);              // Màu chữ (R, G, B)
-            valueLabel.TextAlign = ContentAlignment.MiddleLeft;                // Căn chữ
-            // ══════════════════════════════════════════════════════════════════
+            valueLabel.Font = new Font("Consolas", 9F, FontStyle.Bold);
+            valueLabel.ForeColor = Color.FromArgb(200, 230, 255);
+            valueLabel.TextAlign = ContentAlignment.MiddleLeft;
         }
 
         private static int GetBarWidth(Panel backPanel, int value, int maxValue)
         {
-            if (maxValue <= 0 || backPanel.Width <= 0) return 0;
+            if (maxValue <= 0 || backPanel.Width <= 0)
+                return 0;
+
             int clampedValue = Math.Clamp(value, 0, maxValue);
-            int width = (int)Math.Round(backPanel.Width * (clampedValue / (double)maxValue));
+
+            int width = (int)Math.Round(
+                backPanel.Width * (clampedValue / (double)maxValue)
+            );
+
             return Math.Clamp(width, 0, backPanel.Width);
         }
 
         // ─── Helpers ──────────────────────────────────────────────────────────
 
-        private string GetPortraitPath(string characterId) =>
-            Path.Combine(PortraitRoot, $"{characterId.ToLower()}.png");
+        private string GetPortraitPath(string characterId)
+        {
+            return Path.Combine(PortraitRoot, $"{characterId.ToLower()}.png");
+        }
 
         private Image? LoadImage(string path)
         {
-            try { if (File.Exists(path)) return Image.FromFile(path); }
-            catch { }
-            return null;
-        }
+            try
+            {
+                if (File.Exists(path))
+                    return Image.FromFile(path);
+            }
+            catch
+            {
+            }
 
-        private void HighlightSelected(Panel selected)
-        {
-            foreach (var panel in _slotPanels)
-                panel.BackColor = SlotNormalColor;
-            selected.BackColor = SlotSelectedColor;
+            return null;
         }
 
         // ─── Button Events ────────────────────────────────────────────────────
@@ -430,11 +485,18 @@ namespace BattleGame.Client.Forms
         {
             if (_selectedCharacter == null)
             {
-                MessageBox.Show("Vui lòng chọn nhân vật!", "Thông báo",
-                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(
+                    "Vui lòng chọn nhân vật!",
+                    "Thông báo",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
                 return;
             }
+
             SelectedCharacterId = _selectedCharacter.Id;
+
             DialogResult = DialogResult.OK;
             Close();
         }
@@ -445,22 +507,29 @@ namespace BattleGame.Client.Forms
             Close();
         }
 
-        // ─── Paint Events ─────────────────────────────────────────────────────
+        // ─── Paint Events cũ giữ lại nếu Designer đang gắn event ─────────────
 
         private void CharacterPanel_Click(object sender, EventArgs e)
         {
-            if (sender is Panel panel) SelectByPanel(panel);
+            if (sender is Panel panel)
+                SelectByPanel(panel);
         }
 
-        private void panel4_Paint(object sender, PaintEventArgs e) { }
+        private void panel4_Paint(object sender, PaintEventArgs e)
+        {
+        }
 
-        private void pnlKitsune_Paint(object sender, PaintEventArgs e) { }
+        private void pnlKitsune_Paint(object sender, PaintEventArgs e)
+        {
+        }
 
         private void panel4_Paint_1(object sender, PaintEventArgs e)
         {
             if (sender is not Panel panel) return;
+
             Graphics g = e.Graphics;
             g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.None;
+
             Rectangle rect = panel.ClientRectangle;
 
             using (var brush = new SolidBrush(Color.FromArgb(71, 129, 179)))

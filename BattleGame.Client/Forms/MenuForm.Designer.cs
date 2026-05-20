@@ -29,21 +29,10 @@
         private void InitializeComponent()
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MenuForm));
-            button2 = new Button();
             button1 = new Button();
             button3 = new Button();
+            btnMusic = new Button();
             SuspendLayout();
-            // 
-            // button2
-            // 
-            button2.BackgroundImage = Properties.Resources.loa;
-            button2.BackgroundImageLayout = ImageLayout.Zoom;
-            button2.Location = new Point(996, 520);
-            button2.Name = "button2";
-            button2.Size = new Size(35, 33);
-            button2.TabIndex = 2;
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += button2_Click;
             // 
             // button1
             // 
@@ -71,6 +60,16 @@
             button3.UseVisualStyleBackColor = false;
             button3.Click += button3_Click;
             // 
+            // btnMusic
+            // 
+            btnMusic.Location = new Point(916, 527);
+            btnMusic.Name = "btnMusic";
+            btnMusic.Size = new Size(94, 29);
+            btnMusic.TabIndex = 6;
+            btnMusic.Text = "Music";
+            btnMusic.UseVisualStyleBackColor = true;
+            btnMusic.Click += btnMusic_Click;
+            // 
             // MenuForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -78,9 +77,9 @@
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1057, 581);
+            Controls.Add(btnMusic);
             Controls.Add(button3);
             Controls.Add(button1);
-            Controls.Add(button2);
             DoubleBuffered = true;
             Name = "MenuForm";
             Text = "MenuForm";
@@ -89,9 +88,8 @@
         }
 
         #endregion
-
-        private Button button2;
         private Button button1;
         private Button button3;
+        private Button btnMusic;
     }
 }
