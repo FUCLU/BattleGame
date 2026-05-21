@@ -80,6 +80,9 @@ public static class BattleCharacterDefinitionLoader
             AttackDuration = atkSpeed > 0f ? 1f / atkSpeed : 1f,
             AttackProjectile = stats.TryGetProperty("attackProjectile", out var ap) ? ap.GetString() : null,
             AttackProjectileSpeed = stats.TryGetProperty("attackProjectileSpeed", out var aps) ? aps.GetSingle() : 0f,
+            AttackProjectileSpawnOffsetX = stats.TryGetProperty("attackProjectileSpawnOffsetX", out var apox) ? apox.GetSingle() : 30f,
+            AttackProjectileSpawnOffsetY = stats.TryGetProperty("attackProjectileSpawnOffsetY", out var apoy) ? apoy.GetSingle() : -50f,
+            AttackProjectileScale = stats.TryGetProperty("attackProjectileScale", out var apsc) ? apsc.GetSingle() : 1f,
             ProtectionBlocksAllDirections = protectionBlocksAllDirections
         };
 
@@ -164,6 +167,7 @@ public static class BattleCharacterDefinitionLoader
             var effect = new EffectData
             {
                 Type = type,
+                Animation = ReadString(e, "animation") ?? "",
                 Trigger = ReadString(e, "trigger") ?? "",
                 Damage = e.TryGetProperty("damage", out var d) ? d.GetInt32() : 0,
                 Stun = e.TryGetProperty("stun", out var s) ? s.GetSingle() : 0f,
@@ -187,6 +191,9 @@ public static class BattleCharacterDefinitionLoader
 
             if (e.TryGetProperty("frames", out var frames) && frames.ValueKind == JsonValueKind.Array)
                 effect.Frames = frames.EnumerateArray().Select(frame => frame.GetInt32()).ToList();
+
+            if (e.TryGetProperty("hitFrames", out var hitFrames) && hitFrames.ValueKind == JsonValueKind.Array)
+                effect.HitFrames = hitFrames.EnumerateArray().Select(frame => frame.GetInt32()).ToList();
 
             parsed.Add(effect);
         }

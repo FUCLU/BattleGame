@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Forms;
+using BattleGame.Client.Game.Dungeon;
 
 namespace BattleGame.Client.Forms
 {
@@ -13,9 +14,10 @@ namespace BattleGame.Client.Forms
 
         private void Stage1Form_Click(object sender, EventArgs e)
         {
-            GameForm gameForm = new GameForm("lord", "cave");
+            var dungeonMap = DungeonMapRegistry.Get("map1");
+            GameForm gameForm = new GameForm(dungeonMap.DefaultCharacterId, dungeonMap.MapId, returnFormOnExit: this);
+            Hide();
             gameForm.Show();
-            this.Close();
         }
     }
 }

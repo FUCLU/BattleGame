@@ -25,8 +25,10 @@ namespace BattleGame.Shared.Models
     public class EffectData
     {
         public string Type { get; set; } = ""; // melee / projectile / barrier
+        public string Animation { get; set; } = ""; // optional: restrict effect to an action animation
         public string Trigger { get; set; } = ""; // onStart / onFrame / onFrames / onMiddle / onEnd
         public List<int>? Frames { get; set; }
+        public List<int>? HitFrames { get; set; }
         public int Damage { get; set; }
         public float Stun { get; set; }
         public float Speed { get; set; }

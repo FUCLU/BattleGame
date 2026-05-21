@@ -1,0 +1,18 @@
+{
+  "id": "agis_hunter",
+  "characterId": "agis",
+  "chaseSpeedMultiplier": 0.7,
+  "stopChaseRange": 170,
+  "basicAttackRange": 800,
+  "engageRangeBonus": 0,
+  "skill1Range": 800,
+  "skill1Cooldown": 5.5,
+  "skill2Range": 800,
+  "skill2Cooldown": 7.0,
+  "basicAttackCooldown": 0.85,
+  "postSkillActionCooldown": 0.35,
+  "dashMinRange": 500,
+  "dashCooldown": 4.2,
+  "dashDuration": 0.22,
+  "dashSpeedMultiplier": 3.0
+}

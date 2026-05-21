@@ -1,0 +1,23 @@
+{
+  "id": "zweilander_duelist",
+  "characterId": "zweilander",
+  "chaseSpeedMultiplier": 0.82,
+  "stopChaseRange": 175,
+  "basicAttackRange": 205,
+  "engageRangeBonus": 0,
+  "skill1Range": 230,
+  "skill1Cooldown": 3.0,
+  "skill2Range": 230,
+  "skill2Cooldown": 3.0,
+  "basicAttackCooldown": 0.5,
+  "postSkillActionCooldown": 0.12,
+  "dashMinRange": 260,
+  "dashMaxRange": 720,
+  "dashStopRange": 180,
+  "dashCooldown": 1.0,
+  "dashDuration": 0.45,
+  "dashSpeedMultiplier": 4.2,
+  "dashComboOnDash": true,
+  "dashComboFirstSkill": 2,
+  "dashComboSecondSkill": 1
+}

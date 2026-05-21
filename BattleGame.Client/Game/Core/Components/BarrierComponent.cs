@@ -12,6 +12,7 @@ namespace BattleGame.Client.Game.Core.Components
         public float X { get; set; }
         public float Y { get; set; }
         public int Damage { get; set; } = 10;
+        public float Stun { get; set; } = 0f;
         public List<int> HitFrames { get; set; } = new();
         public int CollisionWidth { get; set; } = 80;
         public int CollisionHeight { get; set; } = 80;

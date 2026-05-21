@@ -169,9 +169,9 @@ namespace BattleGame.Client.Forms
                 return;
             }
 
-            GameForm gameForm = new GameForm(playerCharacterId, currentMap);
+            GameForm gameForm = new GameForm(playerCharacterId, currentMap, returnFormOnExit: this);
+            Hide();
             gameForm.Show();
-            this.Close();
         }
 
         private void btnSelCharPlayer_Click(object sender, EventArgs e)

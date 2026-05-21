@@ -19,5 +19,8 @@ namespace BattleGame.Client.Game.Core.Components
         public float AttackRange { get; set; } = 150f;  // Phạm vi đánh thường (pixel)
         public string? AttackProjectile { get; set; } = null;  // Tên projectile bắn khi attack (vd: "Fire")
         public float AttackProjectileSpeed { get; set; } = 0f;  // Tốc độ projectile (0 = không bắn)
+        public float AttackProjectileSpawnOffsetX { get; set; } = 30f;
+        public float AttackProjectileSpawnOffsetY { get; set; } = -50f;
+        public float AttackProjectileScale { get; set; } = 1f;
     }
 }

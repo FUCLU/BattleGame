@@ -16,13 +16,16 @@
     "atkSpeed": 0.9,
     "attackProjectile": "ArmProjectitle",
     "attackProjectileSpeed": 500,
+    "attackProjectileSpawnOffsetX": 10,
+    "attackProjectileSpawnOffsetY": -80,
+    "attackProjectileScale": 3.0,
     "stunDuration": 0.0,
     "attackRange": 95
   },
 
   "render": {
-    "scale": 1.5,
-    "offsetY": 24,
+    "scale": 2.5,
+    "offsetY": 70,
     "useSpriteSize": true,
     "protectionOverlayOffsetY": 0.0,
     "protectionUsesIdleBase": false,
@@ -48,7 +51,7 @@
           "render": {
             "scale": 0.8,
             "offsetX": 0,
-            "offsetY": 0,
+            "offsetY": -40,
             "useSpriteSize": true,
             "alignY": "center"
           }
@@ -60,27 +63,29 @@
       "id": "laser_beam",
       "animation": "Skill2",
       "manaCost": 45,
-      "cooldown": 8.0,
+      "cooldown": 4.0,
+      "invulnerableWhileCasting": true,
       "effects": [
         {
           "type": "barrier",
           "trigger": "onFrame",
-          "frames": [ 1, 2, 3 ],
+          "frames": [ 1 ],
+          "hitFrames": [ 9, 10, 11, 12, 13, 14 ],
           "objectAnim": "Laser",
           "damage": 11,
           "duration": 1.75,
           "spawnMode": "casterFront",
-          "spawnOffsetX": 120,
-          "spawnOffsetY": -62,
-          "collisionWidth": 420,
-          "collisionHeight": 120,
+          "spawnOffsetX": 10,
+          "spawnOffsetY": 10,
+          "collisionWidth": 840,
+          "collisionHeight": 240,
           "blockEnemyAttack": false,
           "blockEnemyProjectile": false,
           "blockEnemySkill": false,
           "render": {
-            "scale": 1.0,
-            "offsetX": 0,
-            "offsetY": 0,
+            "scale": 2.0,
+            "offsetX": 200,
+            "offsetY": -80,
             "useSpriteSize": true,
             "alignY": "center",
             "facingSource": "owner"

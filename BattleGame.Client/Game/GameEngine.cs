@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -26,11 +26,7 @@ namespace BattleGame.Client.Game
         private const float MinPlayableMapWidth = 420f;
         private const float DefaultSpawnLeftRatio = 0.15f;
         private const float DefaultSpawnRightRatio = 0.85f;
-        private const string CaveMapId = "cave";
-        private const string Stage2MapId = "stage2";
-        private const float CaveWorldWidth = 8000f;
-        private const float Stage2WorldWidth = 12000f;
-        private const float DungeonGroundOffsetY = 30f;
+        private const float DungeonGroundOffsetY = 60f;
         private const float CameraDeadZoneWidthRatio = 0.40f;
         private Entity _player = null!;
         private Entity? _enemy;
@@ -668,24 +664,19 @@ namespace BattleGame.Client.Game
             return Math.Max(0.05f, fallbackDuration);
         }
 
-        private bool IsCaveMap => string.Equals(_mapId, CaveMapId, StringComparison.OrdinalIgnoreCase);
-        private bool IsStage2Map => string.Equals(_mapId, Stage2MapId, StringComparison.OrdinalIgnoreCase);
-        private bool IsDungeonParallaxMap => IsCaveMap || IsStage2Map;
+        private bool IsDungeonParallaxMap => DungeonMapRegistry.IsDungeonMap(_mapId);
 
         private static float GetWorldWidth(string mapId, int formWidth)
-            => string.Equals(mapId, CaveMapId, StringComparison.OrdinalIgnoreCase)
-                ? CaveWorldWidth
-                : string.Equals(mapId, Stage2MapId, StringComparison.OrdinalIgnoreCase)
-                    ? Stage2WorldWidth
-                    : Math.Max(MinPlayableMapWidth, formWidth);
+            => DungeonMapRegistry.TryGet(mapId, out var dungeonMap)
+                ? dungeonMap.WorldWidth
+                : Math.Max(MinPlayableMapWidth, formWidth);
 
         private static float GetGroundY(string mapId, int formHeight)
             => formHeight - GroundBottomMargin +
                (IsDungeonParallaxMapId(mapId) ? DungeonGroundOffsetY : 0f);
 
         private static bool IsDungeonParallaxMapId(string mapId)
-            => string.Equals(mapId, CaveMapId, StringComparison.OrdinalIgnoreCase) ||
-               string.Equals(mapId, Stage2MapId, StringComparison.OrdinalIgnoreCase);
+            => DungeonMapRegistry.IsDungeonMap(mapId);
 
         private static string ResolveClientRoot()
         {
@@ -789,7 +780,7 @@ namespace BattleGame.Client.Game
 
         public void Draw(Graphics g)
         {
-            bool drawEnemyOverForeground = IsDungeonParallaxMap && _enemy != null;
+            bool drawEnemyHealthOverForeground = false;
 
             if (IsDungeonParallaxMap && _parallaxLayers.Count > 0)
             {
@@ -804,30 +795,12 @@ namespace BattleGame.Client.Game
             g.TranslateTransform(-_cameraX, 0f);
 
             _renderer.Draw(g, _player);
-            if (_enemy != null && !drawEnemyOverForeground)
+            if (_enemy != null)
             {
                 _renderer.Draw(g, _enemy);
             }
-            if (IsDungeonParallaxMap && _enemy != null && !drawEnemyOverForeground)
-            {
-                _renderer.DrawHealthBar(g, _enemy);
-            }
             _projectileSystem.Draw(g);
             DrawOnlineProjectiles(g);
-
-            // ===== DRAW BARRIERS =====
-            foreach (var barrier in _playerCombatSystem.GetBarriers())
-            {
-                _barrierRenderer.Draw(g, barrier);
-            }
-            if (_enemy != null)
-            {
-                foreach (var barrier in _enemyCombatSystem.GetBarriers())
-                {
-                    _barrierRenderer.Draw(g, barrier);
-                }
-            }
-            DrawOnlineEffects(g);
 
             g.Restore(state);
 
@@ -837,13 +810,34 @@ namespace BattleGame.Client.Game
                 DrawLayerObjects(g, _foregroundLayer);
             }
 
-            if (drawEnemyOverForeground && _enemy != null)
+            var effectState = g.Save();
+            g.TranslateTransform(-_cameraX, 0f);
+            DrawBarrierEffects(g);
+            DrawOnlineEffects(g);
+            g.Restore(effectState);
+
+            if (drawEnemyHealthOverForeground && _enemy != null)
             {
                 var enemyState = g.Save();
                 g.TranslateTransform(-_cameraX, 0f);
-                _renderer.Draw(g, _enemy);
                 _renderer.DrawHealthBar(g, _enemy);
                 g.Restore(enemyState);
+            }
+        }
+
+        private void DrawBarrierEffects(Graphics g)
+        {
+            foreach (var barrier in _playerCombatSystem.GetBarriers())
+            {
+                _barrierRenderer.Draw(g, barrier);
+            }
+
+            if (_enemy == null)
+                return;
+
+            foreach (var barrier in _enemyCombatSystem.GetBarriers())
+            {
+                _barrierRenderer.Draw(g, barrier);
             }
         }
 
@@ -862,7 +856,7 @@ namespace BattleGame.Client.Game
             => new()
             {
                 Scale = render.Scale,
-                OffsetX = -render.OffsetX,
+                OffsetX = render.OffsetX,
                 OffsetY = render.OffsetY,
                 UseSpriteSize = render.UseSpriteSize,
                 AlignY = render.AlignY,
@@ -1227,7 +1221,8 @@ namespace BattleGame.Client.Game
             int baseHeight = render.UseSpriteSize ? frame.Height : defaultSize;
             int drawWidth = Math.Max(1, (int)MathF.Round(baseWidth * render.Scale));
             int drawHeight = Math.Max(1, (int)MathF.Round(baseHeight * render.Scale));
-            int x = (int)MathF.Round(centerX + render.OffsetX - drawWidth / 2f);
+            float directionalOffsetX = facingRight ? render.OffsetX : -render.OffsetX;
+            int x = (int)MathF.Round(centerX + directionalOffsetX - drawWidth / 2f);
             int y = ResolveEffectDrawY(centerY, drawHeight, render);
 
             var state = g.Save();
@@ -1342,15 +1337,9 @@ namespace BattleGame.Client.Game
             _foregroundLayer = null;
             ClearMapObjects();
 
-            if (string.Equals(mapId, CaveMapId, StringComparison.OrdinalIgnoreCase))
+            if (DungeonMapRegistry.TryGet(mapId, out var dungeonMap))
             {
-                LoadCaveParallax();
-                return;
-            }
-
-            if (string.Equals(mapId, Stage2MapId, StringComparison.OrdinalIgnoreCase))
-            {
-                LoadStage2Parallax();
+                LoadDungeonParallax(dungeonMap);
                 return;
             }
 
@@ -1390,14 +1379,12 @@ namespace BattleGame.Client.Game
         private void InitializeDungeonRun(string mapId)
         {
             _dungeonRun = null;
-            if (!string.Equals(mapId, CaveMapId, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(mapId, Stage2MapId, StringComparison.OrdinalIgnoreCase))
+            if (!DungeonMapRegistry.TryGet(mapId, out var dungeonMap))
             {
                 return;
             }
 
-            string mapFolder = string.Equals(mapId, CaveMapId, StringComparison.OrdinalIgnoreCase) ? "map1" : "map2";
-            DungeonDefinition? definition = DungeonContentLoader.TryLoadDefinition(_clientRoot, mapFolder);
+            DungeonDefinition? definition = DungeonContentLoader.TryLoadDefinition(_clientRoot, dungeonMap.FolderName);
             if (definition == null)
                 return;
 
@@ -1483,45 +1470,10 @@ namespace BattleGame.Client.Game
             _activeDungeonSpawnDefeated = false;
         }
 
-        private void LoadCaveParallax()
+        private void LoadDungeonParallax(DungeonMapDefinition dungeonMap)
         {
-            LoadDungeonParallax(
-                folderName: "map1",
-                mapLabel: "cave",
-                previewFileName: "background",
-                layers: new (string FileName, float Speed)[]
-                {
-                    ("plan5.png", 0.10f),
-                    ("plan4.png", 0.20f),
-                    ("plan3.png", 0.23f),
-                    ("plan2.png", 0.38f)
-                },
-                foregroundFileName: "plan1.png");
-        }
-
-        private void LoadStage2Parallax()
-        {
-            LoadDungeonParallax(
-                folderName: "map2",
-                mapLabel: "stage2",
-                previewFileName: "preview.png",
-                layers: new (string FileName, float Speed)[]
-                {
-                    ("back.png", 0.00f),
-                    ("middle.png", 0.35f)
-                },
-                foregroundFileName: "front.png");
-        }
-
-        private void LoadDungeonParallax(
-            string folderName,
-            string mapLabel,
-            string previewFileName,
-            IReadOnlyList<(string FileName, float Speed)> layers,
-            string? foregroundFileName)
-        {
-            string mapPath = Path.Combine(_clientRoot, "Assets", "dungeon", folderName);
-            string previewPath = Path.Combine(mapPath, previewFileName);
+            string mapPath = Path.Combine(_clientRoot, "Assets", "dungeon", dungeonMap.FolderName);
+            string previewPath = Path.Combine(mapPath, dungeonMap.PreviewFileName);
             if (File.Exists(previewPath))
             {
                 try
@@ -1530,22 +1482,22 @@ namespace BattleGame.Client.Game
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"[GameEngine] Error loading {mapLabel} preview {previewPath}: {ex.Message}");
+                    Console.WriteLine($"[GameEngine] Error loading {dungeonMap.MapId} preview {previewPath}: {ex.Message}");
                 }
             }
 
-            foreach (var layer in layers)
+            foreach (var layer in dungeonMap.Layers)
             {
-                LoadParallaxLayer(mapPath, mapLabel, layer.FileName, layer.FileName, layer.Speed, _parallaxLayers);
+                LoadParallaxLayer(mapPath, dungeonMap.MapId, layer.FileName, layer.FileName, layer.Speed, _parallaxLayers);
             }
 
-            if (!string.IsNullOrWhiteSpace(foregroundFileName))
+            if (!string.IsNullOrWhiteSpace(dungeonMap.ForegroundFileName))
             {
-                LoadParallaxLayer(mapPath, mapLabel, "foreground", foregroundFileName, 1.00f, null);
+                LoadParallaxLayer(mapPath, dungeonMap.MapId, "foreground", dungeonMap.ForegroundFileName, 1.00f, null);
             }
 
             LoadMapObjects(mapPath);
-            Console.WriteLine($"[GameEngine] Loaded {mapLabel} parallax layers: {_parallaxLayers.Count} from {mapPath}");
+            Console.WriteLine($"[GameEngine] Loaded {dungeonMap.MapId} parallax layers: {_parallaxLayers.Count} from {mapPath}");
         }
 
         private void LoadParallaxLayer(

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using BattleGame.Client.Config;
 using BattleGame.Client.Managers;
 using BattleGame.Client.Game;
+using BattleGame.Client.Game.Dungeon;
 using BattleGame.Client.Game.Core.Components;
 using BattleGame.Shared.Packets;
 using BattleGame.Shared.Models;
@@ -26,6 +27,8 @@ namespace BattleGame.Client.Forms
         private static readonly Size DefaultGameClientSize = new(1280, 720);
         private const int HudMargin = 31;
         private const int HudPanelWidth = 281;
+        private const int BossHudPanelWidth = HudPanelWidth * 2;
+        private const int BossHudPanelHeight = 34;
         private const int HudPortraitWidth = 93;
         private const int StatusPanelWidth = 304;
 
@@ -85,6 +88,9 @@ namespace BattleGame.Client.Forms
         private readonly Dictionary<Panel, HudBarState> _hudBars = new();
         private Label? _skill1CooldownLabel;
         private Label? _skill2CooldownLabel;
+        private readonly Form? _returnFormOnExit;
+        private bool _destinationOpened;
+        private string _currentBossHudCharacterId = string.Empty;
 
         public GameForm(
             string characterId,
@@ -94,7 +100,8 @@ namespace BattleGame.Client.Forms
             int localPlayerId = 0,
             string? localUsername = null,
             string? enemyUsername = null,
-            int? roomId = null)
+            int? roomId = null,
+            Form? returnFormOnExit = null)
         {
             try
             {
@@ -124,6 +131,7 @@ namespace BattleGame.Client.Forms
                 _localUsername = string.IsNullOrWhiteSpace(localUsername) ? null : localUsername.Trim();
                 _enemyUsername = string.IsNullOrWhiteSpace(enemyUsername) ? null : enemyUsername.Trim();
                 _roomId = roomId is > 0 ? roomId : null;
+                _returnFormOnExit = returnFormOnExit;
                 _mirrorView = false;
                 _engine = new GameEngine(characterId, mapId, this.ClientSize.Width, this.ClientSize.Height, enemyCharacterId);
 
@@ -186,8 +194,9 @@ namespace BattleGame.Client.Forms
             // Round/time are rendered directly into backbuffer to avoid WinForms control flicker.
             panelStatus.Visible = false;
             btnExit.Parent = this;
-            btnExit.Visible = true;
-            btnExit.BringToFront();
+            btnExit.Visible = !_isDungeonMap;
+            if (btnExit.Visible)
+                btnExit.BringToFront();
 
             UpdateCharacterHeaders();
             ConfigureHudValueLabels();
@@ -248,17 +257,17 @@ namespace BattleGame.Client.Forms
         }
 
         private static bool IsDungeonMap(string mapId)
-            => string.Equals(mapId, "cave", StringComparison.OrdinalIgnoreCase)
-               || string.Equals(mapId, "stage2", StringComparison.OrdinalIgnoreCase);
+            => DungeonMapRegistry.IsDungeonMap(mapId);
 
         private void ApplyDungeonHudVisibility()
         {
             if (!_isDungeonMap)
                 return;
 
-            label4.Visible = false;
+            bool showBossHud = _engine?.Enemy != null;
+            label4.Visible = showBossHud;
             pictureBox2.Visible = false;
-            panel3.Visible = false;
+            panel3.Visible = showBossHud;
             panel1.Visible = false;
         }
 
@@ -469,7 +478,8 @@ namespace BattleGame.Client.Forms
             if (_backGraphics == null) return;
             _backGraphics.Clear(Color.Black);
             _engine.Draw(_backGraphics);
-            DrawRoundOverlay(_backGraphics);
+            if (!_isDungeonMap)
+                DrawRoundOverlay(_backGraphics);
         }
 
         private void DrawRoundOverlay(Graphics g)
@@ -775,7 +785,12 @@ namespace BattleGame.Client.Forms
                 IsProtecting = ch.IsProtecting,
                 IsAttacking = ch.IsAttacking,
                 IsUsingSkill = ch.IsUsingSkill,
+                CurrentSkillSlot = ch.CurrentSkillSlot,
+                CurrentSkillAnimation = ch.CurrentSkillAnim,
+                IsDashing = ch.IsDashing,
                 IsHurt = ch.IsHurt,
+                IsStunned = ch.IsStunned,
+                StunTimer = ch.StunTimer,
                 IsDead = ch.IsDead,
                 CurrentAnimation = sp.CurrentAnimation,
                 CurrentFrame = sp.CurrentFrame
@@ -862,8 +877,8 @@ namespace BattleGame.Client.Forms
 
             await LeaveRoomIfNeededAsync();
 
-            var joinRoom = new JoinRoom();
-            joinRoom.Show();
+            ShowExitDestination();
+
             Close();
         }
 
@@ -895,6 +910,7 @@ namespace BattleGame.Client.Forms
 
             var gameOverForm = new GameOverForm();
             gameOverForm.Show();
+            _destinationOpened = true;
             Close();
         }
 
@@ -910,6 +926,7 @@ namespace BattleGame.Client.Forms
 
             var victoryForm = new VictoryForm();
             victoryForm.Show();
+            _destinationOpened = true;
             Close();
         }
 
@@ -965,7 +982,12 @@ namespace BattleGame.Client.Forms
             enemyCh.IsProtecting = remote.IsProtecting;
             enemyCh.IsAttacking = remote.IsAttacking;
             enemyCh.IsUsingSkill = remote.IsUsingSkill;
+            enemyCh.CurrentSkillSlot = remote.CurrentSkillSlot;
+            enemyCh.CurrentSkillAnim = remote.CurrentSkillAnimation;
+            enemyCh.IsDashing = remote.IsDashing;
             enemyCh.IsHurt = remote.IsHurt;
+            enemyCh.IsStunned = remote.IsStunned;
+            enemyCh.StunTimer = remote.StunTimer;
             enemyCh.IsDead = remote.IsDead;
 
             if (!string.IsNullOrWhiteSpace(remote.CurrentAnimation))
@@ -1017,6 +1039,7 @@ namespace BattleGame.Client.Forms
                 panel3,
                 panel1,
                 !localOnLeft);
+            LayoutDungeonBossHud();
             ApplyDungeonHudVisibility();
             CenterHudValueLabel(panelHPBack, lblHP);
             CenterHudValueLabel(panelManaBack, lblMana);
@@ -1032,7 +1055,9 @@ namespace BattleGame.Client.Forms
             btnExit.Location = new Point(
                 panelStatus.Left + (panelStatus.Width - btnExit.Width) / 2,
                 panelStatus.Top + 88);
-            btnExit.BringToFront();
+            btnExit.Visible = !_isDungeonMap;
+            if (btnExit.Visible)
+                btnExit.BringToFront();
         }
 
         private void LayoutHudSide(PictureBox portrait, Label nameLabel, Panel hpPanel, Panel manaPanel, bool isLeft)
@@ -1051,6 +1076,20 @@ namespace BattleGame.Client.Forms
                 nameY);
             hpPanel.Location = new Point(hudX, 95);
             manaPanel.Location = new Point(hudX, 132);
+        }
+
+        private void LayoutDungeonBossHud()
+        {
+            if (!_isDungeonMap)
+                return;
+
+            int panelX = Math.Max(HudMargin, ClientSize.Width - HudMargin - BossHudPanelWidth);
+            label4.AutoSize = false;
+            label4.TextAlign = ContentAlignment.MiddleRight;
+            label4.Location = new Point(panelX, 18);
+            label4.Size = new Size(BossHudPanelWidth, 32);
+            panel3.Location = new Point(panelX, 56);
+            panel3.Size = new Size(BossHudPanelWidth, BossHudPanelHeight);
         }
 
         private void LayoutSkillCooldownLabels()
@@ -1089,10 +1128,43 @@ namespace BattleGame.Client.Forms
                     SetHudBar(panel3, panel4, label6, enemyChar.Hp, enemyChar.BaseStats.Hp);
                     SetHudBar(panel1, panel2, label5, enemyChar.Mana, enemyChar.BaseStats.Mana);
                 }
+                else if (enemyChar != null && _isDungeonMap)
+                {
+                    UpdateDungeonBossHud(enemyChar);
+                    SetHudBar(panel3, panel4, label6, enemyChar.Hp, enemyChar.BaseStats.Hp);
+                }
+
+                ApplyDungeonHudVisibility();
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"[UpdateUIBars] {ex}");
+            }
+        }
+
+        private void UpdateDungeonBossHud(CharacterComponent boss)
+        {
+            if (!string.Equals(_currentBossHudCharacterId, boss.CharacterId, StringComparison.OrdinalIgnoreCase))
+            {
+                _currentBossHudCharacterId = boss.CharacterId;
+                label4.Text = ResolveCharacterDisplayName(boss.CharacterId);
+            }
+
+            label4.BringToFront();
+            panel3.BringToFront();
+        }
+
+        private static string ResolveCharacterDisplayName(string characterId)
+        {
+            try
+            {
+                string contentRoot = ClientContentRoot.Resolve(AppDomain.CurrentDomain.BaseDirectory);
+                string configPath = CharacterDefinitionLoader.ResolveConfigPath(contentRoot, characterId);
+                return CharacterDefinitionLoader.Load(configPath).Selection.DisplayName;
+            }
+            catch
+            {
+                return CharacterCatalog.ToDisplayName(characterId);
             }
         }
 
@@ -1179,6 +1251,13 @@ namespace BattleGame.Client.Forms
             _backBuffer?.Dispose();
 
             InputManager.Clear();
+
+            if (!_destinationOpened && _returnFormOnExit != null && !_returnFormOnExit.IsDisposed)
+            {
+                _returnFormOnExit.Show();
+                _destinationOpened = true;
+            }
+
             base.OnFormClosed(e);
 
         }
@@ -1230,9 +1309,24 @@ namespace BattleGame.Client.Forms
                 Debug.WriteLine($"[btnExit_Click] {ex}");
             }
 
-            var joinRoom = new JoinRoom();
-            joinRoom.Show();
+            ShowExitDestination();
             Close();
+        }
+
+        private void ShowExitDestination()
+        {
+            if (_destinationOpened)
+                return;
+
+            if (_returnFormOnExit != null && !_returnFormOnExit.IsDisposed)
+                _returnFormOnExit.Show();
+            else
+            {
+                var joinRoom = new JoinRoom();
+                joinRoom.Show();
+            }
+
+            _destinationOpened = true;
         }
 
         private async Task SendDisconnectIfNeededAsync()

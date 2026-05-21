@@ -448,7 +448,7 @@ public class BattleSimulation
                 attacker.Stats.AttackEffects,
                 attacker.TriggeredAttackEffects,
                 attacker.TriggeredAttackEffectFrames,
-                fallbackToBaseAttack: true);
+                fallbackToBaseAttack: attacker.Stats.AttackEffects.Count == 0);
             return;
         }
 
@@ -484,6 +484,12 @@ public class BattleSimulation
         for (int i = 0; i < effects.Count; i++)
         {
             var effect = effects[i];
+            if (!string.IsNullOrWhiteSpace(effect.Animation) &&
+                !string.Equals(effect.Animation, attacker.CurrentAnimation, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
             if (!ShouldTrigger(attacker, i, effect, triggered, triggeredFrames, out string? frameMarker))
                 continue;
 
@@ -581,8 +587,8 @@ public class BattleSimulation
         {
             ProjectileId = _nextProjectileId++,
             OwnerPlayerId = owner.PlayerId,
-            X = owner.X + (owner.FacingRight ? 30f : -80f),
-            Y = owner.Y - 50f,
+            X = owner.X + (owner.FacingRight ? owner.Stats.AttackProjectileSpawnOffsetX : -owner.Stats.AttackProjectileSpawnOffsetX),
+            Y = owner.Y + owner.Stats.AttackProjectileSpawnOffsetY,
             VelocityX = direction * owner.Stats.AttackProjectileSpeed,
             VelocityY = 0f,
             Damage = owner.Stats.Atk,
@@ -593,16 +599,24 @@ public class BattleSimulation
             FacingRight = owner.FacingRight,
             RenderOffsetX = 0f,
             RenderOffsetY = 0f,
-            Render = new EffectRenderData()
+            Render = new EffectRenderData
+            {
+                Scale = owner.Stats.AttackProjectileScale,
+                UseSpriteSize = true
+            }
         });
     }
 
     private void ApplyEffect(PlayerBattleState attacker, PlayerBattleState target, EffectData effect)
     {
-        if (IsBlockedByBarrier(attacker, target, effect.Type) || IsBlockedByProtection(attacker, target))
+        string effectType = (effect.Type ?? "").Trim().ToLowerInvariant();
+        if (IsBlockedByBarrier(attacker, target, effectType))
             return;
 
-        switch ((effect.Type ?? "").Trim().ToLowerInvariant())
+        if (effectType != "barrier" && IsBlockedByProtection(attacker, target))
+            return;
+
+        switch (effectType)
         {
             case "melee":
                 if (IsMeleeEffectHit(attacker, target, effect))
@@ -632,7 +646,7 @@ public class BattleSimulation
             Damage = effect.Damage,
             Stun = effect.Stun,
             Range = effect.Range,
-            Lifetime = ProjectileLifetime,
+            Lifetime = effect.Duration > 0f ? effect.Duration : ProjectileLifetime,
             AnimationKey = effect.ProjectileAnim,
             FacingRight = owner.FacingRight,
             RenderOffsetX = effect.Render.OffsetX,
@@ -680,7 +694,7 @@ public class BattleSimulation
             RemainingTime = effect.Duration,
             Duration = effect.Duration,
             FacingRight = ResolveEffectFacing(owner, target, effect),
-            HitFrames = effect.Frames?.ToList() ?? new List<int>(),
+            HitFrames = effect.HitFrames?.ToList() ?? effect.Frames?.ToList() ?? new List<int>(),
             Render = effect.Render
         });
     }
@@ -733,7 +747,9 @@ public class BattleSimulation
                 && ShouldApplyEffectDamage(effect)
                 && IntersectsRectangle(target, effect.X, effect.Y, effect.CollisionWidth, effect.CollisionHeight))
             {
-                ApplyDamage(target, effect.Damage, effect.Stun);
+                if (!IsBlockedByProtection(owner, target))
+                    ApplyDamage(target, effect.Damage, effect.Stun);
+
                 MarkEffectDamageApplied(effect);
             }
         }
@@ -905,6 +921,9 @@ public class BattleSimulation
 
     private static void ApplyDamage(PlayerBattleState target, int rawDamage, float stun)
     {
+        if (target.IsDead || target.IsInvulnerable)
+            return;
+
         int damage = rawDamage <= 0 ? 0 : Math.Max(1, rawDamage - target.Stats.Def);
         if (damage <= 0 && stun <= 0f)
             return;

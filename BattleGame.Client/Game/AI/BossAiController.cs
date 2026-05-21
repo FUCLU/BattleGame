@@ -10,7 +10,10 @@ public sealed class BossAiController
     private readonly BossAiProfile _profile;
     private float _actionCooldown;
     private float _skill1Cooldown;
+    private float _skill2Cooldown;
     private float _dashCooldown;
+    private int _dashComboNextSkill;
+    private bool _wasBusy;
 
     public BossAiController(BossAiProfile profile)
     {
@@ -27,8 +30,8 @@ public sealed class BossAiController
         if (bossCh.IsDead || targetCh.IsDead)
             return;
 
-        _actionCooldown = Math.Max(0f, _actionCooldown - dt);
         _skill1Cooldown = Math.Max(0f, _skill1Cooldown - dt);
+        _skill2Cooldown = Math.Max(0f, _skill2Cooldown - dt);
         _dashCooldown = Math.Max(0f, _dashCooldown - dt);
 
         float dx = targetMv.X - bossMv.X;
@@ -37,16 +40,45 @@ public sealed class BossAiController
 
         if (bossCh.IsBusy)
         {
+            _wasBusy = true;
             bossMv.VelocityX = 0f;
             return;
         }
 
-        float engageRange = bossCh.BaseStats.AttackRange + _profile.EngageRangeBonus;
-        if (absDx > engageRange)
+        if (_wasBusy)
         {
-            TryDashTowardTarget(bossCh, bossMv, absDx);
-            if (bossCh.IsDashing)
+            _wasBusy = false;
+        }
+        else
+        {
+            _actionCooldown = Math.Max(0f, _actionCooldown - dt);
+        }
+
+        float stopChaseRange = ResolveStopChaseRange(bossCh);
+        float basicAttackRange = ResolveBasicAttackRange(bossCh, stopChaseRange);
+
+        if (TryContinueDashCombo(boss, bossMv, combat, bossCh, absDx))
+            return;
+
+        if (TrySkill(boss, bossMv, combat, bossCh, absDx, slot: 2, _profile.Skill2Range, ref _skill2Cooldown, _profile.Skill2Cooldown))
+            return;
+
+        if (TrySkill(boss, bossMv, combat, bossCh, absDx, slot: 1, _profile.Skill1Range, ref _skill1Cooldown, _profile.Skill1Cooldown))
+            return;
+
+        if (absDx <= basicAttackRange && TryBasicAttack(boss, bossMv, combat))
+            return;
+
+        if (absDx > stopChaseRange || _actionCooldown > 0f)
+        {
+            bool canQueueDashCombo = CanQueueDashCombo(bossCh, absDx);
+            if (TryDashTowardTarget(bossCh, bossMv, absDx, stopChaseRange))
+            {
+                if (canQueueDashCombo)
+                    _dashComboNextSkill = _profile.DashComboFirstSkill;
+
                 return;
+            }
 
             float dir = dx >= 0f ? 1f : -1f;
             bossMv.VelocityX = dir * bossMv.Speed * _profile.ChaseSpeedMultiplier;
@@ -55,39 +87,143 @@ public sealed class BossAiController
 
         bossMv.VelocityX = 0f;
 
-        if (_skill1Cooldown <= 0f && bossCh.Skill1 != null && absDx <= _profile.Skill1Range)
-        {
-            combat.UseSkill(boss, 1);
-            _skill1Cooldown = _profile.Skill1Cooldown;
-            _actionCooldown = _profile.PostSkillActionCooldown;
-            return;
-        }
-
-        if (_actionCooldown <= 0f)
-        {
-            combat.Attack(boss);
-            _actionCooldown = _profile.BasicAttackCooldown;
-        }
+        TryBasicAttack(boss, bossMv, combat);
     }
 
-    private void TryDashTowardTarget(CharacterComponent bossCh, MovementComponent bossMv, float distance)
+    private bool TryContinueDashCombo(Entity boss, MovementComponent bossMv, CombatSystem combat, CharacterComponent bossCh, float distance)
+    {
+        if (_dashComboNextSkill == 0)
+            return false;
+
+        int slot = _dashComboNextSkill;
+        float range = slot == 2 ? _profile.Skill2Range : _profile.Skill1Range;
+        float cooldownDuration = slot == 2 ? _profile.Skill2Cooldown : _profile.Skill1Cooldown;
+        bool used = slot == 2
+            ? TrySkill(boss, bossMv, combat, bossCh, distance, slot, range, ref _skill2Cooldown, cooldownDuration)
+            : TrySkill(boss, bossMv, combat, bossCh, distance, slot, range, ref _skill1Cooldown, cooldownDuration);
+
+        if (!used)
+        {
+            if (distance <= range)
+                _dashComboNextSkill = 0;
+
+            return false;
+        }
+
+        _dashComboNextSkill = slot == _profile.DashComboFirstSkill
+            ? _profile.DashComboSecondSkill
+            : 0;
+        return true;
+    }
+
+    private bool TryDashTowardTarget(CharacterComponent bossCh, MovementComponent bossMv, float distance, float stopChaseRange)
     {
         if (!_profile.CanDash || _dashCooldown > 0f || distance < _profile.DashMinRange)
-            return;
+            return false;
+
+        if (_profile.DashMaxRange > 0f && distance > _profile.DashMaxRange)
+            return false;
 
         string dashAnimation = ResolveDashAnimation(bossCh);
         if (string.IsNullOrWhiteSpace(dashAnimation))
-            return;
+            return false;
 
-        float duration = bossCh.GetAnimationDuration(dashAnimation, _profile.DashDuration);
+        float dashStopRange = _profile.DashStopRange > 0f
+            ? _profile.DashStopRange
+            : stopChaseRange;
+        float dashSpeed = Math.Max(1f, bossMv.Speed * _profile.DashSpeedMultiplier);
+        float smartDuration = Math.Max(0.05f, (distance - dashStopRange) / dashSpeed);
+        float dashDuration = Math.Clamp(smartDuration, 0.05f, _profile.DashDuration);
+        float duration = bossCh.GetAnimationDuration(dashAnimation, dashDuration);
         bossCh.IsDashing = true;
-        bossCh.DashTimer = _profile.DashDuration;
-        bossCh.DashDuration = _profile.DashDuration;
+        bossCh.DashTimer = dashDuration;
+        bossCh.DashDuration = dashDuration;
         bossCh.ActionTimer = duration;
         bossCh.ActionDuration = duration;
         bossCh.DashSpeedMultiplier = _profile.DashSpeedMultiplier;
         bossMv.VelocityX = (bossMv.FacingRight ? 1f : -1f) * bossMv.Speed * bossCh.DashSpeedMultiplier;
         _dashCooldown = _profile.DashCooldown;
+        return true;
+    }
+
+    private bool CanQueueDashCombo(CharacterComponent bossCh, float distance)
+    {
+        if (!_profile.DashComboOnDash)
+            return false;
+
+        return IsSkillReady(bossCh, _profile.DashComboFirstSkill, distance)
+            && IsSkillReady(bossCh, _profile.DashComboSecondSkill, distance);
+    }
+
+    private bool IsSkillReady(CharacterComponent bossCh, int slot, float distance)
+    {
+        return slot switch
+        {
+            1 => bossCh.Skill1 != null && bossCh.Skill1Cooldown <= 0f && _skill1Cooldown <= 0f && distance <= _profile.DashMaxRange,
+            2 => bossCh.Skill2 != null && bossCh.Skill2Cooldown <= 0f && _skill2Cooldown <= 0f && distance <= _profile.DashMaxRange,
+            _ => false
+        };
+    }
+
+    private bool TryBasicAttack(Entity boss, MovementComponent bossMv, CombatSystem combat)
+    {
+        if (_actionCooldown > 0f)
+            return false;
+
+        bossMv.VelocityX = 0f;
+        combat.Attack(boss);
+        _actionCooldown = _profile.BasicAttackCooldown;
+        _wasBusy = true;
+        return true;
+    }
+
+    private bool TrySkill(
+        Entity boss,
+        MovementComponent bossMv,
+        CombatSystem combat,
+        CharacterComponent bossCh,
+        float distance,
+        int slot,
+        float range,
+        ref float cooldown,
+        float cooldownDuration)
+    {
+        if (range <= 0f || cooldown > 0f || distance > range)
+            return false;
+
+        if (slot == 1 && bossCh.Skill1 == null)
+            return false;
+
+        if (slot == 2 && bossCh.Skill2 == null)
+            return false;
+
+        bossMv.VelocityX = 0f;
+        if (!combat.UseSkill(boss, slot))
+            return false;
+
+        cooldown = cooldownDuration;
+        _actionCooldown = _profile.PostSkillActionCooldown;
+        _wasBusy = true;
+        return true;
+    }
+
+    private float ResolveStopChaseRange(CharacterComponent bossCh)
+    {
+        if (_profile.StopChaseRange > 0f)
+            return _profile.StopChaseRange;
+
+        return bossCh.BaseStats.AttackRange + _profile.EngageRangeBonus;
+    }
+
+    private float ResolveBasicAttackRange(CharacterComponent bossCh, float stopChaseRange)
+    {
+        if (_profile.BasicAttackRange > 0f)
+            return _profile.BasicAttackRange;
+
+        if (_profile.ChaseAttackRange > 0f)
+            return _profile.ChaseAttackRange;
+
+        return Math.Max(stopChaseRange, bossCh.BaseStats.AttackRange);
     }
 
     private static string ResolveDashAnimation(CharacterComponent ch)

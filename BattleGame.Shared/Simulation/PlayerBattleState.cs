@@ -47,4 +47,7 @@ public class PlayerBattleState
     public int CurrentActionTick { get; set; }
 
     public bool IsBusy => IsAttacking || IsUsingSkill || IsDashing || IsStunned || IsDead;
+    public bool IsInvulnerable => IsUsingSkill
+        && ((CurrentSkillSlot == 1 && Stats.Skill1?.InvulnerableWhileCasting == true)
+            || (CurrentSkillSlot == 2 && Stats.Skill2?.InvulnerableWhileCasting == true));
 }

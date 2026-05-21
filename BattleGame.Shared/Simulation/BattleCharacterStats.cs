@@ -24,6 +24,9 @@ public class BattleCharacterStats
     public int AttackAnimCount { get; set; } = 1;
     public string? AttackProjectile { get; set; }
     public float AttackProjectileSpeed { get; set; }
+    public float AttackProjectileSpawnOffsetX { get; set; } = 30f;
+    public float AttackProjectileSpawnOffsetY { get; set; } = -50f;
+    public float AttackProjectileScale { get; set; } = 1f;
     public bool ProtectionBlocksAllDirections { get; set; }
     public List<EffectData> AttackEffects { get; set; } = new();
     public SkillData? Skill1 { get; set; }

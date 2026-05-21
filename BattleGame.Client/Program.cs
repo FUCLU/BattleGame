@@ -29,7 +29,7 @@ namespace BattleGame.Client
                 // return;  
             }
 
-            Application.Run(new LoginForm());
+            Application.Run(new DungeonMode());
         }
     }
 }
