@@ -24,6 +24,7 @@ namespace BattleGame.Client.Game.Gameplay
                 Damage = effect.Damage,
                 StunDuration = effect.Stun,
                 Range = effect.Range,
+                Lifetime = effect.Duration > 0f ? effect.Duration : 3f,
                 Owner = caster,
                 AnimationKey = effect.ProjectileAnim,
                 Render = effect.Render
@@ -58,7 +59,14 @@ namespace BattleGame.Client.Game.Gameplay
             return (casterMv.FacingRight ? effect.Speed : -effect.Speed, 0f);
         }
 
-        public static Entity CreateAttackProjectile(Entity caster, string projectileAnim, int damage, float speed)
+        public static Entity CreateAttackProjectile(
+            Entity caster,
+            string projectileAnim,
+            int damage,
+            float speed,
+            float spawnOffsetX,
+            float spawnOffsetY,
+            float scale)
         {
             var mv = caster.Get<MovementComponent>();
 
@@ -66,15 +74,20 @@ namespace BattleGame.Client.Game.Gameplay
 
             e.Add(new ProjectileComponent
             {
-                X = mv.X + (mv.FacingRight ? 30 : -80),
-                Y = mv.Y - 50,
+                X = mv.X + (mv.FacingRight ? spawnOffsetX : -spawnOffsetX),
+                Y = mv.Y + spawnOffsetY,
                 VelocityX = mv.FacingRight ? speed : -speed,
                 VelocityY = 0,
                 Damage = damage,
                 StunDuration = 0,
                 Range = 45,  // nhỏ hơn để projectile bay ra thấy rõ trước khi va chạm
                 Owner = caster,
-                AnimationKey = projectileAnim
+                AnimationKey = projectileAnim,
+                Render = new EffectRenderData
+                {
+                    Scale = scale,
+                    UseSpriteSize = true
+                }
             });
 
             return e;

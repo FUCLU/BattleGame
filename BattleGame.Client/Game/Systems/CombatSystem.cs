@@ -148,7 +148,10 @@ namespace BattleGame.Client.Game.Systems
                             entity,
                             ch.BaseStats.AttackProjectile,
                             ch.BaseStats.Atk,
-                            ch.BaseStats.AttackProjectileSpeed
+                            ch.BaseStats.AttackProjectileSpeed,
+                            ch.BaseStats.AttackProjectileSpawnOffsetX,
+                            ch.BaseStats.AttackProjectileSpawnOffsetY,
+                            ch.BaseStats.AttackProjectileScale
                         );
                         _projectileSystem.Spawn(proj);
                         System.Diagnostics.Debug.WriteLine($"[CombatSystem] Attack projectile spawned: {ch.BaseStats.AttackProjectile}");
@@ -216,7 +219,9 @@ namespace BattleGame.Client.Game.Systems
 
                         if (frameIsConfigured && bc.LastDamageFrame != currentFrame)
                         {
-                            TakeDamage(_target, bc.Damage, 0f);
+                            if (!IsBlockedByProtection(bc.Owner, _target))
+                                TakeDamage(_target, bc.Damage, bc.Stun);
+
                             bc.LastDamageFrame = currentFrame;
                         }
                     }
@@ -280,6 +285,12 @@ namespace BattleGame.Client.Game.Systems
 
         private bool ShouldTriggerAttack(EffectData e, SpriteComponent sp, CharacterComponent ch, int idx)
         {
+            if (!string.IsNullOrWhiteSpace(e.Animation) &&
+                !string.Equals(e.Animation, ch.CurrentAttackAnim, StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
             var trigger = (e.Trigger ?? string.Empty).Trim().ToLowerInvariant();
 
             switch (trigger)
@@ -313,22 +324,22 @@ namespace BattleGame.Client.Game.Systems
             }
         }
 
-        public void UseSkill(Entity caster, int slot)
+        public bool UseSkill(Entity caster, int slot)
         {
             var ch = caster.Get<CharacterComponent>();
-            if (ch.IsBusy) return;
+            if (ch.IsBusy) return false;
 
             var skill = slot == 1 ? ch.Skill1 : ch.Skill2;
-            if (skill == null) return;
+            if (skill == null) return false;
 
             float cd = slot == 1 ? ch.Skill1Cooldown : ch.Skill2Cooldown;
-            if (cd > 0 || ch.Mana < skill.ManaCost) return;
+            if (cd > 0 || ch.Mana < skill.ManaCost) return false;
 
             string animation = string.IsNullOrWhiteSpace(skill.Animation)
                 ? $"Skill{slot}"
                 : skill.Animation;
             if (!ch.AvailableAnimations.Contains(animation))
-                return;
+                return false;
 
             float duration = ch.GetAnimationDuration(animation, 0.7f);
             ch.Mana -= skill.ManaCost;
@@ -348,6 +359,7 @@ namespace BattleGame.Client.Game.Systems
 
             if (slot == 1) ch.Skill1Cooldown = skill.Cooldown;
             else ch.Skill2Cooldown = skill.Cooldown;
+            return true;
         }
 
         private static string ResolveAttackAnimation(CharacterComponent ch)
@@ -416,7 +428,7 @@ namespace BattleGame.Client.Game.Systems
             else
                 ch.TriggeredEffects.Add(idx);
 
-            if (_target != null && (IsBlockedByBarrier(caster, _target, e.Type) || IsBlockedByProtection(caster, _target)))
+            if (_target != null && ShouldBlockImmediateEffect(caster, _target, e.Type))
                 return;
 
             // Thực thi
@@ -431,10 +443,21 @@ namespace BattleGame.Client.Game.Systems
             else
                 ch.TriggeredAttackEffects.Add(idx);
 
-            if (_target != null && (IsBlockedByBarrier(caster, _target, e.Type) || IsBlockedByProtection(caster, _target)))
+            if (_target != null && ShouldBlockImmediateEffect(caster, _target, e.Type))
                 return;
 
             ApplyEffect(caster, e);
+        }
+
+        private bool ShouldBlockImmediateEffect(Entity caster, Entity target, string effectType)
+        {
+            if (IsBlockedByBarrier(caster, target, effectType))
+                return true;
+
+            if (string.Equals(effectType, "barrier", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            return IsBlockedByProtection(caster, target);
         }
 
         private void ApplyEffect(Entity caster, EffectData e)
@@ -492,7 +515,8 @@ namespace BattleGame.Client.Game.Systems
                 X = spawn.X,
                 Y = spawn.Y,
                 Damage = e.Damage,
-                HitFrames = e.Frames ?? new List<int>(),
+                Stun = e.Stun,
+                HitFrames = e.HitFrames ?? e.Frames ?? new List<int>(),
                 CollisionWidth = e.CollisionWidth,
                 CollisionHeight = e.CollisionHeight,
                 BlockEnemyAttack = e.BlockEnemyAttack,

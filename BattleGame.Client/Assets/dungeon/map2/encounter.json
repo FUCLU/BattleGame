@@ -1,16 +1,16 @@
 {
-  "mapId": "stage2",
-  "portalX": 11300,
+  "mapId": "map2",
+  "portalX": 300,
   "waves": [],
   "bossWaves": [
     {
       "waveId": "wave_1",
       "spawns": [
         {
-          "prefabId": "boss_guardian",
+          "prefabId": "boss_agis",
           "count": 1,
-          "spawnXs": [11750],
-          "spawnY": 610
+          "spawnXs": [ 900 ],
+          "spawnY": 640
         }
       ]
     },
@@ -18,10 +18,10 @@
       "waveId": "wave_2",
       "spawns": [
         {
-          "prefabId": "boss_guardian",
+          "prefabId": "boss_zweilander",
           "count": 1,
           "spawnXs": [11850],
-          "spawnY": 610
+          "spawnY": 640
         }
       ]
     }

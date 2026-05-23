@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
+using BattleGame.Shared.Simulation;
 
 namespace BattleGame.Shared.Packets
 {
@@ -19,10 +20,17 @@ namespace BattleGame.Shared.Packets
         public bool IsProtecting { get; set; }
         public bool IsAttacking { get; set; }
         public bool IsUsingSkill { get; set; }
+        public int CurrentSkillSlot { get; set; }
+        public string CurrentSkillAnimation { get; set; } = "";
+        public bool IsDashing { get; set; }
         public bool IsHurt { get; set; }
+        public bool IsStunned { get; set; }
+        public float StunTimer { get; set; }
         public bool IsDead { get; set; }
         public string CurrentAnimation { get; set; } = "Idle";
         public int CurrentFrame { get; set; }
+        public List<ProjectileState> Projectiles { get; set; } = new();
+        public List<EffectState> Effects { get; set; } = new();
 
         public GameStatePacket() : base(PacketType.GameState)
         {

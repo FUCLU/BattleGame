@@ -27,9 +27,9 @@ namespace BattleGame.Client.Forms
 
         private void btnDungeon_Click(object sender, EventArgs e)
         {
-            DungeonMode dungeonMode = new DungeonMode();
+            DungeonMode dungeonMode = new DungeonMode(this);
+            Hide();
             dungeonMode.Show();
-            this.Close();
         }
 
         private void button1_Click(object sender, EventArgs e)

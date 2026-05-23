@@ -1,5 +1,5 @@
 {
-  "mapId": "cave",
+  "mapId": "map1",
   "portalX": 7700,
   "waves": [],
   "bossWaves": [
@@ -21,7 +21,7 @@
           "prefabId": "boss_guardian",
           "count": 1,
           "spawnXs": [8250],
-          "spawnY": 610
+          "spawnY": 640
         }
       ]
     }

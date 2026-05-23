@@ -64,7 +64,8 @@ public class BarrierRenderer
         int drawWidth = (int)MathF.Round(baseWidth * bc.Render.Scale);
         int drawHeight = (int)MathF.Round(baseHeight * bc.Render.Scale);
 
-        int x = (int)MathF.Round(bc.X + bc.Render.OffsetX - drawWidth / 2f);
+        float directionalOffsetX = bc.FacingRight ? bc.Render.OffsetX : -bc.Render.OffsetX;
+        int x = (int)MathF.Round(bc.X + directionalOffsetX - drawWidth / 2f);
         int y = ResolveDrawY(bc.Y, drawHeight, bc.Render);
         var state = g.Save();
 

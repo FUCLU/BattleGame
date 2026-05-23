@@ -1,4 +1,4 @@
-﻿namespace BattleGame.Client.Forms
+namespace BattleGame.Client.Forms
 {
     partial class DungeonMode
     {
@@ -32,7 +32,9 @@
             btnBack = new Button();
             btnStage1 = new Button();
             btnStage2 = new Button();
-            label1 = new Label();
+            btnSelectCharacter = new Button();
+            lblSelectedCharacter = new Label();
+            label2 = new Label();
             SuspendLayout();
             // 
             // btnBack
@@ -43,7 +45,7 @@
             btnBack.FlatAppearance.BorderSize = 0;
             btnBack.FlatStyle = FlatStyle.Flat;
             btnBack.ForeColor = Color.RosyBrown;
-            btnBack.Location = new Point(681, 400);
+            btnBack.Location = new Point(680, 403);
             btnBack.Name = "btnBack";
             btnBack.Size = new Size(120, 48);
             btnBack.TabIndex = 2;
@@ -75,25 +77,56 @@
             btnStage2.FlatAppearance.MouseDownBackColor = Color.Transparent;
             btnStage2.FlatAppearance.MouseOverBackColor = Color.Transparent;
             btnStage2.FlatStyle = FlatStyle.Flat;
-            btnStage2.Location = new Point(540, 212);
+            btnStage2.Location = new Point(540, 210);
             btnStage2.Name = "btnStage2";
             btnStage2.Size = new Size(219, 107);
             btnStage2.TabIndex = 1;
             btnStage2.UseVisualStyleBackColor = false;
             btnStage2.Click += btnStage2_Click;
             // 
-            // label1
+            // btnSelectCharacter
             // 
-            label1.AutoSize = true;
-            label1.BackColor = Color.Transparent;
-            label1.Font = new Font("Tiger Expert", 20.25F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label1.ForeColor = SystemColors.HighlightText;
-            label1.Location = new Point(84, 180);
-            label1.Name = "label1";
-            label1.Size = new Size(387, 81);
-            label1.TabIndex = 3;
-            label1.Text = "Into the shadowed abyss, \r\nI descend—unbroken...\r\n\r\n";
-            label1.Click += label1_Click;
+            btnSelectCharacter.BackColor = Color.Transparent;
+            btnSelectCharacter.BackgroundImage = (Image)resources.GetObject("btnSelectCharacter.BackgroundImage");
+            btnSelectCharacter.BackgroundImageLayout = ImageLayout.Stretch;
+            btnSelectCharacter.FlatAppearance.BorderSize = 0;
+            btnSelectCharacter.FlatAppearance.MouseDownBackColor = Color.Transparent;
+            btnSelectCharacter.FlatAppearance.MouseOverBackColor = Color.Transparent;
+            btnSelectCharacter.FlatStyle = FlatStyle.Flat;
+            btnSelectCharacter.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+            btnSelectCharacter.ForeColor = Color.Transparent;
+            btnSelectCharacter.Location = new Point(285, 387);
+            btnSelectCharacter.Name = "btnSelectCharacter";
+            btnSelectCharacter.Size = new Size(98, 78);
+            btnSelectCharacter.TabIndex = 4;
+            btnSelectCharacter.Text = "CHOOSE";
+            btnSelectCharacter.UseVisualStyleBackColor = false;
+            btnSelectCharacter.Click += btnSelectCharacter_Click;
+            // 
+            // lblSelectedCharacter
+            // 
+            lblSelectedCharacter.BackColor = Color.Transparent;
+            lblSelectedCharacter.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
+            lblSelectedCharacter.ForeColor = Color.White;
+            lblSelectedCharacter.Location = new Point(225, 382);
+            lblSelectedCharacter.Name = "lblSelectedCharacter";
+            lblSelectedCharacter.Size = new Size(219, 19);
+            lblSelectedCharacter.TabIndex = 5;
+            lblSelectedCharacter.TextAlign = ContentAlignment.MiddleCenter;
+            lblSelectedCharacter.Click += lblSelectedCharacter_Click;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.BackColor = Color.Transparent;
+            label2.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            label2.ForeColor = Color.White;
+            label2.Location = new Point(58, 93);
+            label2.Name = "label2";
+            label2.Size = new Size(476, 147);
+            label2.TabIndex = 6;
+            label2.Text = resources.GetString("label2.Text");
+            label2.Click += label2_Click_1;
             // 
             // DungeonMode
             // 
@@ -102,7 +135,9 @@
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(800, 450);
-            Controls.Add(label1);
+            Controls.Add(label2);
+            Controls.Add(lblSelectedCharacter);
+            Controls.Add(btnSelectCharacter);
             Controls.Add(btnStage2);
             Controls.Add(btnStage1);
             Controls.Add(btnBack);
@@ -115,6 +150,8 @@
         private System.Windows.Forms.Button btnBack;
         private System.Windows.Forms.Button btnStage1;
         private System.Windows.Forms.Button btnStage2;
-        private Label label1;
+        private Button btnSelectCharacter;
+        private Label lblSelectedCharacter;
+        private Label label2;
     }
 }

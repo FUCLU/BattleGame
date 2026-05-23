@@ -1,0 +1,141 @@
+{
+  "id": "zweilander",
+  "selection": {
+    "displayName": "Zweilander",
+    "previewImage": "Idle.png",
+    "skillLabel": "Heavy Combo",
+    "assetFolder": "dungeon/boss/zweilander"
+  },
+  "stats": {
+    "hp": 520,
+    "def": 16,
+    "mana": 100,
+    "atk": 34,
+    "speed": 175,
+    "atkSpeed": 0.9,
+    "stunDuration": 0.0,
+    "attackRange": 185
+  },
+  "render": {
+    "scale": 5,
+    "offsetY": 200,
+    "useSpriteSize": false,
+    "protectionOverlayOffsetY": 0.0,
+    "protectionUsesIdleBase": false,
+    "protectionBlocksAllDirections": false
+  },
+  "attackEffects": [
+    {
+      "type": "melee",
+      "animation": "Attack_1",
+      "trigger": "onMiddle",
+      "damage": 34,
+      "range": 205,
+      "collisionWidth": 205,
+      "collisionHeight": 130,
+      "spawnMode": "casterFront",
+      "spawnOffsetX": 102,
+      "spawnOffsetY": 0,
+      "blockEnemyAttack": false,
+      "blockEnemyProjectile": false,
+      "blockEnemySkill": false
+    }
+  ],
+  "skills": {
+    "skill1": {
+      "id": "zweilander_cleave",
+      "animation": "Skill1",
+      "manaCost": 0,
+      "cooldown": 3.0,
+      "effects": [
+        {
+          "type": "melee",
+          "trigger": "onMiddle",
+          "damage": 48,
+          "range": 230,
+          "collisionWidth": 230,
+          "collisionHeight": 150,
+          "spawnMode": "casterFront",
+          "spawnOffsetX": 115,
+          "spawnOffsetY": 0,
+          "blockEnemyAttack": false,
+          "blockEnemyProjectile": false,
+          "blockEnemySkill": false
+        }
+      ]
+    },
+    "skill2": {
+      "id": "zweilander_stunning_breaker",
+      "animation": "Skill2",
+      "manaCost": 0,
+      "cooldown": 3.0,
+      "effects": [
+        {
+          "type": "melee",
+          "trigger": "onMiddle",
+          "damage": 36,
+          "stun": 1.0,
+          "range": 230,
+          "collisionWidth": 230,
+          "collisionHeight": 150,
+          "spawnMode": "casterFront",
+          "spawnOffsetX": 115,
+          "spawnOffsetY": 0,
+          "blockEnemyAttack": false,
+          "blockEnemyProjectile": false,
+          "blockEnemySkill": false
+        }
+      ]
+    }
+  },
+  "animations": {
+    "Idle": {
+      "frameCount": 7,
+      "fps": 10,
+      "loop": true
+    },
+    "Run": {
+      "file": "Run.png",
+      "frameCount": 7,
+      "fps": 12,
+      "loop": true
+    },
+    "Walk": {
+      "file": "Run.png",
+      "frameCount": 7,
+      "fps": 9,
+      "loop": true
+    },
+    "Dash": {
+      "frameCount": 7,
+      "fps": 18,
+      "loop": false
+    },
+    "Attack_1": {
+      "frameCount": 20,
+      "fps": 18,
+      "loop": false
+    },
+    "Hurt": {
+      "frameCount": 4,
+      "fps": 10,
+      "loop": false
+    },
+    "Dead": {
+      "file": "Hurt.png",
+      "frameCount": 4,
+      "fps": 8,
+      "loop": false
+    },
+    "Skill1": {
+      "frameCount": 25,
+      "fps": 18,
+      "loop": false
+    },
+    "Skill2": {
+      "frameCount": 6,
+      "fps": 12,
+      "loop": false
+    }
+  }
+}

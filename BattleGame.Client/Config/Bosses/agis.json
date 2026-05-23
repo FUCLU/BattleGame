@@ -1,0 +1,218 @@
+{
+  "id": "agis",
+  "selection": {
+    "displayName": "Agis",
+    "previewImage": "Idle.png",
+    "skillLabel": "Agis Strike",
+    "assetFolder": "dungeon/boss/agis"
+  },
+  "stats": {
+    "hp": 460,
+    "def": 14,
+    "mana": 100,
+    "atk": 30,
+    "speed": 155,
+    "atkSpeed": 0.85,
+    "stunDuration": 0.0,
+    "attackRange": 170
+  },
+  "attackEffects": [
+    {
+      "type": "projectile",
+      "animation": "Attack_1",
+      "trigger": "onMiddle",
+      "projectileAnim": "AgisProjectile_Attack_1",
+      "damage": 30,
+      "stun": 1.0,
+      "speed": 520,
+      "duration": 3.0,
+      "range": 55,
+      "render": {
+        "scale": 1.6,
+        "offsetX": 0.0,
+        "offsetY": 0,
+        "useSpriteSize": true,
+        "alignY": "center"
+      }
+    },
+    {
+      "type": "projectile",
+      "animation": "Attack_2",
+      "trigger": "onMiddle",
+      "projectileAnim": "AgisProjectile_Attack_2",
+      "damage": 30,
+      "stun": 1.0,
+      "speed": 520,
+      "duration": 3.0,
+      "range": 55,
+      "render": {
+        "scale": 1.6,
+        "offsetX": 0.0,
+        "offsetY": 0,
+        "useSpriteSize": true,
+        "alignY": "center"
+      }
+    }
+  ],
+  "render": {
+    "scale": 3.5,
+    "offsetY": 0,
+    "useSpriteSize": false,
+    "protectionOverlayOffsetY": 0.0,
+    "protectionUsesIdleBase": false,
+    "protectionBlocksAllDirections": false
+  },
+  "skills": {
+    "skill1": {
+      "id": "agis_ground_spike",
+      "animation": "Skill1",
+      "manaCost": 0,
+      "cooldown": 5.5,
+      "effects": [
+        {
+          "type": "barrier",
+          "trigger": "onFrame",
+          "frames": [ 2 ],
+          "objectAnim": "AgisSkill1Effect",
+          "damage": 42,
+          "duration": 1.2,
+          "spawnMode": "targetFront",
+          "spawnOffsetX": 0,
+          "spawnOffsetY": 0,
+          "collisionWidth": 220,
+          "collisionHeight": 180,
+          "blockEnemyAttack": false,
+          "blockEnemyProjectile": false,
+          "blockEnemySkill": false,
+          "render": {
+            "scale": 1.8,
+            "offsetX": 0,
+            "offsetY": 0,
+            "useSpriteSize": true,
+            "alignY": "bottom",
+            "facingSource": "target"
+          }
+        }
+      ]
+    },
+    "skill2": {
+      "id": "agis_stun_trap",
+      "animation": "Skill2",
+      "manaCost": 0,
+      "cooldown": 7.0,
+      "effects": [
+        {
+          "type": "barrier",
+          "trigger": "onFrame",
+          "frames": [ 2 ],
+          "objectAnim": "AgisSkill2Effect",
+          "damage": 30,
+          "stun": 1.0,
+          "duration": 1.2,
+          "spawnMode": "targetFront",
+          "spawnOffsetX": 0,
+          "spawnOffsetY": 0,
+          "collisionWidth": 220,
+          "collisionHeight": 180,
+          "blockEnemyAttack": false,
+          "blockEnemyProjectile": false,
+          "blockEnemySkill": false,
+          "render": {
+            "scale": 1.8,
+            "offsetX": 0,
+            "offsetY": 0,
+            "useSpriteSize": true,
+            "alignY": "bottom",
+            "facingSource": "target"
+          }
+        }
+      ]
+    }
+  },
+  "animations": {
+    "Idle": {
+      "file": "Idle.png",
+      "frameCount": 15,
+      "fps": 10,
+      "loop": true
+    },
+    "Run": {
+      "file": "Idle.png",
+      "frameCount": 15,
+      "fps": 10,
+      "loop": true
+    },
+    "Walk": {
+      "file": "Idle.png",
+      "frameCount": 15,
+      "fps": 10,
+      "loop": true
+    },
+    "Dash": {
+      "file": "Idle.png",
+      "frameCount": 15,
+      "fps": 12,
+      "loop": false
+    },
+    "Attack_1": {
+      "file": "Idle.png",
+      "frameCount": 15,
+      "fps": 10,
+      "loop": false
+    },
+    "Attack_2": {
+      "file": "Idle.png",
+      "frameCount": 15,
+      "fps": 10,
+      "loop": false
+    },
+    "AgisProjectile_Attack_1": {
+      "file": "Attack_1.png",
+      "frameCount": 6,
+      "fps": 10,
+      "loop": false
+    },
+    "AgisProjectile_Attack_2": {
+      "file": "Attack_2.png",
+      "frameCount": 4,
+      "fps": 10,
+      "loop": false
+    },
+    "Hurt": {
+      "file": "Hurt.png",
+      "frameCount": 5,
+      "fps": 8,
+      "loop": false
+    },
+    "Dead": {
+      "file": "Idle.png",
+      "frameCount": 15,
+      "fps": 10,
+      "loop": false
+    },
+    "Skill1": {
+      "file": "Skill1_action.png",
+      "frameCount": 5,
+      "fps": 5,
+      "loop": false
+    },
+    "AgisSkill1Effect": {
+      "file": "Skill1.png",
+      "frameCount": 19,
+      "fps": 19,
+      "loop": false
+    },
+    "Skill2": {
+      "file": "Skill2_action.png",
+      "frameCount": 5,
+      "fps": 5,
+      "loop": false
+    },
+    "AgisSkill2Effect": {
+      "file": "Skill2.png",
+      "frameCount": 12,
+      "fps": 12,
+      "loop": false
+    }
+  }
+}

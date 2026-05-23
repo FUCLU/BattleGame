@@ -24,6 +24,16 @@
       "prefabId": "boss_slimdemon",
       "characterId": "slimdemon",
       "aiProfile": "boss_phase"
+    },
+    {
+      "prefabId": "boss_agis",
+      "characterId": "agis",
+      "aiProfile": "boss_phase"
+    },
+    {
+      "prefabId": "boss_zweilander",
+      "characterId": "zweilander",
+      "aiProfile": "boss_phase"
     }
   ]
 }

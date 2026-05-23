@@ -80,6 +80,9 @@ namespace BattleGame.Client.Config
         {
             var attackProj = stats.TryGetProperty("attackProjectile", out var ap) ? ap.GetString() : null;
             var attackProjSpeed = stats.TryGetProperty("attackProjectileSpeed", out var aps) ? aps.GetSingle() : 0f;
+            var attackProjectileSpawnOffsetX = stats.TryGetProperty("attackProjectileSpawnOffsetX", out var apox) ? apox.GetSingle() : 30f;
+            var attackProjectileSpawnOffsetY = stats.TryGetProperty("attackProjectileSpawnOffsetY", out var apoy) ? apoy.GetSingle() : -50f;
+            var attackProjectileScale = stats.TryGetProperty("attackProjectileScale", out var apsc) ? apsc.GetSingle() : 1f;
 
             return new CharacterStats
             {
@@ -93,7 +96,10 @@ namespace BattleGame.Client.Config
                 StunDuration = stats.GetProperty("stunDuration").GetSingle(),
                 AttackRange = stats.TryGetProperty("attackRange", out var ar) ? ar.GetSingle() : 150f,
                 AttackProjectile = attackProj,
-                AttackProjectileSpeed = attackProjSpeed
+                AttackProjectileSpeed = attackProjSpeed,
+                AttackProjectileSpawnOffsetX = attackProjectileSpawnOffsetX,
+                AttackProjectileSpawnOffsetY = attackProjectileSpawnOffsetY,
+                AttackProjectileScale = attackProjectileScale
             };
         }
 
@@ -181,6 +187,7 @@ namespace BattleGame.Client.Config
                 var effect = new EffectData
                 {
                     Type = e.GetProperty("type").GetString() ?? "",
+                    Animation = e.TryGetProperty("animation", out var anim) ? anim.GetString() ?? "" : "",
                     Trigger = e.GetProperty("trigger").GetString() ?? "",
                     Damage = e.TryGetProperty("damage", out var d) ? d.GetInt32() : 0,
                     Stun = e.TryGetProperty("stun", out var s) ? s.GetSingle() : 0,
@@ -205,6 +212,13 @@ namespace BattleGame.Client.Config
                     effect.Frames = new List<int>();
                     foreach (var f in frames.EnumerateArray())
                         effect.Frames.Add(f.GetInt32());
+                }
+
+                if (e.TryGetProperty("hitFrames", out var hitFrames))
+                {
+                    effect.HitFrames = new List<int>();
+                    foreach (var f in hitFrames.EnumerateArray())
+                        effect.HitFrames.Add(f.GetInt32());
                 }
 
                 parsed.Add(effect);
