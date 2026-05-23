@@ -87,9 +87,9 @@
             panel4.Controls.Add(flpnlSelChar);
             panel4.Controls.Add(lblHeader);
             panel4.Controls.Add(panel3);
-            panel4.Location = new Point(22, 23);
+            panel4.Location = new Point(22, 30);
             panel4.Name = "panel4";
-            panel4.Size = new Size(1078, 543);
+            panel4.Size = new Size(1078, 607);
             panel4.TabIndex = 3;
             panel4.Paint += panel4_Paint_1;
             // 
@@ -101,9 +101,9 @@
             flpnlSelChar.Controls.Add(pnlKitsune);
             flpnlSelChar.Controls.Add(pnlSamurai);
             flpnlSelChar.FlowDirection = FlowDirection.TopDown;
-            flpnlSelChar.Location = new Point(22, 59);
+            flpnlSelChar.Location = new Point(40, 59);
             flpnlSelChar.Name = "flpnlSelChar";
-            flpnlSelChar.Size = new Size(396, 463);
+            flpnlSelChar.Size = new Size(396, 518);
             flpnlSelChar.TabIndex = 4;
             flpnlSelChar.WrapContents = false;
             // 
@@ -265,27 +265,27 @@
             panel3.Controls.Add(btnSellect);
             panel3.Controls.Add(button2);
             panel3.Controls.Add(label2);
-            panel3.Location = new Point(424, 59);
+            panel3.Location = new Point(459, 59);
             panel3.Name = "panel3";
-            panel3.Size = new Size(632, 463);
+            panel3.Size = new Size(585, 518);
             panel3.TabIndex = 1;
             // 
             // panel1
             // 
             panel1.BackColor = Color.FromArgb(15, 28, 46);
             panel1.Controls.Add(pbInfor);
-            panel1.Location = new Point(3, 107);
+            panel1.Location = new Point(192, 52);
             panel1.Name = "panel1";
-            panel1.Size = new Size(238, 212);
+            panel1.Size = new Size(240, 177);
             panel1.TabIndex = 8;
             // 
             // pbInfor
             // 
             pbInfor.BackColor = Color.Transparent;
             pbInfor.Image = (Image)resources.GetObject("pbInfor.Image");
-            pbInfor.Location = new Point(0, 11);
+            pbInfor.Location = new Point(26, 7);
             pbInfor.Name = "pbInfor";
-            pbInfor.Size = new Size(230, 201);
+            pbInfor.Size = new Size(188, 163);
             pbInfor.SizeMode = PictureBoxSizeMode.Zoom;
             pbInfor.TabIndex = 2;
             pbInfor.TabStop = false;
@@ -306,16 +306,16 @@
             panel5.Controls.Add(lblSPD);
             panel5.Controls.Add(lblATK);
             panel5.Controls.Add(lblHP);
-            panel5.Location = new Point(247, 107);
+            panel5.Location = new Point(71, 241);
             panel5.Name = "panel5";
-            panel5.Size = new Size(378, 215);
+            panel5.Size = new Size(473, 221);
             panel5.TabIndex = 7;
             // 
             // lblSpdValue
             // 
             lblSpdValue.AutoSize = true;
             lblSpdValue.ForeColor = Color.WhiteSmoke;
-            lblSpdValue.Location = new Point(291, 134);
+            lblSpdValue.Location = new Point(370, 133);
             lblSpdValue.Name = "lblSpdValue";
             lblSpdValue.Size = new Size(33, 20);
             lblSpdValue.TabIndex = 18;
@@ -325,7 +325,7 @@
             // 
             lblDefValue.AutoSize = true;
             lblDefValue.ForeColor = Color.WhiteSmoke;
-            lblDefValue.Location = new Point(291, 95);
+            lblDefValue.Location = new Point(370, 94);
             lblDefValue.Name = "lblDefValue";
             lblDefValue.Size = new Size(33, 20);
             lblDefValue.TabIndex = 17;
@@ -335,7 +335,7 @@
             // 
             lblAtkValue.AutoSize = true;
             lblAtkValue.ForeColor = Color.WhiteSmoke;
-            lblAtkValue.Location = new Point(291, 51);
+            lblAtkValue.Location = new Point(370, 50);
             lblAtkValue.Name = "lblAtkValue";
             lblAtkValue.Size = new Size(33, 20);
             lblAtkValue.TabIndex = 16;
@@ -345,7 +345,7 @@
             // 
             lblHpValue.AutoSize = true;
             lblHpValue.ForeColor = Color.WhiteSmoke;
-            lblHpValue.Location = new Point(291, 16);
+            lblHpValue.Location = new Point(370, 15);
             lblHpValue.Name = "lblHpValue";
             lblHpValue.Size = new Size(33, 20);
             lblHpValue.TabIndex = 15;
@@ -356,7 +356,7 @@
             panelSpdBack.BackColor = Color.FromArgb(30, 30, 30);
             panelSpdBack.BorderStyle = BorderStyle.Fixed3D;
             panelSpdBack.Controls.Add(panelSpdFill);
-            panelSpdBack.Location = new Point(90, 136);
+            panelSpdBack.Location = new Point(136, 136);
             panelSpdBack.Name = "panelSpdBack";
             panelSpdBack.Size = new Size(190, 16);
             panelSpdBack.TabIndex = 14;
@@ -375,7 +375,7 @@
             panelDefBack.BackColor = Color.FromArgb(30, 30, 30);
             panelDefBack.BorderStyle = BorderStyle.Fixed3D;
             panelDefBack.Controls.Add(panelDefFill);
-            panelDefBack.Location = new Point(90, 95);
+            panelDefBack.Location = new Point(136, 95);
             panelDefBack.Name = "panelDefBack";
             panelDefBack.Size = new Size(190, 16);
             panelDefBack.TabIndex = 13;
@@ -394,7 +394,7 @@
             panelAtkBack.BackColor = Color.FromArgb(30, 30, 30);
             panelAtkBack.BorderStyle = BorderStyle.Fixed3D;
             panelAtkBack.Controls.Add(panelAtkFill);
-            panelAtkBack.Location = new Point(90, 55);
+            panelAtkBack.Location = new Point(136, 55);
             panelAtkBack.Name = "panelAtkBack";
             panelAtkBack.Size = new Size(190, 16);
             panelAtkBack.TabIndex = 12;
@@ -413,7 +413,7 @@
             panelHpBack.BackColor = Color.FromArgb(30, 30, 30);
             panelHpBack.BorderStyle = BorderStyle.Fixed3D;
             panelHpBack.Controls.Add(panelHpFill);
-            panelHpBack.Location = new Point(90, 17);
+            panelHpBack.Location = new Point(136, 17);
             panelHpBack.Name = "panelHpBack";
             panelHpBack.Size = new Size(190, 16);
             panelHpBack.TabIndex = 11;
@@ -432,7 +432,7 @@
             lblDEF.AutoSize = true;
             lblDEF.Font = new Font("Bookman Old Style", 10.2F, FontStyle.Italic);
             lblDEF.ForeColor = Color.Khaki;
-            lblDEF.Location = new Point(12, 91);
+            lblDEF.Location = new Point(58, 91);
             lblDEF.Name = "lblDEF";
             lblDEF.Size = new Size(46, 21);
             lblDEF.TabIndex = 10;
@@ -443,7 +443,7 @@
             lblSkill.AutoSize = true;
             lblSkill.Font = new Font("Bookman Old Style", 10.2F, FontStyle.Italic);
             lblSkill.ForeColor = Color.Khaki;
-            lblSkill.Location = new Point(12, 173);
+            lblSkill.Location = new Point(58, 173);
             lblSkill.Name = "lblSkill";
             lblSkill.Size = new Size(45, 21);
             lblSkill.TabIndex = 9;
@@ -454,7 +454,7 @@
             lblSPD.AutoSize = true;
             lblSPD.Font = new Font("Bookman Old Style", 10.2F, FontStyle.Italic);
             lblSPD.ForeColor = Color.Khaki;
-            lblSPD.Location = new Point(11, 132);
+            lblSPD.Location = new Point(57, 132);
             lblSPD.Name = "lblSPD";
             lblSPD.Size = new Size(44, 21);
             lblSPD.TabIndex = 8;
@@ -465,7 +465,7 @@
             lblATK.AutoSize = true;
             lblATK.Font = new Font("Bookman Old Style", 10.2F, FontStyle.Italic);
             lblATK.ForeColor = Color.Khaki;
-            lblATK.Location = new Point(12, 49);
+            lblATK.Location = new Point(58, 49);
             lblATK.Name = "lblATK";
             lblATK.Size = new Size(44, 21);
             lblATK.TabIndex = 6;
@@ -476,7 +476,7 @@
             lblHP.AutoSize = true;
             lblHP.Font = new Font("Bookman Old Style", 10.2F, FontStyle.Italic);
             lblHP.ForeColor = Color.Khaki;
-            lblHP.Location = new Point(12, 11);
+            lblHP.Location = new Point(58, 11);
             lblHP.Name = "lblHP";
             lblHP.Size = new Size(34, 21);
             lblHP.TabIndex = 5;
@@ -487,9 +487,9 @@
             btnSellect.BackgroundImage = (Image)resources.GetObject("btnSellect.BackgroundImage");
             btnSellect.BackgroundImageLayout = ImageLayout.Stretch;
             btnSellect.FlatStyle = FlatStyle.Popup;
-            btnSellect.Location = new Point(267, 381);
+            btnSellect.Location = new Point(441, 473);
             btnSellect.Name = "btnSellect";
-            btnSellect.Size = new Size(160, 54);
+            btnSellect.Size = new Size(103, 38);
             btnSellect.TabIndex = 1;
             btnSellect.Click += btnSellect_Click;
             // 
@@ -498,9 +498,9 @@
             button2.BackgroundImage = (Image)resources.GetObject("button2.BackgroundImage");
             button2.BackgroundImageLayout = ImageLayout.Stretch;
             button2.FlatStyle = FlatStyle.Popup;
-            button2.Location = new Point(457, 381);
+            button2.Location = new Point(71, 471);
             button2.Name = "button2";
-            button2.Size = new Size(141, 49);
+            button2.Size = new Size(92, 35);
             button2.TabIndex = 0;
             button2.Click += button2_Click;
             // 
@@ -509,11 +509,12 @@
             label2.AutoSize = true;
             label2.Font = new Font("Book Antiqua", 28.2F, FontStyle.Bold | FontStyle.Italic, GraphicsUnit.Point, 0);
             label2.ForeColor = Color.Khaki;
-            label2.Location = new Point(215, 30);
+            label2.Location = new Point(219, -2);
             label2.Name = "label2";
             label2.Size = new Size(181, 56);
             label2.TabIndex = 3;
             label2.Text = "Wizard";
+            label2.Click += label2_Click;
             // 
             // panel6
             // 
@@ -551,7 +552,7 @@
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.SteelBlue;
-            ClientSize = new Size(1112, 592);
+            ClientSize = new Size(1112, 649);
             Controls.Add(panel4);
             Name = "CharacterSelection";
             Text = "Character Selection";

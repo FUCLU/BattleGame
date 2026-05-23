@@ -7,11 +7,11 @@
     "assetFolder": "HeavyCrystal"
   },
   "stats": {
-    "hp": 165,
-    "def": 18,
+    "hp": 200,
+    "def": 20,
     "mana": 100,
     "manaRegen": 7.0,
-    "atk": 26,
+    "atk": 30,
     "speed": 175,
     "atkSpeed": 0.95,
     "stunDuration": 0.0,

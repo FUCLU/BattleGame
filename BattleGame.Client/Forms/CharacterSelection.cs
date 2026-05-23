@@ -47,13 +47,13 @@ namespace BattleGame.Client.Forms
             flpnlSelChar.Resize += flpnlSelChar_Resize;
 
         }
-      
+
         public string SelectedCharacterId { get; private set; } = string.Empty;
         public string SelectedCharacterName => SelectedCharacterId;
 
         private void CharacterSelection_Load(object sender, EventArgs e)
         {
-           
+
             SetupCharacterListFlowPanel();
 
             LoadCharacters();
@@ -95,8 +95,8 @@ namespace BattleGame.Client.Forms
             return Math.Max(350, slotW);
         }
 
-       
-        
+
+
         private void ApplySlotWidthToAll()
         {
             int slotW = GetSlotWidth();
@@ -540,6 +540,11 @@ namespace BattleGame.Client.Forms
 
             using (var penInner = new Pen(Color.FromArgb(100, 255, 255, 255), 2))
                 g.DrawRectangle(penInner, 4, 4, panel.Width - 12, panel.Height - 12);
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
