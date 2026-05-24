@@ -531,7 +531,7 @@ namespace BattleGame.Client.Forms
                 Cursor = Cursors.Hand
             };
 
-            string imgPath = GetPortraitPath(character.Id);
+            string imgPath = GetPortraitPath(character);
             picture.Image = LoadImage(imgPath)
                          ?? LoadImage(character.GetPreviewPath(_charactersRoot));
 
@@ -742,7 +742,7 @@ namespace BattleGame.Client.Forms
         {
             if (character == null) return;
 
-            pbInfor.Image = LoadImage(GetPortraitPath(character.Id))
+            pbInfor.Image = LoadImage(GetPortraitPath(character))
                          ?? LoadImage(character.GetPreviewPath(_charactersRoot));
 
             label2.Text = character.DisplayName;
@@ -892,9 +892,57 @@ namespace BattleGame.Client.Forms
 
         // ─── Helpers ──────────────────────────────────────────────────────────
 
-        private string GetPortraitPath(string characterId)
+        private string GetPortraitPath(CharacterSelectionItem character)
         {
-            return Path.Combine(_portraitRoot, $"{characterId.ToLower()}.png");
+            foreach (string candidateName in GetPortraitCandidateNames(character))
+            {
+                string directPath = Path.Combine(_portraitRoot, candidateName);
+                if (File.Exists(directPath))
+                    return directPath;
+
+                string? matchedPath = FindFileIgnoreCase(_portraitRoot, candidateName);
+                if (!string.IsNullOrWhiteSpace(matchedPath))
+                    return matchedPath;
+            }
+
+            return Path.Combine(_portraitRoot, $"{character.Id}.png");
+        }
+
+        private static IEnumerable<string> GetPortraitCandidateNames(CharacterSelectionItem character)
+        {
+            string previewFile = Path.GetFileName(character.PreviewImage);
+            if (!string.IsNullOrWhiteSpace(previewFile) &&
+                !previewFile.Equals("Idle.png", StringComparison.OrdinalIgnoreCase))
+            {
+                yield return previewFile;
+            }
+
+            if (!string.IsNullOrWhiteSpace(character.AssetFolder))
+                yield return $"{character.AssetFolder}.png";
+
+            if (!string.IsNullOrWhiteSpace(character.DisplayName))
+                yield return $"{character.DisplayName}.png";
+
+            yield return $"{character.Id}.png";
+            yield return $"{character.Id.ToLowerInvariant()}.png";
+        }
+
+        private static string? FindFileIgnoreCase(string directoryPath, string fileName)
+        {
+            try
+            {
+                if (!Directory.Exists(directoryPath))
+                    return null;
+
+                return Directory.EnumerateFiles(directoryPath, fileName, SearchOption.TopDirectoryOnly)
+                    .FirstOrDefault()
+                    ?? Directory.EnumerateFiles(directoryPath, "*.png", SearchOption.TopDirectoryOnly)
+                        .FirstOrDefault(path => string.Equals(Path.GetFileName(path), fileName, StringComparison.OrdinalIgnoreCase));
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private Image? LoadImage(string path)

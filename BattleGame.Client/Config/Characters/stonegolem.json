@@ -2,7 +2,7 @@
   "id": "stonegolem",
   "selection": {
     "displayName": "Golem",
-    "previewImage": "Idle.png",
+    "previewImage": "StoneGolem.png",
     "skillLabel": "Flying Obelisk / Laser Beam",
     "assetFolder": "StoneGolem"
   },
