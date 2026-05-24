@@ -545,6 +545,9 @@
 		<None Update="Assets\Background\U.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
+		<None Update="Assets\Background\unlock.png">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="Assets\Background\verify.png">
 		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>

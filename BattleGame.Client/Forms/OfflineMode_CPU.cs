@@ -1,4 +1,3 @@
-﻿using System;
 using System;
 using System.Drawing;
 using System.IO;
@@ -6,42 +5,158 @@ using System.Linq;
 using System.Windows.Forms;
 using BattleGame.Client.Config;
 
-
 namespace BattleGame.Client.Forms
 {
     public partial class OfflineMode_CPU : Form
     {
+        private static readonly Color PageColor = Color.FromArgb(36, 58, 94);
+        private static readonly Color PanelColor = Color.FromArgb(24, 36, 68);
+        private static readonly Color PanelBorderColor = Color.FromArgb(185, 220, 245);
+        private static readonly Color AccentColor = Color.PaleTurquoise;
+        private static readonly Color TextColor = Color.FromArgb(220, 235, 255);
+        private static readonly Color NormalButtonColor = Color.FromArgb(44, 74, 110);
+        private static readonly Color HoverButtonColor = Color.FromArgb(57, 100, 150);
+        private static readonly Color GoldColor = Color.FromArgb(255, 235, 156);
+
+        private static readonly Font TitleFont = new("Courier New", 26F, FontStyle.Bold);
+        private static readonly Font PanelTitleFont = new("Book Antiqua", 20F, FontStyle.Bold);
+        private static readonly Font BodyFont = new("Segoe UI", 12F, FontStyle.Bold);
+        private static readonly Font ButtonFont = new("Courier New", 13F, FontStyle.Bold);
+        private static readonly Font MapFont = new("Segoe UI", 12F, FontStyle.Bold);
+
+        private string _player1CharacterId = "lord";
+        private string _player2CharacterId = "samurai";
+        private string _currentMap = "terrace";
+
         public OfflineMode_CPU()
         {
             InitializeComponent();
-            ApplyOfflineBackground();
-            this.StartPosition = FormStartPosition.CenterScreen;
+            ApplyUnifiedStyle();
+            StartPosition = FormStartPosition.CenterScreen;
         }
 
-        private static readonly string AssetsRoot = Path.Combine(
-           AppDomain.CurrentDomain.BaseDirectory,
-           "..", "..", "..", "Assets");
-
-
-        private string currentMap = "";
-        private string currentMode = "easy";
-        private string playerCharacterId = string.Empty;
-
-        private void ApplyOfflineBackground()
+        private void ApplyUnifiedStyle()
         {
-            string backgroundPath = Path.Combine(AssetsRoot, "Background", "offlinemode.png");
-            if (File.Exists(backgroundPath))
-            {
-                BackgroundImage = Image.FromFile(backgroundPath);
-                BackgroundImageLayout = ImageLayout.Stretch;
-            }
+            BackgroundImage = null;
+            BackColor = PageColor;
+            AutoScaleMode = AutoScaleMode.None;
+            Text = "Offline Local Battle";
+
+            label1.Text = "OFFLINE MODE";
+            label1.Font = TitleFont;
+            label1.ForeColor = AccentColor;
+            label1.BackColor = Color.Transparent;
+            label1.TextAlign = ContentAlignment.MiddleCenter;
+
+            StylePanel(panel2);
+            StylePanel(panel1);
+            StylePanel(panelMap);
+
+            StyleHeader(lblYouTitle, "PLAYER 1");
+            StyleHeader(lblBotTitle, "PLAYER 2");
+
+            StyleCharacterArea(lblCharacterCaption, lblNameCharPlayer, btnSelCharPlayer, _player1CharacterId);
+            StyleCharacterArea(lblPlayer2CharacterCaption, lblNameCharPlayer2, btnSelCharPlayer2, _player2CharacterId);
+            StyleMapSelector();
+
+            StyleActionButton(button2, "BACK");
+            StyleActionButton(btnPlay, "PLAY");
         }
 
-        private string CreateRandomBotId()
+        private void StylePanel(Panel panel)
         {
-            Random rnd = new Random();
-            string[] ids = { "lord", "samurai", "kitsune", "wizard", "haladin", "heavycrystal" };
-            return ids[rnd.Next(ids.Length)];
+            panel.BackgroundImage = null;
+            panel.BackColor = PanelColor;
+            panel.BorderStyle = BorderStyle.FixedSingle;
+            panel.Paint -= PanelFrame_Paint;
+            panel.Paint += PanelFrame_Paint;
+        }
+
+        private void StyleHeader(Label label, string text)
+        {
+            label.Text = text;
+            label.Font = PanelTitleFont;
+            label.ForeColor = GoldColor;
+            label.BackColor = Color.Transparent;
+            label.TextAlign = ContentAlignment.MiddleCenter;
+        }
+
+        private void StyleCharacterArea(Label caption, Label nameLabel, Button selectButton, string characterId)
+        {
+            caption.Text = "Character:";
+            caption.Font = BodyFont;
+            caption.ForeColor = TextColor;
+            caption.BackColor = Color.Transparent;
+            caption.TextAlign = ContentAlignment.MiddleLeft;
+
+            nameLabel.Text = ToDisplayName(characterId);
+            nameLabel.Font = BodyFont;
+            nameLabel.ForeColor = GoldColor;
+            nameLabel.BackColor = Color.Transparent;
+            nameLabel.TextAlign = ContentAlignment.MiddleLeft;
+
+            selectButton.BackgroundImage = null;
+            selectButton.FlatStyle = FlatStyle.Flat;
+            selectButton.FlatAppearance.BorderSize = 2;
+            selectButton.FlatAppearance.BorderColor = AccentColor;
+            selectButton.FlatAppearance.MouseOverBackColor = HoverButtonColor;
+            selectButton.BackColor = NormalButtonColor;
+            selectButton.ForeColor = GoldColor;
+            selectButton.Font = ButtonFont;
+            selectButton.Text = "SELECT CHARACTER";
+            selectButton.UseVisualStyleBackColor = false;
+        }
+
+        private void StyleMapSelector()
+        {
+            lblMapTitle.Text = "MAP SELECT";
+            lblMapTitle.Font = new Font("Book Antiqua", 18F, FontStyle.Bold);
+            lblMapTitle.ForeColor = GoldColor;
+            lblMapTitle.BackColor = Color.Transparent;
+            lblMapTitle.TextAlign = ContentAlignment.MiddleCenter;
+
+            lblMapCaption.Text = "Arena:";
+            lblMapCaption.Font = MapFont;
+            lblMapCaption.ForeColor = TextColor;
+            lblMapCaption.BackColor = Color.Transparent;
+            lblMapCaption.TextAlign = ContentAlignment.MiddleLeft;
+
+            comboBoxMap.DropDownStyle = ComboBoxStyle.DropDownList;
+            comboBoxMap.Font = new Font("Segoe UI", 12F, FontStyle.Regular);
+            comboBoxMap.BackColor = Color.WhiteSmoke;
+            comboBoxMap.ForeColor = Color.Black;
+            if (comboBoxMap.Items.Count == 0)
+                comboBoxMap.Items.AddRange(new object[] { "Map 1", "Map 2", "Map 3" });
+            if (comboBoxMap.SelectedIndex < 0)
+                comboBoxMap.SelectedIndex = 0;
+
+            pictureBoxMap.SizeMode = PictureBoxSizeMode.StretchImage;
+            pictureBoxMap.BorderStyle = BorderStyle.FixedSingle;
+        }
+
+        private void PanelFrame_Paint(object? sender, PaintEventArgs e)
+        {
+            if (sender is not Panel panel)
+                return;
+
+            using var outerPen = new Pen(Color.FromArgb(10, 18, 36), 4);
+            using var innerPen = new Pen(PanelBorderColor, 2);
+            e.Graphics.DrawRectangle(outerPen, 0, 0, panel.Width - 1, panel.Height - 1);
+            e.Graphics.DrawRectangle(innerPen, 5, 5, panel.Width - 11, panel.Height - 11);
+        }
+
+        private void StyleActionButton(Button button, string text)
+        {
+            button.BackgroundImage = null;
+            button.Text = text;
+            button.Font = new Font("Courier New", 15F, FontStyle.Bold);
+            button.FlatStyle = FlatStyle.Flat;
+            button.FlatAppearance.BorderSize = 2;
+            button.FlatAppearance.BorderColor = AccentColor;
+            button.FlatAppearance.MouseOverBackColor = HoverButtonColor;
+            button.ForeColor = GoldColor;
+            button.BackColor = NormalButtonColor;
+            button.UseVisualStyleBackColor = false;
         }
 
         private static string ToDisplayName(string characterId)
@@ -54,8 +169,18 @@ namespace BattleGame.Client.Forms
                 "wizard" => "Wizard",
                 "haladin" => "Haladin",
                 "heavycrystal" => "HeavyCrystal",
+                "stonegolem" => "Golem",
                 _ => characterId
             };
+        }
+
+        private static string ResolveDisplayName(string characterId)
+        {
+            return CharacterCatalog
+                .LoadSelectionItems(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", ".."))
+                .FirstOrDefault(x => x.Id.Equals(characterId, StringComparison.OrdinalIgnoreCase))
+                ?.DisplayName
+                ?? ToDisplayName(characterId);
         }
 
         private static string? GetMapImageFile(string mapId)
@@ -65,138 +190,98 @@ namespace BattleGame.Client.Forms
                 "terrace" => "terrace.png",
                 "throneroom" => "throneroom.png",
                 "castle" => "castle.png",
-                "forest" => "BackgroundForest.png",
                 _ => null
             };
         }
 
         private void SetMap(string mapId)
         {
-            currentMap = mapId;
+            _currentMap = mapId;
             string? imageFile = GetMapImageFile(mapId);
             if (string.IsNullOrWhiteSpace(imageFile))
                 return;
 
-            string imagePath = imageFile.Contains(Path.DirectorySeparatorChar)
-                ? Path.Combine(AssetsRoot, imageFile)
-                : Path.Combine(AssetsRoot, "Background", imageFile);
+            string assetsRoot = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Assets");
+            string imagePath = Path.Combine(assetsRoot, "Background", imageFile);
             if (File.Exists(imagePath))
                 pictureBoxMap.Image = Image.FromFile(imagePath);
         }
 
-        private void comboBoxMap_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
-            switch (comboBoxMap.SelectedIndex)
-            {
-                case 0:
-                    SetMap("terrace");
-                    break;
-
-                case 1:
-                    SetMap("throneroom");
-                    break;
-
-                case 2:
-                    SetMap("castle");
-                    break;
-
-                case 3:
-                    SetMap("forest");
-                    break;
-
-            }
-        }
-
-
         private void OfflineModeSelection_Load(object sender, EventArgs e)
         {
-            comboBoxMap.SelectedIndex = 0;
-            SetMap("terrace");
-            if (string.IsNullOrWhiteSpace(playerCharacterId))
-            {
-                playerCharacterId = "lord";
-            }
-
-            lblNameCharPlayer.Text = ToDisplayName(playerCharacterId);
-            _ = CreateRandomBotId();
-        }
-
-
-        void SelectMode(Button selectedBtn)
-        {
-            Button[] buttons = { btnEasy, btnMedium, btnHard };
-            foreach (Button btn in buttons)
-            {
-                btn.BackColor = Color.FromArgb(42, 93, 143);
-                btn.ForeColor = Color.White;
-                btn.FlatAppearance.BorderSize = 0;
-            }
-            selectedBtn.BackColor = Color.FromArgb(244, 112, 157);
-            selectedBtn.ForeColor = Color.White;
-            selectedBtn.FlatAppearance.BorderSize = 2;
-            selectedBtn.FlatAppearance.BorderColor = Color.LightBlue;
-            currentMode = selectedBtn.Text.ToLower();
-        }
-
-
-        private void btnEasy_Click(object sender, EventArgs e)
-        {
-            SelectMode(btnEasy);
-        }
-
-        private void btnMedium_Click(object sender, EventArgs e)
-        {
-            SelectMode(btnMedium);
-        }
-
-        private void btnHard_Click(object sender, EventArgs e)
-        {
-            SelectMode(btnHard);
+            lblNameCharPlayer.Text = ResolveDisplayName(_player1CharacterId);
+            lblNameCharPlayer2.Text = ResolveDisplayName(_player2CharacterId);
+            if (comboBoxMap.SelectedIndex < 0)
+                comboBoxMap.SelectedIndex = 0;
+            SetMap(_currentMap);
         }
 
         private void btnPlay_Click(object sender, EventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(playerCharacterId))
+            if (string.IsNullOrWhiteSpace(_player1CharacterId) || string.IsNullOrWhiteSpace(_player2CharacterId))
             {
-                MessageBox.Show("Vui lòng chọn nhân vật trước khi vào game.");
+                MessageBox.Show("Please select characters for both players.");
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(currentMap))
-            {
-                MessageBox.Show("Vui lòng chọn bản đồ trước khi vào game.");
-                return;
-            }
-
-            GameForm gameForm = new GameForm(playerCharacterId, currentMap, returnFormOnExit: this);
+            GameForm gameForm = new(
+                _player1CharacterId,
+                _currentMap,
+                _player2CharacterId,
+                localUsername: "Player 1",
+                enemyUsername: "Player 2",
+                returnFormOnExit: this,
+                localTwoPlayer: true);
             Hide();
             gameForm.Show();
         }
 
         private void btnSelCharPlayer_Click(object sender, EventArgs e)
         {
-            CharacterSelection f = new CharacterSelection();
-            if (f.ShowDialog() == DialogResult.OK)
+            using CharacterSelection selection = new();
+            if (selection.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(selection.SelectedCharacterId))
             {
-                playerCharacterId = f.SelectedCharacterId;
+                _player1CharacterId = selection.SelectedCharacterId;
+                lblNameCharPlayer.Text = ResolveDisplayName(_player1CharacterId);
+            }
+        }
 
-                string displayName = CharacterCatalog
-                    .LoadSelectionItems(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", ".."))
-                    .FirstOrDefault(x => x.Id.Equals(playerCharacterId, StringComparison.OrdinalIgnoreCase))
-                    ?.DisplayName
-                    ?? playerCharacterId;
-
-                lblNameCharPlayer.Text = displayName;
+        private void btnSelCharPlayer2_Click(object sender, EventArgs e)
+        {
+            using CharacterSelection selection = new();
+            if (selection.ShowDialog() == DialogResult.OK && !string.IsNullOrWhiteSpace(selection.SelectedCharacterId))
+            {
+                _player2CharacterId = selection.SelectedCharacterId;
+                lblNameCharPlayer2.Text = ResolveDisplayName(_player2CharacterId);
             }
         }
 
         private void button2_Click(object sender, EventArgs e)
         {
-            OfflineMode offlineMode = new OfflineMode();
+            OfflineMode offlineMode = new();
             offlineMode.Show();
-            this.Close();
+            Close();
         }
 
+        private void comboBoxMap_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            switch (comboBoxMap.SelectedIndex)
+            {
+                case 0:
+                    SetMap("terrace");
+                    break;
+                case 1:
+                    SetMap("throneroom");
+                    break;
+                case 2:
+                    SetMap("castle");
+                    break;
+            }
+        }
+
+        private void pictureBoxMap_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }

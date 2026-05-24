@@ -20,6 +20,8 @@ namespace BattleGame.Client.Forms
     {
         private const int MaxPlayers = 2;
         private const int PacketListenPollMs = 250;
+        private const int ReadyLabelX = 193;
+        private const int ReadyLabelWidth = 128;
         private readonly string _roomCode;
         private readonly bool _isHost;
         private int _timeLimitMinutes;
@@ -283,6 +285,12 @@ namespace BattleGame.Client.Forms
         private static void UpdateReadyLabel(Label label, bool hasPlayer, bool isReady)
         {
             label.Visible = true;
+            label.AutoSize = false;
+            label.Size = new Size(ReadyLabelWidth, 25);
+            label.Location = new Point(ReadyLabelX, label.Name == "lblReady1" ? 29 : 82);
+            label.TextAlign = ContentAlignment.MiddleRight;
+            label.BackColor = Color.FromArgb(34, 124, 162);
+            label.BringToFront();
 
             if (!hasPlayer)
             {
@@ -610,7 +618,6 @@ namespace BattleGame.Client.Forms
                 "terrace" => 0,
                 "throneroom" => 1,
                 "castle" => 2,
-                "forest" => 3,
                 _ => 0
             };
         }
@@ -622,7 +629,6 @@ namespace BattleGame.Client.Forms
                 0 => "terrace",
                 1 => "throneroom",
                 2 => "castle",
-                3 => "forest",
                 _ => "terrace"
             };
         }

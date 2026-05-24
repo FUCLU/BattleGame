@@ -44,8 +44,7 @@
             // 
             // panel1
             // 
-            panel1.BackColor = Color.DarkSlateGray;
-            panel1.BackgroundImage = (Image)resources.GetObject("panel1.BackgroundImage");
+            panel1.BackColor = Color.Black;
             panel1.BackgroundImageLayout = ImageLayout.Stretch;
             panel1.Controls.Add(button3);
             panel1.Controls.Add(linkLabel2);
@@ -79,6 +78,7 @@
             // 
             linkLabel2.ActiveLinkColor = SystemColors.ActiveCaptionText;
             linkLabel2.AutoSize = true;
+            linkLabel2.BackColor = Color.Transparent;
             linkLabel2.Font = new Font("Book Antiqua", 12F, FontStyle.Bold);
             linkLabel2.LinkColor = Color.Red;
             linkLabel2.Location = new Point(203, 302);
@@ -137,7 +137,7 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Book Antiqua", 12F, FontStyle.Bold);
-            label2.ForeColor = Color.Turquoise;
+            label2.ForeColor = SystemColors.Control;
             label2.Location = new Point(32, 115);
             label2.Name = "label2";
             label2.Size = new Size(98, 24);
@@ -148,7 +148,7 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Book Antiqua", 12F, FontStyle.Bold);
-            label1.ForeColor = Color.Turquoise;
+            label1.ForeColor = SystemColors.Control;
             label1.Location = new Point(31, 34);
             label1.Name = "label1";
             label1.Size = new Size(103, 24);
@@ -157,7 +157,7 @@
             // 
             // btnMusic
             // 
-            btnMusic.Location = new Point(907, 524);
+            btnMusic.Location = new Point(951, 524);
             btnMusic.Name = "btnMusic";
             btnMusic.Size = new Size(94, 29);
             btnMusic.TabIndex = 1;

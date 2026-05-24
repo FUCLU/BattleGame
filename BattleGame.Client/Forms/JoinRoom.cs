@@ -17,12 +17,15 @@ namespace BattleGame.Client.Forms
     {
         private const int MaxTimeLimitMinutes = 5;
         private const int DefaultTimeLimitMinutes = 3;
+        private static readonly string[] MatchmakingMapIds = { "terrace", "throneroom", "castle" };
         private string _selectedMapId = "terrace";
         private static readonly HashSet<int> OwnedRoomIds = new();
+        private static readonly HashSet<int> OwnedPublicRoomsAwaitingJoin = new();
         private static readonly Dictionary<int, (string MapId, int TimeLimitMinutes)> OwnedRoomSettings = new();
         private static readonly Dictionary<int, string> OwnedRoomPasswords = new();
         private static readonly Dictionary<int, Room> OwnedRoomCache = new();
         private readonly SemaphoreSlim _roomRequestGate = new(1, 1);
+        private readonly Image? _unlockRoomIcon;
         private bool _isRefreshingRooms;
         private string _lastRenderSignature = string.Empty;
         private DateTime _lastRefreshUtc = DateTime.MinValue;
@@ -41,6 +44,7 @@ namespace BattleGame.Client.Forms
             txtRoomName.KeyDown += CreateRoomInput_KeyDown;
             txtPass.KeyDown += CreateRoomInput_KeyDown;
             textBox1.KeyDown += CreateRoomInput_KeyDown;
+            _unlockRoomIcon = LoadOptionalImage("Assets", "Background", "unlock.png");
         }
 
         private async void JoinRoom_Shown(object? sender, EventArgs e)
@@ -115,6 +119,7 @@ namespace BattleGame.Client.Forms
             if (OwnedRoomIds.Contains(roomId))
             {
                 OwnedRoomIds.Remove(roomId);
+                OwnedPublicRoomsAwaitingJoin.Remove(roomId);
                 OwnedRoomSettings.Remove(roomId);
                 OwnedRoomPasswords.Remove(roomId);
                 OwnedRoomCache.Remove(roomId);
@@ -130,6 +135,7 @@ namespace BattleGame.Client.Forms
         public static void ResetOwnedRoomState()
         {
             OwnedRoomIds.Clear();
+            OwnedPublicRoomsAwaitingJoin.Clear();
             OwnedRoomSettings.Clear();
             OwnedRoomPasswords.Clear();
             OwnedRoomCache.Clear();
@@ -143,6 +149,7 @@ namespace BattleGame.Client.Forms
                     continue;
 
                 OwnedRoomIds.Remove(roomId);
+                OwnedPublicRoomsAwaitingJoin.Remove(roomId);
                 OwnedRoomSettings.Remove(roomId);
                 OwnedRoomPasswords.Remove(roomId);
                 OwnedRoomCache.Remove(roomId);
@@ -230,7 +237,10 @@ namespace BattleGame.Client.Forms
 
                     if (ctrl.Name == "picLock")
                     {
-                        pb.Visible = room.HasPassword;
+                        pb.Image = room.HasPassword
+                            ? oldPb.Image
+                            : _unlockRoomIcon ?? oldPb.Image;
+                        pb.Visible = true;
                         pb.BringToFront();
                     }
                     else
@@ -297,6 +307,7 @@ namespace BattleGame.Client.Forms
             string roomName = NormalizeRoomName(txtRoomName.Text);
             string password = txtPass.Text.Trim();
             int timeLimitMinutes = ParseTimeLimitMinutes();
+            bool hasPassword = !string.IsNullOrWhiteSpace(password);
 
             if (timeLimitMinutes <= 0)
             {
@@ -311,13 +322,19 @@ namespace BattleGame.Client.Forms
 
             if (NetworkManager.Instance.IsConnected)
             {
+                string? resolvedName = await ResolveDuplicateRoomNameAsync(roomName);
+                if (string.IsNullOrWhiteSpace(resolvedName))
+                    return;
+                roomName = resolvedName;
+
                 ForgetOwnedRoomsByName(roomName);
 
                 CreateRoomResultPacket result = await RunRoomRequestAsync(() => NetworkManager.Instance.CreateRoomAsync(new CreateRoomPacket
                 {
                     RoomName = roomName,
                     Password = password,
-                    TimeLimitMinutes = timeLimitMinutes
+                    TimeLimitMinutes = timeLimitMinutes,
+                    AutoJoin = hasPassword
                 }));
 
                 if (result.RoomId <= 0)
@@ -329,24 +346,55 @@ namespace BattleGame.Client.Forms
                 OwnedRoomIds.Add(result.RoomId);
                 int serverTimeLimitMinutes = result.TimeLimitMinutes > 0 ? result.TimeLimitMinutes : timeLimitMinutes;
                 OwnedRoomSettings[result.RoomId] = (_selectedMapId, serverTimeLimitMinutes);
-                OwnedRoomPasswords[result.RoomId] = password;
+                if (hasPassword)
+                {
+                    OwnedRoomPasswords[result.RoomId] = password;
+                    OwnedPublicRoomsAwaitingJoin.Remove(result.RoomId);
+                }
+                else
+                {
+                    OwnedRoomPasswords.Remove(result.RoomId);
+                    OwnedPublicRoomsAwaitingJoin.Add(result.RoomId);
+                }
+
                 OwnedRoomCache[result.RoomId] = new Room
                 {
                     Name = roomName,
                     Code = result.RoomId.ToString(),
                     Password = password,
-                    CurrentPlayer = 1,
+                    CurrentPlayer = hasPassword ? 1 : 0,
                     MapId = _selectedMapId,
                     TimeLimitMinutes = serverTimeLimitMinutes,
-                    HasPassword = !string.IsNullOrWhiteSpace(password),
+                    HasPassword = hasPassword,
                     IsOwner = true
                 };
+
+                txtRoomName.Clear();
+                txtPass.Clear();
+
+                if (!hasPassword)
+                {
+                    await SendRoomMapSelectionAsync(result.RoomId, _selectedMapId);
+                    await RefreshRoomsWithRetryAsync();
+                    MessageBox.Show(
+                        $"Đã tạo phòng mở: {result.RoomId}. Bạn có thể bấm JOIN khi muốn vào phòng.",
+                        "Create Room",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Information);
+                    return;
+                }
+
                 string localUser = string.IsNullOrWhiteSpace(PlayerSession.Username) ? "You" : PlayerSession.Username;
                 RoomForm roomForm = new RoomForm(result.RoomId.ToString(), isHost: true, playerCount: 1, mapId: _selectedMapId, timeLimitMinutes: serverTimeLimitMinutes, player1Name: localUser);
                 roomForm.Show();
                 Close();
                 return;
             }
+
+            string? offlineResolvedName = ResolveDuplicateRoomName(roomName, fakeRooms.Select(r => r.Name));
+            if (string.IsNullOrWhiteSpace(offlineResolvedName))
+                return;
+            roomName = offlineResolvedName;
 
             Room room = new Room
             {
@@ -384,6 +432,69 @@ namespace BattleGame.Client.Forms
 
             text = string.Join(" ", text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries));
             return text.Length <= 32 ? text : text[..32];
+        }
+
+        private async Task<string?> ResolveDuplicateRoomNameAsync(string requestedName)
+        {
+            try
+            {
+                GetRoomResultPacket result = await RunRoomRequestAsync(() => NetworkManager.Instance.GetRoomAsync(new GetRoomPacket()));
+                return ResolveDuplicateRoomName(requestedName, result.Rooms.Select(r => r.RoomName ?? string.Empty));
+            }
+            catch
+            {
+                return requestedName;
+            }
+        }
+
+        private static string? ResolveDuplicateRoomName(string requestedName, IEnumerable<string> existingNames)
+        {
+            string normalized = NormalizeRoomName(requestedName);
+            if (string.IsNullOrWhiteSpace(normalized))
+                return null;
+
+            HashSet<string> names = existingNames
+                .Select(NormalizeRoomName)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .ToHashSet(StringComparer.OrdinalIgnoreCase);
+
+            if (!names.Contains(normalized))
+                return normalized;
+
+            string nextName = BuildNextRoomVersionName(normalized, names);
+            DialogResult answer = MessageBox.Show(
+                $"Đã có phòng tên \"{normalized}\".\nBạn có muốn tạo phòng mới với tên \"{nextName}\" không?",
+                "Tên phòng đã tồn tại",
+                MessageBoxButtons.YesNo,
+                MessageBoxIcon.Question);
+
+            return answer == DialogResult.Yes ? nextName : null;
+        }
+
+        private static string BuildNextRoomVersionName(string roomName, HashSet<string> existingNames)
+        {
+            string baseName = StripRoomVersionSuffix(roomName);
+            for (int index = 1; index < 1000; index++)
+            {
+                string candidate = NormalizeRoomName($"{baseName} ({index})");
+                if (!existingNames.Contains(candidate))
+                    return candidate;
+            }
+
+            return NormalizeRoomName($"{baseName} ({DateTime.Now:HHmmss})");
+        }
+
+        private static string StripRoomVersionSuffix(string roomName)
+        {
+            int closeIndex = roomName.LastIndexOf(')');
+            int openIndex = roomName.LastIndexOf(" (", StringComparison.Ordinal);
+            if (closeIndex != roomName.Length - 1 || openIndex < 0 || openIndex >= closeIndex)
+                return roomName;
+
+            string numberText = roomName[(openIndex + 2)..closeIndex];
+            return int.TryParse(numberText, out _)
+                ? NormalizeRoomName(roomName[..openIndex])
+                : roomName;
         }
 
 
@@ -425,10 +536,10 @@ namespace BattleGame.Client.Forms
                             return;
                         }
 
-                        int nextCountOnline = Math.Min(MaxPlayers, room.CurrentPlayer + 1);
                         if (result.IsOwner)
                         {
                             OwnedRoomIds.Add(roomId);
+                            OwnedPublicRoomsAwaitingJoin.Remove(roomId);
                             if (OwnedRoomCache.TryGetValue(roomId, out Room? ownedRoom))
                             {
                                 ownedRoom.CurrentPlayer = 1;
@@ -437,6 +548,9 @@ namespace BattleGame.Client.Forms
                         bool isHost = result.IsOwner;
                         string roomMapId = result.MapId >= 0 ? MapIdFromNetwork(result.MapId) : room.MapId;
                         int roomTimeLimitMinutes = result.TimeLimitMinutes > 0 ? result.TimeLimitMinutes : room.TimeLimitMinutes;
+                        int nextCountOnline = result.IsOwner
+                            ? Math.Max(1, room.CurrentPlayer)
+                            : Math.Min(MaxPlayers, room.CurrentPlayer + 1);
                         RoomForm roomForm = new RoomForm(result.RoomId.ToString(), isHost, nextCountOnline, roomMapId, roomTimeLimitMinutes, result.Player1Name, result.Player2Name);
                         roomForm.Show();
                         Close();
@@ -509,6 +623,7 @@ namespace BattleGame.Client.Forms
             }
 
             OwnedRoomIds.Remove(roomId);
+            OwnedPublicRoomsAwaitingJoin.Remove(roomId);
             OwnedRoomSettings.Remove(roomId);
             OwnedRoomPasswords.Remove(roomId);
             OwnedRoomCache.Remove(roomId);
@@ -676,29 +791,23 @@ namespace BattleGame.Client.Forms
             {
                 GetRoomResultPacket rooms = await RunRoomRequestAsync(() => NetworkManager.Instance.GetRoomAsync(new GetRoomPacket()));
                 RoomInfo? target = rooms.Rooms
-                    .Where(r => r.CurrentPlayers < MaxPlayers)
-                    .OrderBy(r => r.HasPassword)
+                    .Where(r => !r.HasPassword && !r.IsOwner && r.CurrentPlayers < MaxPlayers)
+                    .OrderByDescending(r => r.CurrentPlayers)
+                    .ThenBy(r => r.RoomId)
                     .FirstOrDefault();
 
                 if (target == null)
                 {
-                    MessageBox.Show("Không có phòng trống.");
+                    await CreateAndOpenRandomPublicRoomAsync();
                     return;
                 }
 
                 int roomId = target.RoomId;
-                string password = string.Empty;
-                if (target.HasPassword)
-                {
-                    if (!TryPromptPassword(target.RoomName ?? $"Room {roomId}", out string? passwordInput))
-                        return;
-                    password = passwordInput ?? string.Empty;
-                }
 
                 JoinRoomResultPacket result = await RunRoomRequestAsync(() => NetworkManager.Instance.JoinRoomWithServerRedirectAsync(new JoinRoomPacket
                 {
                     RoomId = roomId,
-                    Password = password
+                    Password = string.Empty
                 }));
 
                 if (!result.Success)
@@ -792,6 +901,81 @@ namespace BattleGame.Client.Forms
             BtnJoin_Click(sender, e);
         }
 
+        private async Task CreateAndOpenRandomPublicRoomAsync()
+        {
+            string roomName = GenerateRandomRoomName();
+            int timeLimitMinutes = ParseTimeLimitMinutes();
+            if (timeLimitMinutes <= 0)
+                timeLimitMinutes = DefaultTimeLimitMinutes;
+            string randomMapId = PickRandomMapId();
+
+            CreateRoomResultPacket result = await RunRoomRequestAsync(() => NetworkManager.Instance.CreateRoomAsync(new CreateRoomPacket
+            {
+                RoomName = roomName,
+                Password = string.Empty,
+                TimeLimitMinutes = timeLimitMinutes,
+                AutoJoin = true
+            }));
+
+            if (result.RoomId <= 0)
+            {
+                MessageBox.Show(string.IsNullOrWhiteSpace(result.Message) ? "Không thể tạo phòng tự động." : result.Message);
+                return;
+            }
+
+            OwnedRoomIds.Add(result.RoomId);
+            OwnedPublicRoomsAwaitingJoin.Remove(result.RoomId);
+            int serverTimeLimitMinutes = result.TimeLimitMinutes > 0 ? result.TimeLimitMinutes : timeLimitMinutes;
+            OwnedRoomSettings[result.RoomId] = (randomMapId, serverTimeLimitMinutes);
+            OwnedRoomPasswords.Remove(result.RoomId);
+            OwnedRoomCache[result.RoomId] = new Room
+            {
+                Name = roomName,
+                Code = result.RoomId.ToString(),
+                Password = string.Empty,
+                CurrentPlayer = 1,
+                MapId = randomMapId,
+                TimeLimitMinutes = serverTimeLimitMinutes,
+                HasPassword = false,
+                IsOwner = true
+            };
+
+            await SendRoomMapSelectionAsync(result.RoomId, randomMapId);
+
+            string localUser = string.IsNullOrWhiteSpace(PlayerSession.Username) ? "You" : PlayerSession.Username;
+            RoomForm roomForm = new RoomForm(result.RoomId.ToString(), isHost: true, playerCount: 1, mapId: randomMapId, timeLimitMinutes: serverTimeLimitMinutes, player1Name: localUser);
+            roomForm.Show();
+            Close();
+        }
+
+        private string GenerateRandomRoomName()
+        {
+            string userPrefix = string.IsNullOrWhiteSpace(PlayerSession.Username)
+                ? "Open"
+                : NormalizeRoomName(PlayerSession.Username);
+            if (string.IsNullOrWhiteSpace(userPrefix))
+                userPrefix = "Open";
+
+            return $"{userPrefix} Room {rd.Next(100, 999)}";
+        }
+
+        private string PickRandomMapId()
+        {
+            return MatchmakingMapIds[rd.Next(MatchmakingMapIds.Length)];
+        }
+
+        private async Task SendRoomMapSelectionAsync(int roomId, string mapId)
+        {
+            if (!NetworkManager.Instance.IsConnected || roomId <= 0)
+                return;
+
+            await NetworkManager.Instance.SelectMapAsync(new SelectMapPacket
+            {
+                RoomId = roomId,
+                MapId = MapIdToNetwork(mapId)
+            });
+        }
+
         private void OpenRoom(Room room, bool isHost, int nextPlayerCount)
         {
             RoomForm roomForm = new RoomForm(room.Code, isHost, nextPlayerCount, room.MapId, room.TimeLimitMinutes);
@@ -821,6 +1005,8 @@ namespace BattleGame.Client.Forms
                     string roomCode = room.RoomId.ToString();
                     string roomPassword = OwnedRoomPasswords.TryGetValue(room.RoomId, out string savedPassword) ? savedPassword : string.Empty;
                     bool hasPassword = room.HasPassword || !string.IsNullOrWhiteSpace(roomPassword);
+                    if (IsOwnedPublicRoomStillAwaitingJoin(room, hasPassword))
+                        currentPlayers = 0;
 
                     Room mappedRoom = new Room
                     {
@@ -868,6 +1054,7 @@ namespace BattleGame.Client.Forms
                     continue;
 
                 OwnedRoomIds.Remove(roomId);
+                OwnedPublicRoomsAwaitingJoin.Remove(roomId);
                 OwnedRoomSettings.Remove(roomId);
                 OwnedRoomPasswords.Remove(roomId);
                 OwnedRoomCache.Remove(roomId);
@@ -938,6 +1125,17 @@ namespace BattleGame.Client.Forms
                 && room.IsOwner;
         }
 
+        private static bool IsOwnedPublicRoomStillAwaitingJoin(RoomInfo room, bool hasPassword)
+        {
+            if (hasPassword || !OwnedPublicRoomsAwaitingJoin.Contains(room.RoomId))
+                return false;
+
+            int localUserId = NetworkManager.Instance.PreferredUserId;
+            return localUserId > 0
+                && room.Player1Id == localUserId
+                && room.Player2Id == -1;
+        }
+
         private static bool TryGetOwnedSettings(int roomId, out (string MapId, int TimeLimitMinutes) settings)
         {
             return OwnedRoomSettings.TryGetValue(roomId, out settings);
@@ -973,7 +1171,6 @@ namespace BattleGame.Client.Forms
                 "terrace" => "Battle 1",
                 "throneroom" => "Battle 2",
                 "castle" => "Battle 3",
-                "forest" => "Forest",
                 _ => mapId
             };
         }
@@ -985,8 +1182,18 @@ namespace BattleGame.Client.Forms
                 0 => "terrace",
                 1 => "throneroom",
                 2 => "castle",
-                3 => "forest",
                 _ => "terrace"
+            };
+        }
+
+        private static int MapIdToNetwork(string mapId)
+        {
+            return mapId switch
+            {
+                "terrace" => 0,
+                "throneroom" => 1,
+                "castle" => 2,
+                _ => 0
             };
         }
 
@@ -1033,6 +1240,32 @@ namespace BattleGame.Client.Forms
                 btnMusic.BackColor = Color.FromArgb(37, 99, 235);
                 btnMusic.ForeColor = Color.White;
             }
+        }
+
+        private static Image? LoadOptionalImage(params string[] parts)
+        {
+            string path = Path.Combine(parts);
+            if (!File.Exists(path))
+            {
+                string basePath = Path.Combine(new[] { AppDomain.CurrentDomain.BaseDirectory }.Concat(parts).ToArray());
+                string projectPath = Path.Combine(new[]
+                {
+                    AppDomain.CurrentDomain.BaseDirectory,
+                    "..",
+                    "..",
+                    ".."
+                }.Concat(parts).ToArray());
+
+                path = File.Exists(basePath)
+                    ? basePath
+                    : Path.GetFullPath(projectPath);
+            }
+
+            if (!File.Exists(path))
+                return null;
+
+            using Image image = Image.FromFile(path);
+            return new Bitmap(image);
         }
     }
 }

@@ -45,28 +45,29 @@
             pnlMain.BackgroundImageLayout = ImageLayout.Stretch;
             pnlMain.Controls.Add(tabControl);
             pnlMain.Controls.Add(btnBack);
-            pnlMain.Location = new Point(-2, 0);
+            pnlMain.Location = new Point(0, 0);
             pnlMain.Name = "pnlMain";
-            pnlMain.Size = new Size(803, 466);
+            pnlMain.Size = new Size(900, 600);
             pnlMain.TabIndex = 0;
             // 
             // tabControl
             // 
             tabControl.Controls.Add(tabOffline);
             tabControl.Controls.Add(tabOnline);
-            tabControl.Font = new Font("Lucida Bright", 12F, FontStyle.Italic, GraphicsUnit.Point, 0);
-            tabControl.Location = new Point(28, 14);
+            tabControl.Font = new Font("Courier New", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            tabControl.ItemSize = new Size(180, 42);
+            tabControl.Location = new Point(24, 18);
             tabControl.Name = "tabControl";
             tabControl.SelectedIndex = 0;
-            tabControl.Size = new Size(753, 400);
+            tabControl.Size = new Size(852, 500);
             tabControl.TabIndex = 1;
             // 
             // tabOffline
             // 
-            tabOffline.Location = new Point(4, 32);
+            tabOffline.Location = new Point(4, 46);
             tabOffline.Name = "tabOffline";
             tabOffline.Padding = new Padding(3);
-            tabOffline.Size = new Size(745, 364);
+            tabOffline.Size = new Size(844, 450);
             tabOffline.TabIndex = 0;
             tabOffline.Text = "Offline";
             tabOffline.UseVisualStyleBackColor = true;
@@ -74,10 +75,10 @@
             // tabOnline
             // 
             tabOnline.BackColor = SystemColors.Info;
-            tabOnline.Location = new Point(4, 32);
+            tabOnline.Location = new Point(4, 46);
             tabOnline.Name = "tabOnline";
             tabOnline.Padding = new Padding(3);
-            tabOnline.Size = new Size(745, 364);
+            tabOnline.Size = new Size(844, 450);
             tabOnline.TabIndex = 1;
             tabOnline.Text = "Online";
             // 
@@ -86,18 +87,18 @@
             btnBack.BackgroundImage = (Image)resources.GetObject("btnBack.BackgroundImage");
             btnBack.BackgroundImageLayout = ImageLayout.Stretch;
             btnBack.FlatStyle = FlatStyle.Popup;
-            btnBack.Location = new Point(326, 418);
+            btnBack.Font = new Font("Courier New", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            btnBack.Location = new Point(370, 532);
             btnBack.Name = "btnBack";
-            btnBack.Size = new Size(127, 45);
+            btnBack.Size = new Size(160, 52);
             btnBack.TabIndex = 0;
             btnBack.UseVisualStyleBackColor = true;
             btnBack.Click += btnBack_Click;
             // 
             // InstructionForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 464);
+            AutoScaleMode = AutoScaleMode.None;
+            ClientSize = new Size(900, 600);
             Controls.Add(pnlMain);
             Name = "InstructionForm";
             Text = "InstructionForm";

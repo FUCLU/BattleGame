@@ -85,10 +85,11 @@ namespace BattleGame.Server.Services
             _config = config;
         }
 
-        public (int RoomId, bool Success) CreateRoom(string roomName, string password, int timeLimitMinutes, int ownerId, string ownerName, ClientHandler handler)
+        public (int RoomId, bool Success) CreateRoom(string roomName, string password, int timeLimitMinutes, int ownerId, string ownerName, ClientHandler? handler, bool autoJoin = true)
         {
             RemoveExistingRoomsForOwner(ownerId);
             int safeTimeLimitMinutes = NormalizeTimeLimitMinutes(timeLimitMinutes);
+            bool joinOwnerNow = autoJoin && handler != null;
 
             for (int i = 0; i < 50; i++)
             {
@@ -101,8 +102,9 @@ namespace BattleGame.Server.Services
                     TimeLimitMinutes = safeTimeLimitMinutes,
                     OwnerId = ownerId,
                     OwnerName = ownerName,
-                    Player1Id = ownerId,
-                    Player1Name = ownerName,
+                    OwnerWaitingToJoin = !joinOwnerNow,
+                    Player1Id = joinOwnerNow ? ownerId : -1,
+                    Player1Name = joinOwnerNow ? ownerName : string.Empty,
                     Player1CharId = -1,
                     Player2Id = -1,
                     Player2Name = string.Empty,
@@ -117,13 +119,14 @@ namespace BattleGame.Server.Services
                 {
                     _runtimeRooms[roomId] = new LocalRoomRuntime
                     {
-                        Player1Handler = handler,
+                        Player1Handler = joinOwnerNow ? handler : null,
                         RoundDurationSeconds = safeTimeLimitMinutes * 60f,
                         RoundSecondsRemaining = safeTimeLimitMinutes * 60f
                     };
                 }
 
-                _roomStore.SetUserAffinity(ownerId, _config.ServerId);
+                if (joinOwnerNow)
+                    _roomStore.SetUserAffinity(ownerId, _config.ServerId);
                 return (roomId, true);
             }
 
@@ -253,6 +256,11 @@ namespace BattleGame.Server.Services
                 // Rejoin: user already belongs to this room, only refresh handler.
                 if (room.Player1Id == userId)
                 {
+                    if (room.OwnerId == userId)
+                    {
+                        room.OwnerWaitingToJoin = false;
+                        _roomStore.SaveRoom(room);
+                    }
                     runtime.Player1Handler = handler;
                     _roomStore.SetUserAffinity(userId, _config.ServerId);
                     message = string.Empty;
@@ -261,6 +269,11 @@ namespace BattleGame.Server.Services
 
                 if (room.Player2Id == userId)
                 {
+                    if (room.OwnerId == userId)
+                    {
+                        room.OwnerWaitingToJoin = false;
+                        _roomStore.SaveRoom(room);
+                    }
                     runtime.Player2Handler = handler;
                     _roomStore.SetUserAffinity(userId, _config.ServerId);
                     message = string.Empty;
@@ -272,6 +285,8 @@ namespace BattleGame.Server.Services
                     room.Player1Id = userId;
                     room.Player1Name = userName;
                     room.Player1CharId = -1;
+                    if (room.OwnerId == userId)
+                        room.OwnerWaitingToJoin = false;
                     runtime.Player1Handler = handler;
                 }
                 else
@@ -279,6 +294,8 @@ namespace BattleGame.Server.Services
                     room.Player2Id = userId;
                     room.Player2Name = userName;
                     room.Player2CharId = -1;
+                    if (room.OwnerId == userId)
+                        room.OwnerWaitingToJoin = false;
                     runtime.Player2Handler = handler;
                 }
             }
@@ -932,7 +949,7 @@ namespace BattleGame.Server.Services
         private static int GetCurrentPlayerCount(RoomMeta room)
         {
             int count = 0;
-            if (room.Player1Id != -1) count++;
+            if (room.Player1Id != -1 && !(room.OwnerWaitingToJoin && room.Player1Id == room.OwnerId)) count++;
             if (room.Player2Id != -1) count++;
             return count;
         }

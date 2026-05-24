@@ -49,6 +49,14 @@ namespace BattleGame.LoadBalancer.Routing
                     var preferred = active.FirstOrDefault(s => s.ServerId == preferredServerId);
                     if (preferred != null)
                         return preferred;
+
+                    if (roomId.HasValue && roomId.Value > 0)
+                    {
+                        LbLogger.Warn(
+                            $"room {roomId.Value} belongs to unavailable server {preferredServerId}; refusing fallback route",
+                            "routing");
+                        return null;
+                    }
                 }
                 index = index % active.Count;
                 return active[index++];

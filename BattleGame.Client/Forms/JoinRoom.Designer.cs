@@ -137,9 +137,9 @@
             btnBack.BackgroundImage = (Image)resources.GetObject("btnBack.BackgroundImage");
             btnBack.BackgroundImageLayout = ImageLayout.Stretch;
             btnBack.FlatStyle = FlatStyle.Popup;
-            btnBack.Location = new Point(95, 386);
+            btnBack.Location = new Point(87, 382);
             btnBack.Name = "btnBack";
-            btnBack.Size = new Size(162, 54);
+            btnBack.Size = new Size(171, 54);
             btnBack.TabIndex = 2;
             btnBack.UseVisualStyleBackColor = false;
             btnBack.Click += btnBack_Click;
@@ -165,7 +165,7 @@
             label3.Name = "label3";
             label3.Size = new Size(86, 23);
             label3.TabIndex = 4;
-            label3.Text = "Password:";
+            label3.Text = "Password (optional):";
             // 
             // txtPass
             // 

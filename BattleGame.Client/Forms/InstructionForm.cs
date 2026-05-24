@@ -18,11 +18,11 @@ namespace BattleGame.Client.Forms
         private static readonly Color KeyBgColor = Color.FromArgb(8, 35, 90);
         private static readonly Color KeyTextColor = Color.FromArgb(210, 235, 255);
 
-        private static readonly Font FontTitle = new Font("Courier New", 12F, FontStyle.Bold);
-        private static readonly Font FontSection = new Font("Courier New", 10F, FontStyle.Bold);
-        private static readonly Font FontBody = new Font("Courier New", 9F);
-        private static readonly Font FontBtn = new Font("Courier New", 10F, FontStyle.Bold);
-        private static readonly Font FontTab = new Font("Courier New", 10F, FontStyle.Bold);
+        private static readonly Font FontTitle = new Font("Courier New", 16F, FontStyle.Bold);
+        private static readonly Font FontSection = new Font("Courier New", 13F, FontStyle.Bold);
+        private static readonly Font FontBody = new Font("Courier New", 11.5F, FontStyle.Bold);
+        private static readonly Font FontBtn = new Font("Courier New", 12F, FontStyle.Bold);
+        private static readonly Font FontTab = new Font("Courier New", 12F, FontStyle.Bold);
 
         public InstructionForm()
         {
@@ -40,14 +40,19 @@ namespace BattleGame.Client.Forms
             this.FormBorderStyle = FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
             this.StartPosition = FormStartPosition.CenterScreen;
+            this.ClientSize = new Size(900, 600);
 
             pnlMain.BackColor = BgColor;
+            pnlMain.Location = new Point(0, 0);
+            pnlMain.Size = ClientSize;
 
             tabControl.DrawMode = TabDrawMode.OwnerDrawFixed;
             tabControl.DrawItem += TabControl_DrawItem;
             tabControl.BackColor = BgColor;
             tabControl.Font = FontTab;
-            tabControl.ItemSize = new Size(150, 32);
+            tabControl.ItemSize = new Size(180, 42);
+            tabControl.Location = new Point(24, 18);
+            tabControl.Size = new Size(852, 500);
             tabControl.SelectedIndexChanged += (s, e) => tabControl.Invalidate();
 
             tabOffline.BackColor = PanelColor;
@@ -63,6 +68,8 @@ namespace BattleGame.Client.Forms
             btnBack.Text = "[ BACK ]";
             btnBack.Cursor = Cursors.Hand;
             btnBack.BackgroundImage = null;
+            btnBack.Size = new Size(160, 52);
+            btnBack.Location = new Point((ClientSize.Width - btnBack.Width) / 2, 532);
         }
 
         private void TabControl_DrawItem(object sender, DrawItemEventArgs e)
@@ -112,10 +119,10 @@ namespace BattleGame.Client.Forms
                 ForeColor = color,
                 BackColor = Color.FromArgb(25, color.R, color.G, color.B),
                 AutoSize = false,
-                Width = 700,
-                Height = 22,
+                Width = 790,
+                Height = 34,
                 Location = new Point(x, y),
-                Padding = new Padding(4, 2, 0, 0)
+                Padding = new Padding(8, 5, 0, 0)
             };
         }
 
@@ -127,7 +134,7 @@ namespace BattleGame.Client.Forms
                 FlowDirection = FlowDirection.LeftToRight,
                 WrapContents = false,
                 AutoSize = true,
-                Height = 36,
+                Height = 46,
                 BackColor = Color.Transparent,
                 Padding = new Padding(0)
             };
@@ -139,10 +146,10 @@ namespace BattleGame.Client.Forms
                 ForeColor = TextColor,
                 BackColor = Color.Transparent,
                 AutoSize = false,
-                Width = 110,
-                Height = 32,
+                Width = 150,
+                Height = 42,
                 TextAlign = ContentAlignment.MiddleLeft,
-                Margin = new Padding(0, 2, 8, 0)
+                Margin = new Padding(0, 2, 14, 0)
             });
 
             var img = GetImage(imageFile);
@@ -151,9 +158,50 @@ namespace BattleGame.Client.Forms
                 {
                     Image = img,
                     SizeMode = PictureBoxSizeMode.StretchImage,
-                    Size = new Size(32, 32),
+                    Size = new Size(40, 40),
                     Margin = new Padding(2, 2, 0, 0)
                 });
+
+            return row;
+        }
+
+        private FlowLayoutPanel MakeTextControlRow(string actionName, string keyText)
+        {
+            var row = new FlowLayoutPanel
+            {
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                AutoSize = true,
+                Height = 42,
+                BackColor = Color.Transparent,
+                Padding = new Padding(0)
+            };
+
+            row.Controls.Add(new Label
+            {
+                Text = actionName,
+                Font = FontBody,
+                ForeColor = TextColor,
+                BackColor = Color.Transparent,
+                AutoSize = false,
+                Width = 150,
+                Height = 38,
+                TextAlign = ContentAlignment.MiddleLeft,
+                Margin = new Padding(0, 2, 14, 0)
+            });
+
+            row.Controls.Add(new Label
+            {
+                Text = keyText,
+                Font = FontBody,
+                ForeColor = KeyTextColor,
+                BackColor = KeyBgColor,
+                AutoSize = false,
+                Width = 160,
+                Height = 34,
+                TextAlign = ContentAlignment.MiddleCenter,
+                Margin = new Padding(2, 4, 0, 0)
+            });
 
             return row;
         }
@@ -167,10 +215,10 @@ namespace BattleGame.Client.Forms
                 Dock = DockStyle.Fill,
                 AutoScroll = true,
                 BackColor = PanelColor,
-                Padding = new Padding(14, 10, 14, 10)
+                Padding = new Padding(18, 14, 18, 14)
             };
 
-            int y = 10;
+            int y = 14;
 
             panel.Controls.Add(new Label
             {
@@ -181,11 +229,11 @@ namespace BattleGame.Client.Forms
                 AutoSize = true,
                 Location = new Point(10, y)
             });
-            y += 32;
+            y += 44;
 
             // Player 1
             panel.Controls.Add(MakeSectionLabel("PLAYER 1", AccentColor, 10, y));
-            y += 26;
+            y += 42;
 
             var p1 = new (string action, string img)[]
             {
@@ -202,14 +250,38 @@ namespace BattleGame.Client.Forms
                 var row = MakeControlRow(action, img);
                 row.Location = new Point(20, y);
                 panel.Controls.Add(row);
-                y += 38;
+                y += 48;
             }
 
-            y += 8;
+            y += 12;
+
+            panel.Controls.Add(MakeSectionLabel("PLAYER 2 - SAME KEYBOARD", AccentColor, 10, y));
+            y += 42;
+
+            var p2 = new (string action, string key)[] 
+            {
+                ("Move Left",  "Left Arrow"),
+                ("Move Right", "Right Arrow"),
+                ("Guard",      "Down Arrow"),
+                ("Punch",      "Num 1"),
+                ("Dash",       "Num 2"),
+                ("Skill 1",    "Num 4"),
+                ("Skill 2",    "Num 5"),
+            };
+
+            foreach (var (action, key) in p2)
+            {
+                var row = MakeTextControlRow(action, key);
+                row.Location = new Point(20, y);
+                panel.Controls.Add(row);
+                y += 44;
+            }
+
+            y += 12;
 
             // Tips
             panel.Controls.Add(MakeSectionLabel("TIPS", TipColor, 10, y));
-            y += 26;
+            y += 42;
 
             foreach (var tip in new[]
             {
@@ -224,10 +296,12 @@ namespace BattleGame.Client.Forms
                     Font = FontBody,
                     ForeColor = TipColor,
                     BackColor = Color.Transparent,
-                    AutoSize = true,
-                    Location = new Point(24, y)
+                    AutoSize = false,
+                    Size = new Size(780, 30),
+                    Location = new Point(24, y),
+                    TextAlign = ContentAlignment.MiddleLeft
                 });
-                y += 22;
+                y += 32;
             }
 
             tabOffline.Controls.Add(panel);
@@ -242,10 +316,10 @@ namespace BattleGame.Client.Forms
                 Dock = DockStyle.Fill,
                 AutoScroll = true,
                 BackColor = PanelColor,
-                Padding = new Padding(14, 10, 14, 10)
+                Padding = new Padding(18, 14, 18, 14)
             };
 
-            int y = 10;
+            int y = 14;
 
             panel.Controls.Add(new Label
             {
@@ -256,10 +330,10 @@ namespace BattleGame.Client.Forms
                 AutoSize = true,
                 Location = new Point(10, y)
             });
-            y += 32;
+            y += 44;
 
             panel.Controls.Add(MakeSectionLabel("PLAYER CONTROLS", AccentColor, 10, y));
-            y += 26;
+            y += 42;
 
             var controls = new (string action, string img)[]
             {
@@ -276,13 +350,13 @@ namespace BattleGame.Client.Forms
                 var row = MakeControlRow(action, img);
                 row.Location = new Point(20, y);
                 panel.Controls.Add(row);
-                y += 38;
+                y += 48;
             }
 
-            y += 8;
+            y += 10;
 
             panel.Controls.Add(MakeSectionLabel("NETWORK NOTES", Color.FromArgb(120, 190, 255), 10, y));
-            y += 26;
+            y += 42;
 
             foreach (var note in new[]
             {
@@ -297,10 +371,12 @@ namespace BattleGame.Client.Forms
                     Font = FontBody,
                     ForeColor = Color.FromArgb(160, 210, 255),
                     BackColor = Color.Transparent,
-                    AutoSize = true,
-                    Location = new Point(24, y)
+                    AutoSize = false,
+                    Size = new Size(780, 30),
+                    Location = new Point(24, y),
+                    TextAlign = ContentAlignment.MiddleLeft
                 });
-                y += 22;
+                y += 32;
             }
 
             tabOnline.Controls.Add(panel);

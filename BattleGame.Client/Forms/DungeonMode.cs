@@ -39,7 +39,7 @@ namespace BattleGame.Client.Forms
         {
             if (string.IsNullOrWhiteSpace(_selectedCharacterId))
             {
-                MessageBox.Show("Vui long chon nhan vat truoc khi vao stage.", "Dungeon", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show("Vui lòng chọn nhân vật trước khi vào stage.", "Dungeon", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 return;
             }
 

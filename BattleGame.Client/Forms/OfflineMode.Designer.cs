@@ -70,7 +70,7 @@
             btnVsBot.Name = "btnVsBot";
             btnVsBot.Size = new Size(174, 48);
             btnVsBot.TabIndex = 2;
-            btnVsBot.Text = "BOT";
+            btnVsBot.Text = "PVP";
             btnVsBot.UseVisualStyleBackColor = false;
             btnVsBot.Click += btnVsBot_Click;
             // 
@@ -90,13 +90,15 @@
             // 
             // button1
             // 
+            button1.BackColor = Color.FromArgb(42, 93, 143);
             button1.Font = new Font("Segoe UI", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            button1.ForeColor = SystemColors.ButtonFace;
             button1.Location = new Point(315, 410);
             button1.Name = "button1";
             button1.Size = new Size(163, 56);
             button1.TabIndex = 4;
             button1.Text = "BACK";
-            button1.UseVisualStyleBackColor = true;
+            button1.UseVisualStyleBackColor = false;
             button1.Click += button1_Click;
             // 
             // OfflineMode

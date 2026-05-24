@@ -2,6 +2,7 @@ using BattleGame.Client.Game.Core;
 using BattleGame.Client.Game.Core.Components;
 using BattleGame.Client.Game.Systems;
 using BattleGame.Client.Managers;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace BattleGame.Client.Game.Input
@@ -11,15 +12,41 @@ namespace BattleGame.Client.Game.Input
         private readonly Entity _entity;
         private readonly CombatSystem _combat;
         private readonly Entity _target;
+        private readonly Keys[] _leftKeys;
+        private readonly Keys[] _rightKeys;
+        private readonly Keys[] _blockKeys;
+        private readonly Keys[] _attackKeys;
+        private readonly Keys[] _skill1Keys;
+        private readonly Keys[] _skill2Keys;
+        private readonly Keys[] _dashKeys;
 
-        // Theo dõi phím trigger một lần (attack, skill)
-        private bool _prevJ, _prevU, _prevI, _prevK;
+        private bool _prevAttack;
+        private bool _prevSkill1;
+        private bool _prevSkill2;
+        private bool _prevDash;
 
-        public PlayerController(Entity entity, Entity target, CombatSystem combat)
+        public PlayerController(
+            Entity entity,
+            Entity target,
+            CombatSystem combat,
+            Keys leftKey = Keys.A,
+            Keys rightKey = Keys.D,
+            Keys blockKey = Keys.S,
+            Keys attackKey = Keys.J,
+            Keys skill1Key = Keys.U,
+            Keys skill2Key = Keys.I,
+            Keys dashKey = Keys.K)
         {
             _entity = entity;
             _target = target;
             _combat = combat;
+            _leftKeys = CreateAliases(leftKey);
+            _rightKeys = CreateAliases(rightKey);
+            _blockKeys = CreateAliases(blockKey);
+            _attackKeys = CreateAliases(attackKey);
+            _skill1Keys = CreateAliases(skill1Key);
+            _skill2Keys = CreateAliases(skill2Key);
+            _dashKeys = CreateAliases(dashKey);
         }
 
         public void Update()
@@ -27,54 +54,42 @@ namespace BattleGame.Client.Game.Input
             var mv = _entity.Get<MovementComponent>();
             var ch = _entity.Get<CharacterComponent>();
 
-            if (ch.IsDead) return;
+            if (ch.IsDead)
+                return;
 
-            // ===== MOVEMENT =====
             mv.VelocityX = 0;
 
             if (!ch.IsBusy && !ch.IsProtecting)
             {
-                if (InputManager.IsKeyDown(Keys.A))
+                if (IsAnyKeyDown(_leftKeys))
                 {
                     mv.VelocityX = -mv.Speed;
                     mv.FacingRight = false;
                 }
-                else if (InputManager.IsKeyDown(Keys.D))
+                else if (IsAnyKeyDown(_rightKeys))
                 {
                     mv.VelocityX = mv.Speed;
                     mv.FacingRight = true;
                 }
             }
 
-            // ===== BLOCK =====
-            ch.IsProtecting = InputManager.IsKeyDown(Keys.S) && !ch.IsBusy;
+            ch.IsProtecting = IsAnyKeyDown(_blockKeys) && !ch.IsBusy;
 
-            // ===== INPUT TRIGGER =====
-            bool curJ = InputManager.IsKeyDown(Keys.J);
-            bool curU = InputManager.IsKeyDown(Keys.U);
-            bool curI = InputManager.IsKeyDown(Keys.I);
-            bool curK = InputManager.IsKeyDown(Keys.K);
+            bool curAttack = IsAnyKeyDown(_attackKeys);
+            bool curSkill1 = IsAnyKeyDown(_skill1Keys);
+            bool curSkill2 = IsAnyKeyDown(_skill2Keys);
+            bool curDash = IsAnyKeyDown(_dashKeys);
 
-            // ===== ATTACK =====
-            if (curJ && !_prevJ && !ch.IsBusy)
-            {
+            if (curAttack && !_prevAttack && !ch.IsBusy)
                 _combat.Attack(_entity);
-            }
 
-            // ===== SKILL 1 (DAMAGE) =====
-            if (curU && !_prevU && !ch.IsBusy)
-            {
+            if (curSkill1 && !_prevSkill1 && !ch.IsBusy)
                 _combat.UseSkill(_entity, 1);
-            }
 
-            // ===== SKILL 2 (STUN) =====
-            if (curI && !_prevI && !ch.IsBusy)
-            {
+            if (curSkill2 && !_prevSkill2 && !ch.IsBusy)
                 _combat.UseSkill(_entity, 2);
-            }
 
-            // ===== DASH =====
-            if (curK && !_prevK && !ch.IsBusy && !ch.IsProtecting)
+            if (curDash && !_prevDash && !ch.IsBusy && !ch.IsProtecting)
             {
                 string dashAnimation = ResolveDashAnimation(ch);
                 if (!string.IsNullOrWhiteSpace(dashAnimation))
@@ -94,10 +109,10 @@ namespace BattleGame.Client.Game.Input
                 }
             }
 
-            _prevJ = curJ;
-            _prevU = curU;
-            _prevI = curI;
-            _prevK = curK;
+            _prevAttack = curAttack;
+            _prevSkill1 = curSkill1;
+            _prevSkill2 = curSkill2;
+            _prevDash = curDash;
         }
 
         private static string ResolveDashAnimation(CharacterComponent ch)
@@ -110,6 +125,21 @@ namespace BattleGame.Client.Game.Input
                 return "Walk";
 
             return string.Empty;
+        }
+
+        private static bool IsAnyKeyDown(Keys[] keys)
+            => keys.Any(InputManager.IsKeyDown);
+
+        private static Keys[] CreateAliases(Keys key)
+        {
+            return key switch
+            {
+                Keys.NumPad1 => new[] { Keys.NumPad1, Keys.D1, Keys.End },
+                Keys.NumPad2 => new[] { Keys.NumPad2, Keys.D2 },
+                Keys.NumPad4 => new[] { Keys.NumPad4, Keys.D4 },
+                Keys.NumPad5 => new[] { Keys.NumPad5, Keys.D5, Keys.Clear },
+                _ => new[] { key }
+            };
         }
     }
 }

@@ -105,6 +105,7 @@ namespace BattleGame.Server.Services
         public string ServerId { get; set; } = string.Empty;
         public int OwnerId { get; set; } = -1;
         public string OwnerName { get; set; } = string.Empty;
+        public bool OwnerWaitingToJoin { get; set; }
         public int Player1Id { get; set; } = -1;
         public string Player1Name { get; set; } = string.Empty;
         public int Player1CharId { get; set; } = -1;

@@ -143,28 +143,28 @@
             // 
             // lblReady2
             // 
-            lblReady2.AutoSize = true;
             lblReady2.BackColor = Color.FromArgb(34, 124, 162);
             lblReady2.Font = new Font("Segoe UI", 10.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblReady2.ForeColor = Color.Ivory;
-            lblReady2.Location = new Point(214, 82);
+            lblReady2.Location = new Point(193, 82);
             lblReady2.Name = "lblReady2";
-            lblReady2.Size = new Size(102, 25);
+            lblReady2.Size = new Size(128, 25);
             lblReady2.TabIndex = 10;
             lblReady2.Text = "WAITING..";
+            lblReady2.TextAlign = ContentAlignment.MiddleRight;
             lblReady2.Visible = false;
             // 
             // lblReady1
             // 
-            lblReady1.AutoSize = true;
             lblReady1.BackColor = Color.FromArgb(34, 124, 162);
             lblReady1.Font = new Font("Segoe UI", 10.8F, FontStyle.Bold, GraphicsUnit.Point, 0);
             lblReady1.ForeColor = Color.White;
-            lblReady1.Location = new Point(213, 29);
+            lblReady1.Location = new Point(193, 29);
             lblReady1.Name = "lblReady1";
-            lblReady1.Size = new Size(102, 25);
+            lblReady1.Size = new Size(128, 25);
             lblReady1.TabIndex = 9;
             lblReady1.Text = "WAITING..";
+            lblReady1.TextAlign = ContentAlignment.MiddleRight;
             lblReady1.Visible = false;
             // 
             // textBox2

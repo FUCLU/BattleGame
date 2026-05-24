@@ -223,7 +223,7 @@
             label2.AutoSize = true;
             label2.BackColor = Color.Transparent;
             label2.Font = new Font("Yu Gothic Medium", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
-            label2.ForeColor = Color.DarkSalmon;
+            label2.ForeColor = Color.Navy;
             label2.Location = new Point(34, 100);
             label2.Name = "label2";
             label2.Size = new Size(389, 52);

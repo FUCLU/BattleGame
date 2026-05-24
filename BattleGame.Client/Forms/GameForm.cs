@@ -32,9 +32,13 @@ namespace BattleGame.Client.Forms
         private const int HudPortraitWidth = 93;
         private const int StatusPanelWidth = 304;
 
-        private readonly GameEngine _engine;
+        private GameEngine _engine;
         private readonly bool _isOnline;
         private readonly bool _isDungeonMap;
+        private readonly bool _localTwoPlayer;
+        private readonly string _playerCharacterId;
+        private readonly string _enemyCharacterId;
+        private readonly string _mapId;
         private readonly int _localPlayerId;
         private readonly string? _localUsername;
         private readonly string? _enemyUsername;
@@ -54,6 +58,16 @@ namespace BattleGame.Client.Forms
         private float _roundSecondsRemaining = 180f;
         private int _currentRound = 1;
         private bool _isSuddenDeath;
+        private int _player1RoundWins;
+        private int _player2RoundWins;
+        private bool _offlineRoundResolving;
+        private bool _offlineMatchEnded;
+        private bool _dungeonRunEnded;
+        private float _roundIntroTimer = RoundIntroSeconds;
+        private string _roundIntroText = "ROUND 1";
+        private const float RoundIntroSeconds = 2.2f;
+        private const float OfflineRoundResolveDelaySeconds = 1.2f;
+        private const float DungeonResolveDelaySeconds = 1.2f;
 
         private static readonly string AssetsRoot = Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory,
@@ -88,6 +102,8 @@ namespace BattleGame.Client.Forms
         private readonly Dictionary<Panel, HudBarState> _hudBars = new();
         private Label? _skill1CooldownLabel;
         private Label? _skill2CooldownLabel;
+        private Label? _enemySkill1CooldownLabel;
+        private Label? _enemySkill2CooldownLabel;
         private readonly Form? _returnFormOnExit;
         private bool _destinationOpened;
         private string _currentBossHudCharacterId = string.Empty;
@@ -101,7 +117,8 @@ namespace BattleGame.Client.Forms
             string? localUsername = null,
             string? enemyUsername = null,
             int? roomId = null,
-            Form? returnFormOnExit = null)
+            Form? returnFormOnExit = null,
+            bool localTwoPlayer = false)
         {
             try
             {
@@ -127,13 +144,18 @@ namespace BattleGame.Client.Forms
                 InputManager.Clear();
                 _isOnline = isOnline;
                 _isDungeonMap = IsDungeonMap(mapId);
+                _localTwoPlayer = localTwoPlayer;
+                _playerCharacterId = characterId;
+                _enemyCharacterId = string.IsNullOrWhiteSpace(enemyCharacterId) ? "samurai" : enemyCharacterId.Trim().ToLowerInvariant();
+                _mapId = mapId;
                 _localPlayerId = localPlayerId;
                 _localUsername = string.IsNullOrWhiteSpace(localUsername) ? null : localUsername.Trim();
                 _enemyUsername = string.IsNullOrWhiteSpace(enemyUsername) ? null : enemyUsername.Trim();
                 _roomId = roomId is > 0 ? roomId : null;
                 _returnFormOnExit = returnFormOnExit;
                 _mirrorView = false;
-                _engine = new GameEngine(characterId, mapId, this.ClientSize.Width, this.ClientSize.Height, enemyCharacterId);
+                _engine = CreateGameEngine();
+                StartRoundIntro();
 
                 CreateBackBuffer();
 
@@ -172,6 +194,23 @@ namespace BattleGame.Client.Forms
             _backGraphics.SmoothingMode = SmoothingMode.None;
             _backGraphics.PixelOffsetMode = PixelOffsetMode.None;
             _backGraphics.CompositingQuality = CompositingQuality.HighSpeed;
+        }
+
+        private GameEngine CreateGameEngine()
+        {
+            return new GameEngine(
+                _playerCharacterId,
+                _mapId,
+                ClientSize.Width,
+                ClientSize.Height,
+                _enemyCharacterId,
+                _localTwoPlayer);
+        }
+
+        private void StartRoundIntro()
+        {
+            _roundIntroText = _isSuddenDeath ? "SUDDEN DEATH" : $"ROUND {_currentRound}";
+            _roundIntroTimer = RoundIntroSeconds;
         }
 
         private void GameForm_Load(object? sender, EventArgs e)
@@ -219,17 +258,48 @@ namespace BattleGame.Client.Forms
         protected override void OnKeyDown(KeyEventArgs e)
         {
             base.OnKeyDown(e);
-            if (IsTrackedGameKey(e.KeyCode))
-            {
-                bool wasDown = InputManager.IsKeyDown(e.KeyCode);
-                InputManager.SetKey(e.KeyCode, true);
-
-                if (_isOnline && !wasDown && TryCreateImmediateActionInput(e.KeyCode, out var actionInput))
-                    LatchSampledInput(actionInput);
-            }
+            TrackKeyDown(e.KeyCode);
 
             e.Handled = true;
             e.SuppressKeyPress = true;
+        }
+
+        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
+        {
+            Keys keyCode = keyData & Keys.KeyCode;
+            if (IsTrackedGameKey(keyCode))
+            {
+                TrackKeyDown(keyCode);
+                return true;
+            }
+
+            return base.ProcessCmdKey(ref msg, keyData);
+        }
+
+        protected override bool IsInputKey(Keys keyData)
+        {
+            Keys keyCode = keyData & Keys.KeyCode;
+            return IsTrackedGameKey(keyCode) || base.IsInputKey(keyData);
+        }
+
+        protected override void OnPreviewKeyDown(PreviewKeyDownEventArgs e)
+        {
+            if (IsTrackedGameKey(e.KeyCode))
+                e.IsInputKey = true;
+
+            base.OnPreviewKeyDown(e);
+        }
+
+        private void TrackKeyDown(Keys keyCode)
+        {
+            if (!IsTrackedGameKey(keyCode))
+                return;
+
+            bool wasDown = InputManager.IsKeyDown(keyCode);
+            InputManager.SetKey(keyCode, true);
+
+            if (_isOnline && !wasDown && TryCreateImmediateActionInput(keyCode, out var actionInput))
+                LatchSampledInput(actionInput);
         }
 
         private void UpdateCharacterHeaders()
@@ -285,9 +355,13 @@ namespace BattleGame.Client.Forms
         {
             _skill1CooldownLabel ??= CreateSkillCooldownLabel();
             _skill2CooldownLabel ??= CreateSkillCooldownLabel();
+            _enemySkill1CooldownLabel ??= CreateSkillCooldownLabel();
+            _enemySkill2CooldownLabel ??= CreateSkillCooldownLabel();
 
             AddCooldownLabelToForm(_skill1CooldownLabel);
             AddCooldownLabelToForm(_skill2CooldownLabel);
+            AddCooldownLabelToForm(_enemySkill1CooldownLabel);
+            AddCooldownLabelToForm(_enemySkill2CooldownLabel);
             LayoutSkillCooldownLabels();
         }
 
@@ -482,6 +556,7 @@ namespace BattleGame.Client.Forms
             _engine.Draw(_backGraphics);
             if (!_isDungeonMap)
                 DrawRoundOverlay(_backGraphics);
+            DrawRoundIntroOverlay(_backGraphics);
         }
 
         private void DrawRoundOverlay(Graphics g)
@@ -509,6 +584,42 @@ namespace BattleGame.Client.Forms
             g.DrawString(timeText, timeFont, textBrush, timeRect, sf);
         }
 
+        private void DrawRoundIntroOverlay(Graphics g)
+        {
+            if (_roundIntroTimer <= 0f || _isDungeonMap)
+                return;
+
+            var overlayRect = new Rectangle(0, 0, ClientSize.Width, ClientSize.Height);
+            using var shade = new SolidBrush(Color.FromArgb(145, 0, 0, 0));
+            g.FillRectangle(shade, overlayRect);
+
+            var bannerRect = new Rectangle(
+                Math.Max(0, (ClientSize.Width - 560) / 2),
+                Math.Max(0, (ClientSize.Height - 150) / 2),
+                Math.Min(560, ClientSize.Width),
+                150);
+
+            using var bannerBrush = new SolidBrush(Color.FromArgb(190, 0, 0, 0));
+            using var borderPen = new Pen(Color.FromArgb(210, 140, 0, 0), 4);
+            g.FillRectangle(bannerBrush, bannerRect);
+            g.DrawRectangle(borderPen, bannerRect);
+
+            g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+            using var roundFont = new Font("Book Antiqua", 48f, FontStyle.Bold, GraphicsUnit.Point);
+            using var textBrush = new SolidBrush(Color.FromArgb(220, 28, 28));
+            using var shadowBrush = new SolidBrush(Color.Black);
+            using var sf = new StringFormat
+            {
+                Alignment = StringAlignment.Center,
+                LineAlignment = StringAlignment.Center
+            };
+
+            var shadowRect = bannerRect;
+            shadowRect.Offset(4, 4);
+            g.DrawString(_roundIntroText, roundFont, shadowBrush, shadowRect, sf);
+            g.DrawString(_roundIntroText, roundFont, textBrush, bannerRect, sf);
+        }
+
         private void UpdateUIBarsThrottled(float dt)
         {
             _uiAccumulator += dt;
@@ -525,16 +636,21 @@ namespace BattleGame.Client.Forms
                 float dt = (now - _lastTicks) / (float)Stopwatch.Frequency;
                 _lastTicks = now;
                 dt = Math.Min(dt, MaxFrameDt);
+                UpdateRoundIntro(dt);
 
                 _frameAccumulator += dt;
                 while (_frameAccumulator >= FixedTimestep)
                 {
-                    if (!_isOnline)
+                    bool roundPresentationActive = _roundIntroTimer > 0f || _offlineRoundResolving || _offlineMatchEnded || _dungeonRunEnded;
+                    if (!_isOnline && !roundPresentationActive)
                         _engine.Update(FixedTimestep);
                     else
                     {
-                        LatchSampledInput(SampleBattleInput());
-                        _engine.UpdateOnlineVisuals(FixedTimestep);
+                        if (_isOnline)
+                        {
+                            LatchSampledInput(SampleBattleInput());
+                            _engine.UpdateOnlineVisuals(FixedTimestep);
+                        }
                     }
 
                     TrySendRealtimeState(FixedTimestep);
@@ -545,6 +661,8 @@ namespace BattleGame.Client.Forms
                 }
 
                 UpdateRoundTimer(dt);
+                UpdateOfflineRoundState();
+                UpdateDungeonRunState();
                 DrawFrame();
                 UpdateUIBarsThrottled(dt);
                 Invalidate(false);
@@ -762,7 +880,11 @@ namespace BattleGame.Client.Forms
 
         private static bool IsTrackedGameKey(Keys key)
         {
-            return key is Keys.A or Keys.D or Keys.S or Keys.J or Keys.U or Keys.I or Keys.K;
+            return key is Keys.A or Keys.D or Keys.S or Keys.J or Keys.U or Keys.I or Keys.K
+                or Keys.Left or Keys.Right or Keys.Down
+                or Keys.NumPad1 or Keys.NumPad2 or Keys.NumPad4 or Keys.NumPad5
+                or Keys.D1 or Keys.D2 or Keys.D4 or Keys.D5
+                or Keys.End or Keys.Clear;
         }
 
         private async Task SendLegacyGameStateAsync()
@@ -893,6 +1015,7 @@ namespace BattleGame.Client.Forms
                 _currentRound = incomingRound;
                 ClearGameInputState();
                 _engine.ClearLocalActionPrediction();
+                StartRoundIntro();
             }
             _roundSecondsRemaining = Math.Max(0f, state.RoundSecondsRemaining);
             _isSuddenDeath = state.IsSuddenDeath;
@@ -1003,7 +1126,135 @@ namespace BattleGame.Client.Forms
 
         private void UpdateRoundTimer(float deltaTime)
         {
+            if (!_isOnline && (_offlineRoundResolving || _offlineMatchEnded || _roundIntroTimer > 0f))
+                return;
+
             _roundSecondsRemaining = Math.Max(0f, _roundSecondsRemaining - deltaTime);
+        }
+
+        private void UpdateRoundIntro(float deltaTime)
+        {
+            if (_roundIntroTimer > 0f)
+                _roundIntroTimer = Math.Max(0f, _roundIntroTimer - deltaTime);
+        }
+
+        private void UpdateOfflineRoundState()
+        {
+            if (_isOnline || _isDungeonMap || _offlineRoundResolving || _offlineMatchEnded)
+                return;
+
+            var player = _engine.Player.Get<CharacterComponent>();
+            var enemy = _engine.Enemy?.Get<CharacterComponent>();
+            if (enemy == null)
+                return;
+
+            bool playerDead = player.IsDead || player.Hp <= 0;
+            bool enemyDead = enemy.IsDead || enemy.Hp <= 0;
+            if (!playerDead && !enemyDead && _roundSecondsRemaining > 0f)
+                return;
+
+            int winner = ResolveOfflineRoundWinner(player, enemy, playerDead, enemyDead);
+            if (winner == 1)
+                _player1RoundWins++;
+            else if (winner == 2)
+                _player2RoundWins++;
+
+            _offlineRoundResolving = true;
+            _ = ResolveOfflineRoundAsync(winner);
+        }
+
+        private void UpdateDungeonRunState()
+        {
+            if (!_isDungeonMap || _dungeonRunEnded)
+                return;
+
+            var player = _engine.Player.Get<CharacterComponent>();
+            bool playerDead = player.IsDead || player.Hp <= 0;
+            if (playerDead)
+            {
+                _dungeonRunEnded = true;
+                _ = ResolveDungeonRunAsync(victory: false);
+                return;
+            }
+
+            if (_engine.IsDungeonCompleted)
+            {
+                _dungeonRunEnded = true;
+                _ = ResolveDungeonRunAsync(victory: true);
+            }
+        }
+
+        private async Task ResolveDungeonRunAsync(bool victory)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(DungeonResolveDelaySeconds));
+            if (IsDisposed)
+                return;
+
+            string title = victory ? "Dungeon Clear" : "Dungeon Failed";
+            string message = victory
+                ? "Bạn đã đánh bại toàn bộ boss trong stage này."
+                : "Bạn đã bị boss hạ gục. Hãy chọn lại stage hoặc đổi nhân vật để thử lại.";
+            MessageBoxIcon icon = victory ? MessageBoxIcon.Information : MessageBoxIcon.Warning;
+
+            MessageBox.Show(this, message, title, MessageBoxButtons.OK, icon);
+            ShowExitDestination();
+            Close();
+        }
+
+        private int ResolveOfflineRoundWinner(CharacterComponent player, CharacterComponent enemy, bool playerDead, bool enemyDead)
+        {
+            if (playerDead && !enemyDead)
+                return 2;
+            if (enemyDead && !playerDead)
+                return 1;
+            if (player.Hp > enemy.Hp)
+                return 1;
+            if (enemy.Hp > player.Hp)
+                return 2;
+            return 0;
+        }
+
+        private async Task ResolveOfflineRoundAsync(int winner)
+        {
+            await Task.Delay(TimeSpan.FromSeconds(OfflineRoundResolveDelaySeconds));
+            if (IsDisposed)
+                return;
+
+            if (_player1RoundWins >= 2 || _player2RoundWins >= 2 || _currentRound >= 3)
+            {
+                ShowOfflineMatchResult();
+                return;
+            }
+
+            _currentRound++;
+            _roundSecondsRemaining = 180f;
+            _isSuddenDeath = false;
+            _engine = CreateGameEngine();
+            ClearGameInputState();
+            UpdateCharacterHeaders();
+            UpdateUIBars();
+            _offlineRoundResolving = false;
+            StartRoundIntro();
+        }
+
+        private void ShowOfflineMatchResult()
+        {
+            _offlineMatchEnded = true;
+            _offlineRoundResolving = false;
+
+            string result = _player1RoundWins == _player2RoundWins
+                ? "DRAW"
+                : _player1RoundWins > _player2RoundWins
+                    ? "PLAYER 1 WINS"
+                    : "PLAYER 2 WINS";
+
+            using (var resultForm = new OfflineMatchResultForm(result, _player1RoundWins, _player2RoundWins))
+            {
+                resultForm.ShowDialog(this);
+            }
+
+            ShowExitDestination();
+            Close();
         }
 
         private static string FormatTime(int totalSeconds)
@@ -1096,20 +1347,29 @@ namespace BattleGame.Client.Forms
 
         private void LayoutSkillCooldownLabels()
         {
-            if (_skill1CooldownLabel == null || _skill2CooldownLabel == null)
+            if (_skill1CooldownLabel == null || _skill2CooldownLabel == null ||
+                _enemySkill1CooldownLabel == null || _enemySkill2CooldownLabel == null)
                 return;
 
+            LayoutCooldownPair(_skill1CooldownLabel, _skill2CooldownLabel, panelManaBack, "left");
+            LayoutCooldownPair(_enemySkill1CooldownLabel, _enemySkill2CooldownLabel, panel1, "right");
+        }
+
+        private void LayoutCooldownPair(Label first, Label second, Panel anchor, string side)
+        {
             int gap = 6;
-            int top = panelManaBack.Bottom + 4;
-            int labelWidth = Math.Max(80, (panelManaBack.Width - gap) / 2);
+            int top = anchor.Bottom + 4;
+            int labelWidth = Math.Max(80, (anchor.Width - gap) / 2);
             int labelHeight = 22;
 
-            _skill1CooldownLabel.Location = new Point(panelManaBack.Left, top);
-            _skill1CooldownLabel.Size = new Size(labelWidth, labelHeight);
-            _skill2CooldownLabel.Location = new Point(panelManaBack.Left + labelWidth + gap, top);
-            _skill2CooldownLabel.Size = new Size(labelWidth, labelHeight);
-            _skill1CooldownLabel.BringToFront();
-            _skill2CooldownLabel.BringToFront();
+            first.Location = new Point(anchor.Left, top);
+            first.Size = new Size(labelWidth, labelHeight);
+            second.Location = new Point(anchor.Left + labelWidth + gap, top);
+            second.Size = new Size(labelWidth, labelHeight);
+            first.Visible = side == "left" || (!_isDungeonMap && _localTwoPlayer);
+            second.Visible = first.Visible;
+            first.BringToFront();
+            second.BringToFront();
         }
 
         private void UpdateUIBars()
@@ -1129,6 +1389,7 @@ namespace BattleGame.Client.Forms
                 {
                     SetHudBar(panel3, panel4, label6, enemyChar.Hp, enemyChar.BaseStats.Hp);
                     SetHudBar(panel1, panel2, label5, enemyChar.Mana, enemyChar.BaseStats.Mana);
+                    UpdateEnemySkillCooldownLabels(enemyChar);
                 }
                 else if (enemyChar != null && _isDungeonMap)
                 {
@@ -1206,6 +1467,18 @@ namespace BattleGame.Client.Forms
 
             SetSkillCooldownLabel(_skill1CooldownLabel, "U", character.Skill1, character.Skill1Cooldown, character.Mana);
             SetSkillCooldownLabel(_skill2CooldownLabel, "I", character.Skill2, character.Skill2Cooldown, character.Mana);
+        }
+
+        private void UpdateEnemySkillCooldownLabels(CharacterComponent character)
+        {
+            if (_enemySkill1CooldownLabel == null || _enemySkill2CooldownLabel == null)
+                ConfigureSkillCooldownLabels();
+
+            if (_enemySkill1CooldownLabel == null || _enemySkill2CooldownLabel == null)
+                return;
+
+            SetSkillCooldownLabel(_enemySkill1CooldownLabel, _localTwoPlayer ? "4" : "S1", character.Skill1, character.Skill1Cooldown, character.Mana);
+            SetSkillCooldownLabel(_enemySkill2CooldownLabel, _localTwoPlayer ? "5" : "S2", character.Skill2, character.Skill2Cooldown, character.Mana);
         }
 
         private static void SetSkillCooldownLabel(Label label, string key, SkillData? skill, float cooldown, int mana)
@@ -1375,7 +1648,11 @@ namespace BattleGame.Client.Forms
 
         private static readonly Keys[] TrackedKeys =
         {
-            Keys.A, Keys.D, Keys.S, Keys.J, Keys.U, Keys.I, Keys.K
+            Keys.A, Keys.D, Keys.S, Keys.J, Keys.U, Keys.I, Keys.K,
+            Keys.Left, Keys.Right, Keys.Down,
+            Keys.NumPad1, Keys.NumPad2, Keys.NumPad4, Keys.NumPad5,
+            Keys.D1, Keys.D2, Keys.D4, Keys.D5,
+            Keys.End, Keys.Clear
         };
 
         private sealed class HudBarState

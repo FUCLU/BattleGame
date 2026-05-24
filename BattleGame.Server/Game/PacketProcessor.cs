@@ -319,8 +319,9 @@ namespace BattleGame.Server.Game
                 p.TimeLimitMinutes,
                 _client.UserId,
                 _client.Username,
-                _client);
-            if (success && roomId > 0)
+                _client,
+                p.AutoJoin);
+            if (success && roomId > 0 && p.AutoJoin)
                 _client.CurrentRoomId = roomId.ToString();
             var room = roomId > 0 ? _matchmaking.GetRoom(roomId) : null;
 

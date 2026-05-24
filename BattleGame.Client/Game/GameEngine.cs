@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Windows.Forms;
 using BattleGame.Client.Config;
 using BattleGame.Client.Game.Core;
 using BattleGame.Client.Game.Core.Components;
@@ -40,6 +41,7 @@ namespace BattleGame.Client.Game
         private CharacterRenderer _renderer = null!;
         private BarrierRenderer _barrierRenderer = null!;
         private PlayerController _controller = null!;
+        private PlayerController? _localEnemyController;
         private readonly Dictionary<string, SpriteAnimation> _onlineEffectAnimations = new(StringComparer.OrdinalIgnoreCase);
         private readonly List<ProjectileState> _onlineProjectiles = new();
         private readonly List<EffectState> _onlineEffects = new();
@@ -75,8 +77,9 @@ namespace BattleGame.Client.Game
 
         public Entity Player => _player;
         public Entity? Enemy => _enemy;
+        public bool IsDungeonCompleted => _dungeonRun?.IsCompleted == true;
 
-        public GameEngine(string characterId, string mapId, int formWidth, int formHeight, string? enemyCharacterId = null)
+        public GameEngine(string characterId, string mapId, int formWidth, int formHeight, string? enemyCharacterId = null, bool localTwoPlayer = false)
         {
             _mapId = mapId;
             _clientRoot = ResolveClientRoot();
@@ -129,6 +132,7 @@ namespace BattleGame.Client.Game
                     ? Math.Min(_mapWidth - 300f, 7600f)
                     : rightSpawnX;
                 _enemy = CharacterFactory.Create(resolvedEnemyCharacterId, enemyStartX, _groundY, enemyAnimKeys);
+                _enemy.Get<MovementComponent>().FacingRight = _player.Get<MovementComponent>().X >= enemyStartX;
             }
             RefreshCombinedAnimations();
 
@@ -151,6 +155,20 @@ namespace BattleGame.Client.Game
             _renderer = new CharacterRenderer(_player.Id, _playerAnimations, _enemyAnimations);
             _barrierRenderer = new BarrierRenderer(_onlineEffectAnimations);
             _controller = new PlayerController(_player, _enemy ?? _player, _playerCombatSystem);
+            if (localTwoPlayer && _enemy != null)
+            {
+                _localEnemyController = new PlayerController(
+                    _enemy,
+                    _player,
+                    _enemyCombatSystem,
+                    Keys.Left,
+                    Keys.Right,
+                    Keys.Down,
+                    Keys.NumPad1,
+                    Keys.NumPad4,
+                    Keys.NumPad5,
+                    Keys.NumPad2);
+            }
             _lastTime = DateTime.Now;
             UpdateCamera();
         }
@@ -741,6 +759,7 @@ namespace BattleGame.Client.Game
             dt = Math.Min(dt, 0.05f);
 
             _controller.Update();
+            _localEnemyController?.Update();
             if (_enemy != null)
                 _bossAiController?.Update(dt, _enemy, _player, _enemyCombatSystem);
 
