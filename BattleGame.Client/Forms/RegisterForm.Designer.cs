@@ -42,7 +42,6 @@
             label3 = new Label();
             label2 = new Label();
             label1 = new Label();
-            button2 = new Button();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
@@ -64,7 +63,7 @@
             panel1.Controls.Add(label3);
             panel1.Controls.Add(label2);
             panel1.Controls.Add(label1);
-            panel1.Location = new Point(334, 41);
+            panel1.Location = new Point(341, 41);
             panel1.Name = "panel1";
             panel1.Size = new Size(382, 507);
             panel1.TabIndex = 0;
@@ -196,17 +195,6 @@
             label1.TabIndex = 0;
             label1.Text = "Email";
             // 
-            // button2
-            // 
-            button2.BackgroundImage = Properties.Resources.loa;
-            button2.BackgroundImageLayout = ImageLayout.Zoom;
-            button2.Location = new Point(997, 519);
-            button2.Name = "button2";
-            button2.Size = new Size(35, 33);
-            button2.TabIndex = 2;
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += button2_Click;
-            // 
             // RegisterForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -214,7 +202,6 @@
             BackgroundImage = Properties.Resources.login;
             BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1057, 581);
-            Controls.Add(button2);
             Controls.Add(panel1);
             DoubleBuffered = true;
             ForeColor = SystemColors.ControlText;
@@ -241,7 +228,6 @@
         private Label label1;
         private LinkLabel linkLabel1;
         private Label label5;
-        private Button button2;
         private PictureBox pictureBox1;
     }
 }

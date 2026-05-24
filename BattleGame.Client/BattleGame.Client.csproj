@@ -48,6 +48,15 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
 		</Content>
+		<Content Include="Assets\Sounds\SFX\*.wav">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<Content Include="Assets\UI\*.png">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
+		</Content>
+		<EmbeddedResource Include="Assets\UI\setting_gear.png" LogicalName="BattleGame.Client.Assets.UI.setting_gear.png" />
 	</ItemGroup>
 
 	<ItemGroup>

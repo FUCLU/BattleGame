@@ -7,7 +7,6 @@ namespace BattleGame.Client.Forms
 {
     public partial class LoginForm : Form
     {
-        private bool _isMuted = false;
         public LoginForm()
         {
             InitializeComponent();
@@ -31,8 +30,7 @@ namespace BattleGame.Client.Forms
 
         private void LoginForm_Load(object sender, EventArgs e)
         {
-            StyleMusicButton();
-            UpdateMusicButtonText();
+            AudioSettingsButton.Attach(this, btnSetting);
             SoundManager.PlayBGM("xtremefreddy.mp3");
             BeginInvoke(new Action(() =>
             {
@@ -129,47 +127,8 @@ namespace BattleGame.Client.Forms
             this.Hide();
         }
 
-        private void btnMusic_Click(object sender, EventArgs e)
+        private void btnSetting_Click(object sender, EventArgs e)
         {
-            _isMuted = !_isMuted;
-
-            SoundManager.SetVolume(_isMuted ? 0.0f : 1.0f);
-
-            UpdateMusicButtonText();
-        }
-        private void UpdateMusicButtonText()
-        {
-            if (_isMuted)
-            {
-                btnMusic.Text = "♪ Music: Off";
-                btnMusic.BackColor = Color.FromArgb(15, 23, 42);
-                btnMusic.ForeColor = Color.FromArgb(147, 197, 253);
-            }
-            else
-            {
-                btnMusic.Text = "♫ Music: On";
-                btnMusic.BackColor = Color.FromArgb(37, 99, 235);
-                btnMusic.ForeColor = Color.White;
-            }
-        }
-        private void StyleMusicButton()
-        {
-            {
-                btnMusic.FlatStyle = FlatStyle.Flat;
-                btnMusic.FlatAppearance.BorderSize = 2;
-                btnMusic.FlatAppearance.BorderColor = Color.FromArgb(96, 165, 250);
-
-                btnMusic.Font = new Font("Segoe UI", 10, FontStyle.Bold);
-                btnMusic.Cursor = Cursors.Hand;
-
-                btnMusic.Width = 135;
-                btnMusic.Height = 40;
-
-                btnMusic.TextAlign = ContentAlignment.MiddleCenter;
-
-                btnMusic.FlatAppearance.MouseOverBackColor = Color.FromArgb(59, 130, 246);
-                btnMusic.FlatAppearance.MouseDownBackColor = Color.FromArgb(30, 64, 175);
-            }
 
         }
     }

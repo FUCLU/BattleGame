@@ -38,7 +38,7 @@
             textBox1 = new TextBox();
             label2 = new Label();
             label1 = new Label();
-            btnMusic = new Button();
+            btnSetting = new GearButton();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -155,15 +155,18 @@
             label1.TabIndex = 0;
             label1.Text = "Username";
             // 
-            // btnMusic
+            // btnSetting
             // 
-            btnMusic.Location = new Point(951, 524);
-            btnMusic.Name = "btnMusic";
-            btnMusic.Size = new Size(94, 29);
-            btnMusic.TabIndex = 1;
-            btnMusic.Text = "Music";
-            btnMusic.UseVisualStyleBackColor = true;
-            btnMusic.Click += btnMusic_Click;
+            btnSetting.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnSetting.BackColor = Color.Black;
+            btnSetting.FlatStyle = FlatStyle.Popup;
+            btnSetting.ForeColor = Color.FromArgb(255, 235, 156);
+            btnSetting.Location = new Point(985, 511);
+            btnSetting.Name = "btnSetting";
+            btnSetting.Size = new Size(48, 48);
+            btnSetting.TabIndex = 1;
+            btnSetting.UseVisualStyleBackColor = false;
+            btnSetting.Click += btnSetting_Click;
             // 
             // LoginForm
             // 
@@ -172,7 +175,7 @@
             BackgroundImage = Properties.Resources.login;
             BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1057, 581);
-            Controls.Add(btnMusic);
+            Controls.Add(btnSetting);
             Controls.Add(panel1);
             DoubleBuffered = true;
             Name = "LoginForm";
@@ -194,6 +197,6 @@
         private Label label1;
         private LinkLabel linkLabel2;
         private Button button3;
-        private Button btnMusic;
+        private GearButton btnSetting;
     }
 }

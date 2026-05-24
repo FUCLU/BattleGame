@@ -36,6 +36,7 @@
             button4 = new Button();
             pictureBox3 = new PictureBox();
             button1 = new Button();
+            btnSetting = new GearButton();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox2).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
@@ -118,6 +119,19 @@
             button1.Size = new Size(145, 55);
             button1.TabIndex = 7;
             button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
+            // 
+            // btnSetting
+            // 
+            btnSetting.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnSetting.BackColor = Color.Black;
+            btnSetting.FlatStyle = FlatStyle.Popup;
+            btnSetting.ForeColor = Color.FromArgb(255, 235, 156);
+            btnSetting.Location = new Point(985, 511);
+            btnSetting.Name = "btnSetting";
+            btnSetting.Size = new Size(48, 48);
+            btnSetting.TabIndex = 8;
+            btnSetting.UseVisualStyleBackColor = false;
             // 
             // ModeForm
             // 
@@ -127,6 +141,7 @@
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1057, 581);
+            Controls.Add(btnSetting);
             Controls.Add(button1);
             Controls.Add(button2);
             Controls.Add(pictureBox3);
@@ -152,5 +167,6 @@
         private Button button4;
         private PictureBox pictureBox3;
         private Button button1;
+        private GearButton btnSetting;
     }
 }

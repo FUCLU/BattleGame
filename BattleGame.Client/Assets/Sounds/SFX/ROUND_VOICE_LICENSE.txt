@@ -1,0 +1,17 @@
+Round announcer voice source:
+Freesound - "Round 1\2\3 Fight! Announcer Deep Voice" by exe2be
+https://freesound.org/people/exe2be/sounds/553600/
+
+License:
+Creative Commons Attribution 4.0
+https://creativecommons.org/licenses/by/4.0/
+
+Project files derived from this source:
+round_announcer_deep_full.mp3
+round_1.wav
+round_2.wav
+round_3.wav
+round_start.wav
+
+ProductionCrate reference tested but not used for the final round clips:
+https://soundscrate.com/sounds-effects/soundscrate-battle-narrator-round-1-fight

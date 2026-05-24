@@ -29,6 +29,7 @@ namespace BattleGame.Client
                 // return;  
             }
 
+            Application.AddMessageFilter(new ButtonSoundMessageFilter());
             Application.Run(new LoginForm());
         }
     }

@@ -31,7 +31,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MenuForm));
             button1 = new Button();
             button3 = new Button();
-            btnMusic = new Button();
+            btnSetting = new GearButton();
             SuspendLayout();
             // 
             // button1
@@ -60,15 +60,17 @@
             button3.UseVisualStyleBackColor = false;
             button3.Click += button3_Click;
             // 
-            // btnMusic
+            // btnSetting
             // 
-            btnMusic.Location = new Point(916, 527);
-            btnMusic.Name = "btnMusic";
-            btnMusic.Size = new Size(94, 29);
-            btnMusic.TabIndex = 6;
-            btnMusic.Text = "Music";
-            btnMusic.UseVisualStyleBackColor = true;
-            btnMusic.Click += btnMusic_Click;
+            btnSetting.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnSetting.BackColor = Color.Black;
+            btnSetting.FlatStyle = FlatStyle.Popup;
+            btnSetting.ForeColor = Color.FromArgb(255, 235, 156);
+            btnSetting.Location = new Point(985, 511);
+            btnSetting.Name = "btnSetting";
+            btnSetting.Size = new Size(48, 48);
+            btnSetting.TabIndex = 6;
+            btnSetting.UseVisualStyleBackColor = false;
             // 
             // MenuForm
             // 
@@ -77,7 +79,7 @@
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1057, 581);
-            Controls.Add(btnMusic);
+            Controls.Add(btnSetting);
             Controls.Add(button3);
             Controls.Add(button1);
             DoubleBuffered = true;
@@ -90,6 +92,6 @@
         #endregion
         private Button button1;
         private Button button3;
-        private Button btnMusic;
+        private GearButton btnSetting;
     }
 }

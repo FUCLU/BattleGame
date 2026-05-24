@@ -112,10 +112,11 @@ namespace BattleGame.Client.Forms
             lblSelectedCharacter.BackColor = Color.Transparent;
             lblSelectedCharacter.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             lblSelectedCharacter.ForeColor = Color.White;
-            lblSelectedCharacter.Location = new Point(257, 509);
+            lblSelectedCharacter.Location = new Point(274, 509);
             lblSelectedCharacter.Name = "lblSelectedCharacter";
             lblSelectedCharacter.Size = new Size(250, 25);
             lblSelectedCharacter.TabIndex = 5;
+            lblSelectedCharacter.Text = "Name";
             lblSelectedCharacter.TextAlign = ContentAlignment.MiddleCenter;
             lblSelectedCharacter.Click += lblSelectedCharacter_Click;
             // 

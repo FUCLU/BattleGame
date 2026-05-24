@@ -34,11 +34,20 @@ namespace BattleGame.Client.Forms
 
         private void ModeForm_Load(object sender, EventArgs e)
         {
-
+            AudioSettingsButton.Attach(this, btnSetting);
         }
 
         private void button3_Click(object sender, EventArgs e)
         {
+            LoginForm loginForm = new LoginForm();
+            loginForm.Show();
+            this.Close();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            MenuForm menuForm = new MenuForm();
+            menuForm.Show(); 
             this.Close();
         }
     }

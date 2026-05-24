@@ -34,6 +34,7 @@
             btnVsBot = new Button();
             btnDungeon = new Button();
             button1 = new Button();
+            btnSetting = new GearButton();
             ((System.ComponentModel.ISupportInitialize)picBotLogo).BeginInit();
             ((System.ComponentModel.ISupportInitialize)picCpuLogo).BeginInit();
             SuspendLayout();
@@ -101,6 +102,18 @@
             button1.UseVisualStyleBackColor = false;
             button1.Click += button1_Click;
             // 
+            // btnSetting
+            // 
+            btnSetting.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnSetting.BackColor = Color.Black;
+            btnSetting.FlatStyle = FlatStyle.Popup;
+            btnSetting.ForeColor = Color.FromArgb(255, 235, 156);
+            btnSetting.Location = new Point(739, 417);
+            btnSetting.Name = "btnSetting";
+            btnSetting.Size = new Size(48, 48);
+            btnSetting.TabIndex = 5;
+            btnSetting.UseVisualStyleBackColor = false;
+            // 
             // OfflineMode
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -108,6 +121,7 @@
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(808, 487);
+            Controls.Add(btnSetting);
             Controls.Add(button1);
             Controls.Add(btnDungeon);
             Controls.Add(btnVsBot);
@@ -127,5 +141,6 @@
         private System.Windows.Forms.Button btnVsBot;
         private System.Windows.Forms.Button btnDungeon;
         private Button button1;
+        private GearButton btnSetting;
     }
 }

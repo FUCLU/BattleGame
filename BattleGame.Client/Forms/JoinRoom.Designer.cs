@@ -51,7 +51,6 @@
             lblRoomName = new Label();
             button1 = new Button();
             findroom = new Button();
-            btnMusic = new Button();
             panel1.SuspendLayout();
             flowLayoutPanelRooms.SuspendLayout();
             panelRoomTemplate.SuspendLayout();
@@ -163,7 +162,7 @@
             label3.ForeColor = Color.Gold;
             label3.Location = new Point(16, 127);
             label3.Name = "label3";
-            label3.Size = new Size(86, 23);
+            label3.Size = new Size(166, 23);
             label3.TabIndex = 4;
             label3.Text = "Password (optional):";
             // 
@@ -312,17 +311,6 @@
             findroom.TabIndex = 3;
             findroom.UseVisualStyleBackColor = true;
             // 
-            // btnMusic
-            // 
-            btnMusic.FlatStyle = FlatStyle.Flat;
-            btnMusic.Location = new Point(-1, -1);
-            btnMusic.Name = "btnMusic";
-            btnMusic.Size = new Size(26, 30);
-            btnMusic.TabIndex = 4;
-            btnMusic.Text = "Music";
-            btnMusic.UseVisualStyleBackColor = true;
-            btnMusic.Click += btnMusic_Click;
-            // 
             // JoinRoom
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -331,7 +319,6 @@
             BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(1128, 616);
             Controls.Add(findroom);
-            Controls.Add(btnMusic);
             Controls.Add(button1);
             Controls.Add(flowLayoutPanelRooms);
             Controls.Add(panel1);
@@ -372,6 +359,5 @@
         private Button button2;
         private TextBox textBox1;
         private Button findroom;
-        private Button btnMusic;
     }
 }

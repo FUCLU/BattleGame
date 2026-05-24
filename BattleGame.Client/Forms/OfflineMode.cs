@@ -16,6 +16,12 @@ namespace BattleGame.Client.Forms
         {
             InitializeComponent();
             this.StartPosition = FormStartPosition.CenterScreen;
+            Load += OfflineMode_Load;
+        }
+
+        private void OfflineMode_Load(object? sender, EventArgs e)
+        {
+            AudioSettingsButton.Attach(this, btnSetting);
         }
 
         private void btnVsBot_Click(object sender, EventArgs e)

@@ -88,6 +88,10 @@ namespace BattleGame.Client.Forms
         private const float MaxFrameDt = 0.05f;
         private float _uiAccumulator = 0f;
         private const float UiUpdateInterval = 0.1f;
+        private float _moveSfxTimer;
+        private const float MoveSfxIntervalSeconds = 0.28f;
+        private CombatantAudioState _playerAudioState = new();
+        private CombatantAudioState _enemyAudioState = new();
 
         private CancellationTokenSource? _networkCts;
         private Task? _networkListenTask;
@@ -211,12 +215,13 @@ namespace BattleGame.Client.Forms
         {
             _roundIntroText = _isSuddenDeath ? "SUDDEN DEATH" : $"ROUND {_currentRound}";
             _roundIntroTimer = RoundIntroSeconds;
+            ResetBattleActionSoundState();
+            SoundManager.PlayRoundAnnouncement(_currentRound, _isSuddenDeath);
         }
 
         private void GameForm_Load(object? sender, EventArgs e)
         {
             SoundManager.PlayBGM("darren_hirst.mp3");
-            SoundManager.SetVolume(0.1f);
             InputManager.Clear();
             LayoutHud();
             panelStatus.BackColor = Color.FromArgb(180, 0, 0, 0);
@@ -300,6 +305,77 @@ namespace BattleGame.Client.Forms
 
             if (_isOnline && !wasDown && TryCreateImmediateActionInput(keyCode, out var actionInput))
                 LatchSampledInput(actionInput);
+        }
+
+        private void UpdateBattleMovementSound(float dt)
+        {
+            if (_offlineMatchEnded || _dungeonRunEnded || _offlineRoundResolving || _roundIntroTimer > 0f)
+                return;
+
+            _moveSfxTimer = Math.Max(0f, _moveSfxTimer - dt);
+            if (_moveSfxTimer > 0f || !IsForegroundGameWindow())
+                return;
+
+            bool moving = InputManager.IsKeyDown(Keys.A)
+                || InputManager.IsKeyDown(Keys.D)
+                || InputManager.IsKeyDown(Keys.Left)
+                || InputManager.IsKeyDown(Keys.Right);
+
+            if (!moving)
+                return;
+
+            SoundManager.PlayBattleMove();
+            _moveSfxTimer = MoveSfxIntervalSeconds;
+        }
+
+        private void UpdateBattleActionSounds()
+        {
+            if (_offlineMatchEnded || _dungeonRunEnded || _offlineRoundResolving || _roundIntroTimer > 0f)
+            {
+                ResetBattleActionSoundState();
+                return;
+            }
+
+            TrackCombatantSounds(_engine.Player, _playerAudioState);
+
+            if (_engine.Enemy != null)
+                TrackCombatantSounds(_engine.Enemy, _enemyAudioState);
+            else
+                _enemyAudioState.Reset();
+        }
+
+        private static void TrackCombatantSounds(BattleGame.Client.Game.Core.Entity entity, CombatantAudioState state)
+        {
+            var character = entity.Get<CharacterComponent>();
+
+            if (!state.Initialized)
+            {
+                state.Capture(character);
+                return;
+            }
+
+            if (character.Hp < state.Hp)
+                SoundManager.PlayBattleHit();
+
+            if (character.IsAttacking && !state.IsAttacking)
+                SoundManager.PlayBattleAttack();
+
+            if (character.IsUsingSkill && !state.IsUsingSkill)
+                SoundManager.PlayBattleSkill();
+
+            if (character.IsDashing && !state.IsDashing)
+                SoundManager.PlayBattleDash();
+
+            if (character.IsProtecting && !state.IsProtecting)
+                SoundManager.PlayBattleGuard();
+
+            state.Capture(character);
+        }
+
+        private void ResetBattleActionSoundState()
+        {
+            _playerAudioState.Reset();
+            _enemyAudioState.Reset();
         }
 
         private void UpdateCharacterHeaders()
@@ -637,6 +713,7 @@ namespace BattleGame.Client.Forms
                 _lastTicks = now;
                 dt = Math.Min(dt, MaxFrameDt);
                 UpdateRoundIntro(dt);
+                UpdateBattleMovementSound(dt);
 
                 _frameAccumulator += dt;
                 while (_frameAccumulator >= FixedTimestep)
@@ -660,6 +737,7 @@ namespace BattleGame.Client.Forms
                         _clientTick++;
                 }
 
+                UpdateBattleActionSounds();
                 UpdateRoundTimer(dt);
                 UpdateOfflineRoundState();
                 UpdateDungeonRunState();
@@ -1670,6 +1748,36 @@ namespace BattleGame.Client.Forms
             public Color BackColor { get; set; }
             public Font Font { get; set; }
             public Color TextColor { get; set; } = Color.Black;
+        }
+
+        private sealed class CombatantAudioState
+        {
+            public bool Initialized { get; private set; }
+            public int Hp { get; private set; }
+            public bool IsAttacking { get; private set; }
+            public bool IsUsingSkill { get; private set; }
+            public bool IsDashing { get; private set; }
+            public bool IsProtecting { get; private set; }
+
+            public void Capture(CharacterComponent character)
+            {
+                Initialized = true;
+                Hp = character.Hp;
+                IsAttacking = character.IsAttacking;
+                IsUsingSkill = character.IsUsingSkill;
+                IsDashing = character.IsDashing;
+                IsProtecting = character.IsProtecting;
+            }
+
+            public void Reset()
+            {
+                Initialized = false;
+                Hp = 0;
+                IsAttacking = false;
+                IsUsingSkill = false;
+                IsDashing = false;
+                IsProtecting = false;
+            }
         }
 
     }
