@@ -14,8 +14,9 @@ public class BattleCharacterStats
     public int Hp { get; set; } = 100;
     public int Mana { get; set; } = 100;
     public float ManaRegen { get; set; } = 8f;
-    public int Atk { get; set; } = 20;
+    public float Atk { get; set; } = 20;
     public int Def { get; set; } = 10;
+    public int ArmorPen { get; set; }
     public float Speed { get; set; } = 250f;
     public float AtkSpeed { get; set; } = 1f;
     public float StunDuration { get; set; }

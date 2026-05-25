@@ -22,11 +22,13 @@ namespace BattleGame.Client.Game.Gameplay
                 VelocityX = velocity.Vx,
                 VelocityY = velocity.Vy,
                 Damage = effect.Damage,
+                ArmorPen = effect.ArmorPen ?? caster.Get<CharacterComponent>().BaseStats.ArmorPen,
                 StunDuration = effect.Stun,
                 Range = effect.Range,
                 Lifetime = effect.Duration > 0f ? effect.Duration : 3f,
                 Owner = caster,
                 AnimationKey = effect.ProjectileAnim,
+                HitFrames = effect.HitFrames ?? new List<int>(),
                 Render = effect.Render
             });
 
@@ -62,7 +64,8 @@ namespace BattleGame.Client.Game.Gameplay
         public static Entity CreateAttackProjectile(
             Entity caster,
             string projectileAnim,
-            int damage,
+            float damage,
+            int armorPen,
             float speed,
             float spawnOffsetX,
             float spawnOffsetY,
@@ -79,6 +82,7 @@ namespace BattleGame.Client.Game.Gameplay
                 VelocityX = mv.FacingRight ? speed : -speed,
                 VelocityY = 0,
                 Damage = damage,
+                ArmorPen = armorPen,
                 StunDuration = 0,
                 Range = 45,  // nhỏ hơn để projectile bay ra thấy rõ trước khi va chạm
                 Owner = caster,

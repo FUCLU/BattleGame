@@ -17,7 +17,7 @@ namespace BattleGame.Server.Database
         public void Save(Match match)
         {
             const string sql = @"
-                INSERT INTO matches (winner_name, loser_name, duration, played_at)
+                INSERT INTO matches (winner, loser, duration, played_at)
                 VALUES (@winner, @loser, @duration, @played_at)
             ";
             
@@ -35,16 +35,16 @@ namespace BattleGame.Server.Database
         {
             const string sql = @"
                 WITH all_players AS (
-                    SELECT DISTINCT winner_name as username FROM matches
+                    SELECT DISTINCT winner as username FROM matches
                     UNION
-                    SELECT DISTINCT loser_name FROM matches
+                    SELECT DISTINCT loser FROM matches
                 )
                 SELECT 
                     ap.username,
-                    COUNT(CASE WHEN m.winner_name = ap.username THEN 1 END) as wins,
-                    COUNT(CASE WHEN m.loser_name = ap.username THEN 1 END) as losses
+                    COUNT(CASE WHEN m.winner = ap.username THEN 1 END) as wins,
+                    COUNT(CASE WHEN m.loser = ap.username THEN 1 END) as losses
                 FROM all_players ap
-                LEFT JOIN matches m ON (m.winner_name = ap.username OR m.loser_name = ap.username)
+                LEFT JOIN matches m ON (m.winner = ap.username OR m.loser = ap.username)
                 GROUP BY ap.username
                 ORDER BY wins DESC
                 LIMIT @limit";

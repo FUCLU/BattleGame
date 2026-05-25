@@ -78,7 +78,7 @@ namespace BattleGame.Client.Config
                     definition.Selection.DisplayName,
                     definition.Selection.PreviewImage,
                     definition.Stats.Hp,
-                    definition.Stats.Atk,
+                    (int)MathF.Round(definition.Stats.Atk, MidpointRounding.AwayFromZero),
                     definition.Stats.Def,
                     (int)definition.Stats.Speed,
                     definition.Selection.SkillLabel,

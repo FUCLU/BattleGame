@@ -128,6 +128,7 @@ namespace BattleGame.Server.Game
             var roomAfterLeave = _matchmaking.GetRoom(p.RoomId);
             if (roomAfterLeave != null && roomAfterLeave.OwnerId != _client.UserId)
             {
+                await BroadcastRoomSnapshotAsync(roomAfterLeave, p.RoomId, $"{leaveName} đã rời phòng.");
                 await BroadcastSystemRoomMessageAsync(roomAfterLeave, p.RoomId, $"{leaveName} đã rời phòng.");
             }
 
@@ -470,6 +471,7 @@ namespace BattleGame.Server.Game
                 var roomAfterDisconnect = _matchmaking.GetRoom(roomId);
                 if (roomAfterDisconnect != null)
                 {
+                    await BroadcastRoomSnapshotAsync(roomAfterDisconnect, roomId, $"{leaveName} đã mất kết nối.");
                     await BroadcastSystemRoomMessageAsync(roomAfterDisconnect, roomId, $"{leaveName} đã mất kết nối.");
                 }
             }
@@ -628,6 +630,38 @@ namespace BattleGame.Server.Game
                 SenderName = "SYSTEM",
                 Message = message
             });
+        }
+
+        private static async Task BroadcastRoomSnapshotAsync(MatchmakingService.RoomData room, int roomId, string message)
+        {
+            var snapshot = new JoinRoomResultPacket
+            {
+                Success = true,
+                RoomId = roomId,
+                MapId = room.MapId,
+                TimeLimitMinutes = room.TimeLimitMinutes,
+                Player1Name = room.Player1Name,
+                Player2Name = room.Player2Name,
+                Message = message
+            };
+
+            var ready = new ReadyPacket
+            {
+                Player1Ready = room.Player1CharId != -1,
+                Player2Ready = room.Player2CharId != -1
+            };
+
+            if (room.Player1Handler != null)
+            {
+                await room.Player1Handler.SendAsync(snapshot);
+                await room.Player1Handler.SendAsync(ready);
+            }
+
+            if (room.Player2Handler != null)
+            {
+                await room.Player2Handler.SendAsync(snapshot);
+                await room.Player2Handler.SendAsync(ready);
+            }
         }
 
 

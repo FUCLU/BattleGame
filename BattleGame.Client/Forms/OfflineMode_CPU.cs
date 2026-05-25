@@ -194,6 +194,17 @@ namespace BattleGame.Client.Forms
             };
         }
 
+        private static string ResolveMapImagePath(string imageFile)
+        {
+            string outputPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Background", imageFile);
+            if (File.Exists(outputPath))
+                return outputPath;
+
+            return Path.GetFullPath(Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory,
+                "..", "..", "..", "Assets", "Background", imageFile));
+        }
+
         private void SetMap(string mapId)
         {
             _currentMap = mapId;
@@ -201,8 +212,7 @@ namespace BattleGame.Client.Forms
             if (string.IsNullOrWhiteSpace(imageFile))
                 return;
 
-            string assetsRoot = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", "..", "Assets");
-            string imagePath = Path.Combine(assetsRoot, "Background", imageFile);
+            string imagePath = ResolveMapImagePath(imageFile);
             if (File.Exists(imagePath))
                 pictureBoxMap.Image = Image.FromFile(imagePath);
         }

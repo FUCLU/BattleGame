@@ -3,16 +3,12 @@
   "characterId": "agis",
   "chaseSpeedMultiplier": 0.7,
   "stopChaseRange": 170,
-  "basicAttackRange": 800,
   "engageRangeBonus": 0,
+  "basicAttackRange": 800,
   "skill1Range": 800,
-  "skill1Cooldown": 13.0,
   "skill2Range": 800,
-  "skill2Cooldown": 15.0,
   "basicAttackCooldown": 1.55,
   "postSkillActionCooldown": 1.2,
   "dashMinRange": 500,
-  "dashCooldown": 9.0,
-  "dashDuration": 0.22,
-  "dashSpeedMultiplier": 3.0
+  "dashCooldown": 9
 }

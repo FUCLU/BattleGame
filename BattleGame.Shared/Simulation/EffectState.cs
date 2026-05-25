@@ -10,7 +10,8 @@ public class EffectState
     public string AnimationKey { get; set; } = string.Empty;
     public float X { get; set; }
     public float Y { get; set; }
-    public int Damage { get; set; }
+    public float Damage { get; set; }
+    public int ArmorPen { get; set; }
     public float Stun { get; set; }
     public int CollisionWidth { get; set; } = 80;
     public int CollisionHeight { get; set; } = 80;

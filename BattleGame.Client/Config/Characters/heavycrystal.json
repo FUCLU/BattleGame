@@ -7,13 +7,14 @@
     "assetFolder": "HeavyCrystal"
   },
   "stats": {
-    "hp": 200,
-    "def": 20,
-    "mana": 100,
+    "hp": 380,
+    "def": 30,
+    "armorPen": 0,
+    "mana": 120,
     "manaRegen": 7.0,
-    "atk": 30,
-    "speed": 175,
-    "atkSpeed": 0.95,
+    "atk": 45,
+    "speed": 220,
+    "atkSpeed": 1.2,
     "stunDuration": 0.0,
     "attackRange": 85
   },
@@ -32,15 +33,16 @@
       "id": "crystal_crush",
       "animation": "Skill1",
       "manaCost": 35,
-      "cooldown": 7.0,
+      "armorPen": 10,
+      "cooldown": 4.0,
 
       "effects": [
         {
           "type": "melee",
           "trigger": "onFrames",
-          "frames": [ 7, 8, 9, 13, 14 ],
-          "damage": 22,
-          "stun": 0.15,
+          "triggerFrames": [ 12 ],
+          "damage": 45,
+          "stun": 0.0,
           "range": 230,
           "spawnMode": "casterFront",
           "spawnOffsetX": 165,
@@ -55,15 +57,16 @@
       "id": "crystal_burst",
       "animation": "Skill2",
       "manaCost": 45,
-      "cooldown": 8.0,
+      "armorPen": 10,
+      "cooldown": 5.0,
 
       "effects": [
         {
           "type": "melee",
           "trigger": "onFrames",
-          "frames": [ 6, 7, 8, 12, 13 ],
-          "damage": 24,
-          "stun": 0.35,
+          "triggerFrames": [ 9 ],
+          "damage": 65,
+          "stun": 0.5,
           "range": 200,
           "spawnMode": "casterFront",
           "spawnOffsetX": 150,

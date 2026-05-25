@@ -522,15 +522,17 @@ public class BattleSimulation
             case "onend":
                 return currentFrame >= frameCount - 1 && !triggered.Contains(effectIndex);
             case "onframe":
-                if (effect.Frames == null || effect.Frames.Count == 0)
+                var onFrameFrames = effect.TriggerFrames ?? effect.Frames;
+                if (onFrameFrames == null || onFrameFrames.Count == 0)
                     return currentFrame >= frameCount / 2 && !triggered.Contains(effectIndex);
 
-                return effect.Frames[0] == currentFrame && !triggered.Contains(effectIndex);
+                return onFrameFrames[0] == currentFrame && !triggered.Contains(effectIndex);
             case "onframes":
-                if (effect.Frames == null || effect.Frames.Count == 0)
+                var onFramesFrames = effect.TriggerFrames ?? effect.Frames;
+                if (onFramesFrames == null || onFramesFrames.Count == 0)
                     return currentFrame >= frameCount / 2 && !triggered.Contains(effectIndex);
 
-                bool matched = effect.Frames.Contains(currentFrame);
+                bool matched = onFramesFrames.Contains(currentFrame);
                 if (!matched)
                     return false;
 
@@ -577,7 +579,7 @@ public class BattleSimulation
         if (IsBlockedByBarrier(attacker, target, "melee") || IsBlockedByProtection(attacker, target))
             return;
 
-        ApplyDamage(target, attacker.Stats.Atk, 0f);
+        ApplyDamage(target, attacker.Stats.Atk, 0f, attacker.Stats.ArmorPen);
     }
 
     private void SpawnBasicAttackProjectile(PlayerBattleState owner)
@@ -592,6 +594,7 @@ public class BattleSimulation
             VelocityX = direction * owner.Stats.AttackProjectileSpeed,
             VelocityY = 0f,
             Damage = owner.Stats.Atk,
+            ArmorPen = owner.Stats.ArmorPen,
             Stun = 0f,
             Range = 45f,
             Lifetime = ProjectileLifetime,
@@ -599,6 +602,7 @@ public class BattleSimulation
             FacingRight = owner.FacingRight,
             RenderOffsetX = 0f,
             RenderOffsetY = 0f,
+            HitFrames = new List<int>(),
             Render = new EffectRenderData
             {
                 Scale = owner.Stats.AttackProjectileScale,
@@ -620,7 +624,7 @@ public class BattleSimulation
         {
             case "melee":
                 if (IsMeleeEffectHit(attacker, target, effect))
-                    ApplyDamage(target, effect.Damage, effect.Stun);
+                    ApplyDamage(target, effect.Damage, effect.Stun, effect.ArmorPen ?? attacker.Stats.ArmorPen);
                 break;
             case "projectile":
                 SpawnProjectile(attacker, target, effect);
@@ -644,11 +648,13 @@ public class BattleSimulation
             VelocityX = velocity.X,
             VelocityY = velocity.Y,
             Damage = effect.Damage,
+            ArmorPen = effect.ArmorPen ?? owner.Stats.ArmorPen,
             Stun = effect.Stun,
             Range = effect.Range,
             Lifetime = effect.Duration > 0f ? effect.Duration : ProjectileLifetime,
             AnimationKey = effect.ProjectileAnim,
             FacingRight = owner.FacingRight,
+            HitFrames = effect.HitFrames?.ToList() ?? new List<int>(),
             RenderOffsetX = effect.Render.OffsetX,
             RenderOffsetY = effect.Render.OffsetY,
             Render = effect.Render
@@ -685,6 +691,7 @@ public class BattleSimulation
             X = x,
             Y = y,
             Damage = effect.Damage,
+            ArmorPen = effect.ArmorPen ?? owner.Stats.ArmorPen,
             Stun = effect.Stun,
             CollisionWidth = effect.CollisionWidth,
             CollisionHeight = effect.CollisionHeight,
@@ -707,6 +714,7 @@ public class BattleSimulation
             projectile.X += projectile.VelocityX * dt;
             projectile.Y += projectile.VelocityY * dt;
             projectile.Timer += dt;
+            UpdateProjectileFrame(projectile);
 
             if (projectile.Timer >= projectile.Lifetime ||
                 (projectile.Timer >= ProjectileCollisionDelay && IsProjectileBlockedByBarrier(projectile)))
@@ -718,14 +726,34 @@ public class BattleSimulation
             PlayerBattleState target = projectile.OwnerPlayerId == State.Player1.PlayerId ? State.Player2 : State.Player1;
             if (projectile.Timer >= ProjectileCollisionDelay
                 && !target.IsDead
+                && CanProjectileDamageOnCurrentFrame(projectile)
                 && ProjectileIntersectsTarget(projectile, target))
             {
                 if (!IsProjectileBlockedByProtection(projectile, target))
-                    ApplyDamage(target, projectile.Damage, projectile.Stun);
+                    ApplyDamage(target, projectile.Damage, projectile.Stun, projectile.ArmorPen);
 
                 State.Projectiles.RemoveAt(i);
             }
         }
+    }
+
+    private void UpdateProjectileFrame(ProjectileState projectile)
+    {
+        PlayerBattleState owner = projectile.OwnerPlayerId == State.Player1.PlayerId ? State.Player1 : State.Player2;
+        if (string.IsNullOrWhiteSpace(projectile.AnimationKey) ||
+            !owner.Stats.Animations.TryGetValue(projectile.AnimationKey, out var meta))
+        {
+            return;
+        }
+
+        int frameCount = Math.Max(1, meta.FrameCount);
+        int frame = (int)MathF.Floor(projectile.Timer * Math.Max(1f, meta.Fps));
+        projectile.CurrentFrame = Math.Clamp(frame, 0, frameCount - 1);
+    }
+
+    private static bool CanProjectileDamageOnCurrentFrame(ProjectileState projectile)
+    {
+        return projectile.HitFrames.Count == 0 || projectile.HitFrames.Contains(projectile.CurrentFrame + 1);
     }
 
     private void UpdateEffects(float dt)
@@ -748,7 +776,7 @@ public class BattleSimulation
                 && IntersectsRectangle(target, effect.X, effect.Y, effect.CollisionWidth, effect.CollisionHeight))
             {
                 if (!IsBlockedByProtection(owner, target))
-                    ApplyDamage(target, effect.Damage, effect.Stun);
+                    ApplyDamage(target, effect.Damage, effect.Stun, effect.ArmorPen);
 
                 MarkEffectDamageApplied(effect);
             }
@@ -863,8 +891,21 @@ public class BattleSimulation
 
     private static bool IsMeleeEffectHit(PlayerBattleState attacker, PlayerBattleState target, EffectData effect)
     {
+        if (IsCasterBothSpawn(effect))
+        {
+            float offsetX = MathF.Abs(effect.SpawnOffsetX);
+            return IntersectsRectangle(target, attacker.X + offsetX, attacker.Y + effect.SpawnOffsetY, effect.CollisionWidth, effect.CollisionHeight)
+                || IntersectsRectangle(target, attacker.X - offsetX, attacker.Y + effect.SpawnOffsetY, effect.CollisionWidth, effect.CollisionHeight);
+        }
+
         var (x, y) = ResolveEffectSpawn(attacker, target, effect);
         return IntersectsRectangle(target, x, y, effect.CollisionWidth, effect.CollisionHeight);
+    }
+
+    private static bool IsCasterBothSpawn(EffectData effect)
+    {
+        string mode = (effect.SpawnMode ?? string.Empty).Trim().ToLowerInvariant();
+        return mode is "casterboth" or "casteraround";
     }
 
     private static bool ProjectileIntersectsTarget(ProjectileState projectile, PlayerBattleState target)
@@ -897,6 +938,9 @@ public class BattleSimulation
         string mode = (effect.SpawnMode ?? "between").Trim().ToLowerInvariant();
         return mode switch
         {
+            "casterself" => (
+                owner.X + effect.SpawnOffsetX,
+                owner.Y + effect.SpawnOffsetY),
             "targetfront" => (
                 target.X + (owner.X < target.X ? effect.SpawnOffsetX : -effect.SpawnOffsetX),
                 target.Y + effect.SpawnOffsetY),
@@ -919,12 +963,12 @@ public class BattleSimulation
         };
     }
 
-    private static void ApplyDamage(PlayerBattleState target, int rawDamage, float stun)
+    private static void ApplyDamage(PlayerBattleState target, float rawDamage, float stun, int armorPen = 0)
     {
         if (target.IsDead || target.IsInvulnerable)
             return;
 
-        int damage = rawDamage <= 0 ? 0 : Math.Max(1, rawDamage - target.Stats.Def);
+        int damage = CalculateDamage(rawDamage, target.Stats.Def, armorPen);
         if (damage <= 0 && stun <= 0f)
             return;
 
@@ -943,6 +987,15 @@ public class BattleSimulation
             target.IsDead = true;
             target.CurrentAnimation = "Dead";
         }
+    }
+
+    private static int CalculateDamage(float rawDamage, int targetDef, int armorPen)
+    {
+        if (rawDamage <= 0)
+            return 0;
+
+        int effectiveDef = Math.Max(0, targetDef - Math.Max(0, armorPen));
+        return Math.Max(1, (int)MathF.Round(rawDamage - effectiveDef, MidpointRounding.AwayFromZero));
     }
 
     private static void UpdateAnimation(PlayerBattleState player)

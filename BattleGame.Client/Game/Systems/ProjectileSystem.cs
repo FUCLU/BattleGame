@@ -88,7 +88,7 @@ namespace BattleGame.Client.Game.Systems
                         if (ch.IsDead) continue;
                         if (ch.IsInvulnerable) continue;
 
-                        if (p.Timer >= ProjectileCollisionDelay && CheckHit(p, mv))
+                        if (p.Timer >= ProjectileCollisionDelay && CanApplyDamageOnCurrentFrame(p) && CheckHit(p, mv))
                         {
                             if (IsBlockedByProtection(p, target))
                             {
@@ -216,12 +216,18 @@ namespace BattleGame.Client.Game.Systems
             return (p.X + p.Render.OffsetX, p.Y + p.Render.OffsetY);
         }
 
+        private static bool CanApplyDamageOnCurrentFrame(ProjectileComponent p)
+        {
+            return p.HitFrames.Count == 0 || p.HitFrames.Contains(p.CurrentFrame + 1);
+        }
+
         private void ApplyDamage(Entity target, ProjectileComponent p)
         {
             var ch = target.Get<CharacterComponent>();
             if (ch.IsDead || ch.IsInvulnerable) return;
 
-            int dmg = p.Damage <= 0 ? 0 : Math.Max(1, p.Damage - ch.BaseStats.Def);
+            int effectiveDef = Math.Max(0, ch.BaseStats.Def - Math.Max(0, p.ArmorPen));
+            int dmg = p.Damage <= 0 ? 0 : Math.Max(1, (int)MathF.Round(p.Damage - effectiveDef, MidpointRounding.AwayFromZero));
             ch.Hp = Math.Max(0, ch.Hp - dmg);
 
             ch.IsHurt = true;

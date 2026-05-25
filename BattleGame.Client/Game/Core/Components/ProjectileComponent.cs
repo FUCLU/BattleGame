@@ -11,7 +11,8 @@ namespace BattleGame.Client.Game.Core.Components
         public float VelocityX;
         public float VelocityY;
 
-        public int Damage;
+        public float Damage;
+        public int ArmorPen;
         public float StunDuration;
         public float Range = 50f;
 
@@ -25,6 +26,7 @@ namespace BattleGame.Client.Game.Core.Components
         public string AnimationKey { get; set; } = "";
         public int CurrentFrame { get; set; } = 0;
         public float FrameTimer { get; set; } = 0f;
+        public List<int> HitFrames { get; set; } = new();
         public EffectRenderData Render { get; set; } = new();
     }
 }
