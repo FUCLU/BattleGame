@@ -33,10 +33,6 @@ namespace BattleGame.Client.Forms
             ApplyUnifiedStyle();
         }
 
-        private static readonly string AssetsRoot = Path.Combine(
-           AppDomain.CurrentDomain.BaseDirectory,
-           "..", "..", "..", "Assets", "Background");
-
         private static string? GetMapImageFile(string mapId)
         {
             return mapId switch
@@ -48,6 +44,17 @@ namespace BattleGame.Client.Forms
             };
         }
 
+        private static string ResolveMapImagePath(string imageFile)
+        {
+            string outputPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets", "Background", imageFile);
+            if (File.Exists(outputPath))
+                return outputPath;
+
+            return Path.GetFullPath(Path.Combine(
+                AppDomain.CurrentDomain.BaseDirectory,
+                "..", "..", "..", "Assets", "Background", imageFile));
+        }
+
         private void SetMap(string mapId)
         {
             _selectedMapId = mapId;
@@ -55,7 +62,7 @@ namespace BattleGame.Client.Forms
             if (string.IsNullOrWhiteSpace(imageFile))
                 return;
 
-            string imagePath = Path.Combine(AssetsRoot, imageFile);
+            string imagePath = ResolveMapImagePath(imageFile);
             if (!File.Exists(imagePath))
             {
                 pictureBoxMap.Image = null;

@@ -88,12 +88,13 @@ namespace BattleGame.Client.Config
             {
                 Hp = stats.GetProperty("hp").GetInt32(),
                 Def = stats.GetProperty("def").GetInt32(),
+                ArmorPen = stats.TryGetProperty("armorPen", out var armorPen) ? armorPen.GetInt32() : 0,
                 Mana = stats.GetProperty("mana").GetInt32(),
                 ManaRegen = stats.TryGetProperty("manaRegen", out var manaRegen) ? manaRegen.GetSingle() : 8f,
-                Atk = stats.GetProperty("atk").GetInt32(),
+                Atk = stats.GetProperty("atk").GetSingle(),
                 Speed = stats.GetProperty("speed").GetSingle(),
                 AtkSpeed = stats.GetProperty("atkSpeed").GetSingle(),
-                StunDuration = stats.GetProperty("stunDuration").GetSingle(),
+                StunDuration = stats.TryGetProperty("stunDuration", out var stunDuration) ? stunDuration.GetSingle() : 0f,
                 AttackRange = stats.TryGetProperty("attackRange", out var ar) ? ar.GetSingle() : 150f,
                 AttackProjectile = attackProj,
                 AttackProjectileSpeed = attackProjSpeed,
@@ -160,12 +161,17 @@ namespace BattleGame.Client.Config
                 ManaCost = el.GetProperty("manaCost").GetInt32(),
                 Cooldown = el.GetProperty("cooldown").GetSingle(),
                 Animation = el.TryGetProperty("animation", out var anim) ? anim.GetString() ?? "" : "",
+                ArmorPen = el.TryGetProperty("armorPen", out var armorPen) ? armorPen.GetInt32() : null,
                 InvulnerableWhileCasting = el.TryGetProperty("invulnerableWhileCasting", out var invulnerableWhileCasting)
                     && invulnerableWhileCasting.GetBoolean()
             };
 
             if (el.TryGetProperty("effects", out var effects))
+            {
                 skill.Effects = ParseEffects(effects);
+                foreach (var effect in skill.Effects)
+                    effect.ArmorPen ??= skill.ArmorPen;
+            }
 
             return skill;
         }
@@ -189,7 +195,8 @@ namespace BattleGame.Client.Config
                     Type = e.GetProperty("type").GetString() ?? "",
                     Animation = e.TryGetProperty("animation", out var anim) ? anim.GetString() ?? "" : "",
                     Trigger = e.GetProperty("trigger").GetString() ?? "",
-                    Damage = e.TryGetProperty("damage", out var d) ? d.GetInt32() : 0,
+                    Damage = e.TryGetProperty("damage", out var d) ? d.GetSingle() : 0,
+                    ArmorPen = e.TryGetProperty("armorPen", out var armorPen) ? armorPen.GetInt32() : null,
                     Stun = e.TryGetProperty("stun", out var s) ? s.GetSingle() : 0,
                     Speed = e.TryGetProperty("speed", out var sp) ? sp.GetSingle() : 0,
                     ProjectileAnim = e.TryGetProperty("projectileAnim", out var pa) ? pa.GetString() ?? "" : "",
@@ -207,11 +214,20 @@ namespace BattleGame.Client.Config
                     Render = ParseEffectRender(e)
                 };
 
+                if (e.TryGetProperty("triggerFrames", out var triggerFrames))
+                {
+                    effect.TriggerFrames = new List<int>();
+                    foreach (var f in triggerFrames.EnumerateArray())
+                        effect.TriggerFrames.Add(f.GetInt32());
+                }
+
                 if (e.TryGetProperty("frames", out var frames))
                 {
                     effect.Frames = new List<int>();
                     foreach (var f in frames.EnumerateArray())
                         effect.Frames.Add(f.GetInt32());
+
+                    effect.TriggerFrames ??= new List<int>(effect.Frames);
                 }
 
                 if (e.TryGetProperty("hitFrames", out var hitFrames))

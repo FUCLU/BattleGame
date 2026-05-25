@@ -53,8 +53,22 @@ namespace BattleGame.Client.Game.Systems
         private static bool IsMeleeEffectHit(Entity caster, Entity target, EffectData effect)
         {
             var targetMv = target.Get<MovementComponent>();
+            if (IsCasterBothSpawn(effect))
+            {
+                var casterMv = caster.Get<MovementComponent>();
+                float offsetX = MathF.Abs(effect.SpawnOffsetX);
+                return CharacterHitbox.IntersectsRectangle(targetMv, casterMv.X + offsetX, casterMv.Y + effect.SpawnOffsetY, effect.CollisionWidth, effect.CollisionHeight)
+                    || CharacterHitbox.IntersectsRectangle(targetMv, casterMv.X - offsetX, casterMv.Y + effect.SpawnOffsetY, effect.CollisionWidth, effect.CollisionHeight);
+            }
+
             var spawn = ResolveBarrierSpawnPosition(caster, target, effect);
             return CharacterHitbox.IntersectsRectangle(targetMv, spawn.X, spawn.Y, effect.CollisionWidth, effect.CollisionHeight);
+        }
+
+        private static bool IsCasterBothSpawn(EffectData effect)
+        {
+            string mode = (effect.SpawnMode ?? string.Empty).Trim().ToLowerInvariant();
+            return mode is "casterboth" or "casteraround";
         }
 
         private bool IsBlockedByBarrier(Entity attacker, Entity target, string effectType)
@@ -131,7 +145,7 @@ namespace BattleGame.Client.Game.Systems
                         if (IsBaseAttackHit(entity, _target, ch.BaseStats.AttackRange)
                             && !IsBlockedByBarrier(entity, _target, "melee")
                             && !IsBlockedByProtection(entity, _target))
-                            TakeDamage(_target, ch.BaseStats.Atk);
+                            TakeDamage(_target, ch.BaseStats.Atk, armorPen: ch.BaseStats.ArmorPen);
                     }
                     ch.AttackHitDone = true;
                 }
@@ -148,6 +162,7 @@ namespace BattleGame.Client.Game.Systems
                             entity,
                             ch.BaseStats.AttackProjectile,
                             ch.BaseStats.Atk,
+                            ch.BaseStats.ArmorPen,
                             ch.BaseStats.AttackProjectileSpeed,
                             ch.BaseStats.AttackProjectileSpawnOffsetX,
                             ch.BaseStats.AttackProjectileSpawnOffsetY,
@@ -215,12 +230,14 @@ namespace BattleGame.Client.Game.Systems
                     if (!targetCh.IsDead && IntersectsBarrier(_target, bc))
                     {
                         int currentFrame = spBarrier.CurrentFrame + 1;
-                        bool frameIsConfigured = bc.HitFrames.Count == 0 || bc.HitFrames.Contains(currentFrame);
+                        bool canApplyDamage = bc.HitFrames.Count == 0
+                            ? bc.LastDamageFrame < 0
+                            : bc.HitFrames.Contains(currentFrame) && bc.LastDamageFrame != currentFrame;
 
-                        if (frameIsConfigured && bc.LastDamageFrame != currentFrame)
+                        if (canApplyDamage)
                         {
                             if (!IsBlockedByProtection(bc.Owner, _target))
-                                TakeDamage(_target, bc.Damage, bc.Stun);
+                                TakeDamage(_target, bc.Damage, bc.Stun, bc.ArmorPen);
 
                             bc.LastDamageFrame = currentFrame;
                         }
@@ -302,14 +319,16 @@ namespace BattleGame.Client.Game.Systems
                     return sp.AnimationFinished && !ch.TriggeredAttackEffects.Contains(idx);
 
                 case "onframe":
-                    return e.Frames != null &&
-                           e.Frames.Count > 0 &&
-                           sp.CurrentFrame == e.Frames[0] &&
+                    var onFrameFrames = e.TriggerFrames ?? e.Frames;
+                    return onFrameFrames != null &&
+                           onFrameFrames.Count > 0 &&
+                           sp.CurrentFrame == onFrameFrames[0] &&
                            !ch.TriggeredAttackEffects.Contains(idx);
 
                 case "onframes":
-                    return e.Frames != null &&
-                           e.Frames.Contains(sp.CurrentFrame) &&
+                    var onFramesFrames = e.TriggerFrames ?? e.Frames;
+                    return onFramesFrames != null &&
+                           onFramesFrames.Contains(sp.CurrentFrame) &&
                            !ch.TriggeredAttackFrames.Contains((idx, sp.CurrentFrame));
 
                 case "onmiddle":
@@ -392,17 +411,19 @@ namespace BattleGame.Client.Game.Systems
                     return triggered;
 
                 case "onframe":
-                    return e.Frames != null &&
-                           e.Frames.Count > 0 &&
-                           sp.CurrentFrame == e.Frames[0] &&
+                    var onFrameFrames = e.TriggerFrames ?? e.Frames;
+                    return onFrameFrames != null &&
+                           onFrameFrames.Count > 0 &&
+                           sp.CurrentFrame == onFrameFrames[0] &&
                            !ch.TriggeredEffects.Contains(idx);
 
                 case "onframes":
-                    bool shouldTriggerFrames = e.Frames != null &&
-                           e.Frames.Contains(sp.CurrentFrame) &&
+                    var onFramesFrames = e.TriggerFrames ?? e.Frames;
+                    bool shouldTriggerFrames = onFramesFrames != null &&
+                           onFramesFrames.Contains(sp.CurrentFrame) &&
                            !ch.TriggeredFrames.Contains((idx, sp.CurrentFrame));
                     if (shouldTriggerFrames)
-                        System.Diagnostics.Debug.WriteLine($"[ShouldTrigger] onFrames triggered! Frame={sp.CurrentFrame}, Frames={string.Join(",", e.Frames)}");
+                        System.Diagnostics.Debug.WriteLine($"[ShouldTrigger] onFrames triggered! Frame={sp.CurrentFrame}, TriggerFrames={string.Join(",", onFramesFrames!)}");
                     return shouldTriggerFrames;
 
                 case "onmiddle":
@@ -478,7 +499,8 @@ namespace BattleGame.Client.Game.Systems
                         if (IsMeleeEffectHit(caster, _target, e))
                         {
                             System.Diagnostics.Debug.WriteLine($"[ExecuteEffect] Damage applied: {e.Damage}");
-                            TakeDamage(_target, e.Damage, e.Stun);
+                            var armorPen = e.ArmorPen ?? caster.Get<CharacterComponent>().BaseStats.ArmorPen;
+                            TakeDamage(_target, e.Damage, e.Stun, armorPen);
                         }
                         else
                         {
@@ -515,6 +537,7 @@ namespace BattleGame.Client.Game.Systems
                 X = spawn.X,
                 Y = spawn.Y,
                 Damage = e.Damage,
+                ArmorPen = e.ArmorPen ?? caster.Get<CharacterComponent>().BaseStats.ArmorPen,
                 Stun = e.Stun,
                 HitFrames = e.HitFrames ?? e.Frames ?? new List<int>(),
                 CollisionWidth = e.CollisionWidth,
@@ -553,6 +576,9 @@ namespace BattleGame.Client.Game.Systems
 
             if (target == null)
             {
+                if (mode == "casterself")
+                    return (casterMv.X + e.SpawnOffsetX, casterMv.Y + e.SpawnOffsetY);
+
                 // For front-based spawns, follow caster facing even when no target exists (e.g. dungeon solo).
                 if (mode == "casterfront" || mode == "targetfront")
                 {
@@ -566,6 +592,9 @@ namespace BattleGame.Client.Game.Systems
 
             return mode switch
             {
+                "casterself" => (
+                    casterMv.X + e.SpawnOffsetX,
+                    casterMv.Y + e.SpawnOffsetY),
                 "targetfront" => (
                     targetMv.X + (casterMv.X < targetMv.X ? e.SpawnOffsetX : -e.SpawnOffsetX),
                     targetMv.Y + e.SpawnOffsetY),
@@ -580,12 +609,12 @@ namespace BattleGame.Client.Game.Systems
 
         // ================= DAMAGE =================
 
-        public void TakeDamage(Entity target, int rawDamage, float stun = 0f)
+        public void TakeDamage(Entity target, float rawDamage, float stun = 0f, int armorPen = 0)
         {
             var ch = target.Get<CharacterComponent>();
             if (ch.IsDead || ch.IsInvulnerable) return;
 
-            int damage = rawDamage <= 0 ? 0 : Math.Max(1, rawDamage - ch.BaseStats.Def);
+            int damage = CalculateDamage(rawDamage, ch.BaseStats.Def, armorPen);
             ch.Hp = Math.Max(0, ch.Hp - damage);
 
             ch.IsHurt = true;
@@ -598,6 +627,15 @@ namespace BattleGame.Client.Game.Systems
             }
 
             if (ch.Hp <= 0) ch.IsDead = true;
+        }
+
+        private static int CalculateDamage(float rawDamage, int targetDef, int armorPen)
+        {
+            if (rawDamage <= 0)
+                return 0;
+
+            int effectiveDef = Math.Max(0, targetDef - Math.Max(0, armorPen));
+            return Math.Max(1, (int)MathF.Round(rawDamage - effectiveDef, MidpointRounding.AwayFromZero));
         }
     }
 }

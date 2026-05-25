@@ -7,10 +7,10 @@ namespace BattleGame.Client.Game.AI;
 
 public sealed class BossAiController
 {
+    private const float StopChaseRangeBuffer = 30f;
+
     private readonly BossAiProfile _profile;
     private float _actionCooldown;
-    private float _skill1Cooldown;
-    private float _skill2Cooldown;
     private float _dashCooldown;
     private int _dashComboNextSkill;
     private bool _wasBusy;
@@ -30,8 +30,6 @@ public sealed class BossAiController
         if (bossCh.IsDead || targetCh.IsDead)
             return;
 
-        _skill1Cooldown = Math.Max(0f, _skill1Cooldown - dt);
-        _skill2Cooldown = Math.Max(0f, _skill2Cooldown - dt);
         _dashCooldown = Math.Max(0f, _dashCooldown - dt);
 
         float dx = targetMv.X - bossMv.X;
@@ -55,24 +53,25 @@ public sealed class BossAiController
         }
 
         float stopChaseRange = ResolveStopChaseRange(bossCh);
+        float chaseStopDistance = Math.Max(0f, stopChaseRange - StopChaseRangeBuffer);
         float basicAttackRange = ResolveBasicAttackRange(bossCh, stopChaseRange);
 
         if (TryContinueDashCombo(boss, bossMv, combat, bossCh, absDx))
             return;
 
-        if (TrySkill(boss, bossMv, combat, bossCh, absDx, slot: 2, _profile.Skill2Range, ref _skill2Cooldown, _profile.Skill2Cooldown))
+        if (TrySkill(boss, bossMv, combat, bossCh, absDx, slot: 2, _profile.Skill2Range))
             return;
 
-        if (TrySkill(boss, bossMv, combat, bossCh, absDx, slot: 1, _profile.Skill1Range, ref _skill1Cooldown, _profile.Skill1Cooldown))
+        if (TrySkill(boss, bossMv, combat, bossCh, absDx, slot: 1, _profile.Skill1Range))
             return;
 
         if (absDx <= basicAttackRange && TryBasicAttack(boss, bossMv, combat))
             return;
 
-        if (absDx > stopChaseRange || _actionCooldown > 0f)
+        if (absDx > chaseStopDistance)
         {
             bool canQueueDashCombo = CanQueueDashCombo(bossCh, absDx);
-            if (TryDashTowardTarget(bossCh, bossMv, absDx, stopChaseRange))
+            if (TryDashTowardTarget(bossCh, bossMv, absDx, chaseStopDistance))
             {
                 if (canQueueDashCombo)
                     _dashComboNextSkill = _profile.DashComboFirstSkill;
@@ -97,10 +96,9 @@ public sealed class BossAiController
 
         int slot = _dashComboNextSkill;
         float range = slot == 2 ? _profile.Skill2Range : _profile.Skill1Range;
-        float cooldownDuration = slot == 2 ? _profile.Skill2Cooldown : _profile.Skill1Cooldown;
         bool used = slot == 2
-            ? TrySkill(boss, bossMv, combat, bossCh, distance, slot, range, ref _skill2Cooldown, cooldownDuration)
-            : TrySkill(boss, bossMv, combat, bossCh, distance, slot, range, ref _skill1Cooldown, cooldownDuration);
+            ? TrySkill(boss, bossMv, combat, bossCh, distance, slot, range)
+            : TrySkill(boss, bossMv, combat, bossCh, distance, slot, range);
 
         if (!used)
         {
@@ -159,8 +157,8 @@ public sealed class BossAiController
     {
         return slot switch
         {
-            1 => bossCh.Skill1 != null && bossCh.Skill1Cooldown <= 0f && _skill1Cooldown <= 0f && distance <= _profile.DashMaxRange,
-            2 => bossCh.Skill2 != null && bossCh.Skill2Cooldown <= 0f && _skill2Cooldown <= 0f && distance <= _profile.DashMaxRange,
+            1 => bossCh.Skill1 != null && bossCh.Skill1Cooldown <= 0f && distance <= _profile.DashMaxRange,
+            2 => bossCh.Skill2 != null && bossCh.Skill2Cooldown <= 0f && distance <= _profile.DashMaxRange,
             _ => false
         };
     }
@@ -184,11 +182,9 @@ public sealed class BossAiController
         CharacterComponent bossCh,
         float distance,
         int slot,
-        float range,
-        ref float cooldown,
-        float cooldownDuration)
+        float range)
     {
-        if (range <= 0f || cooldown > 0f || distance > range)
+        if (range <= 0f || distance > range)
             return false;
 
         if (slot == 1 && bossCh.Skill1 == null)
@@ -201,7 +197,6 @@ public sealed class BossAiController
         if (!combat.UseSkill(boss, slot))
             return false;
 
-        cooldown = cooldownDuration;
         _actionCooldown = _profile.PostSkillActionCooldown;
         _wasBusy = true;
         return true;

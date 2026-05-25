@@ -7,22 +7,17 @@
     "assetFolder": "dungeon/boss/cthulu"
   },
   "stats": {
-    "hp": 420,
-    "def": 12,
+    "hp": 3000,
+    "def": 30,
     "mana": 100,
-    "atk": 28,
+    "atk": 80,
     "speed": 150,
     "atkSpeed": 0.9,
-    "stunDuration": 0.0,
     "attackRange": 165
   },
   "render": {
     "scale": 5,
-    "offsetY": 92,
-    "useSpriteSize": false,
-    "protectionOverlayOffsetY": 0.0,
-    "protectionUsesIdleBase": false,
-    "protectionBlocksAllDirections": false
+    "offsetY": 92
   },
   "skills": {
     "skill1": {
@@ -35,7 +30,7 @@
           "type": "melee",
           "trigger": "onStart",
           "damage": 34,
-          "stun": 0.35,
+          "stun": 0.75,
           "range": 185
         }
       ]

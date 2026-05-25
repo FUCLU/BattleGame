@@ -7,38 +7,29 @@
     "assetFolder": "dungeon/boss/zweilander"
   },
   "stats": {
-    "hp": 520,
+    "hp": 4000,
     "def": 16,
     "mana": 100,
-    "atk": 34,
+    "atk": 80,
     "speed": 175,
     "atkSpeed": 0.9,
-    "stunDuration": 0.0,
     "attackRange": 185
   },
   "render": {
     "scale": 5,
-    "offsetY": 200,
-    "useSpriteSize": false,
-    "protectionOverlayOffsetY": 0.0,
-    "protectionUsesIdleBase": false,
-    "protectionBlocksAllDirections": false
+    "offsetY": 200
   },
   "attackEffects": [
     {
       "type": "melee",
       "animation": "Attack_1",
       "trigger": "onMiddle",
-      "damage": 34,
-      "range": 205,
-      "collisionWidth": 205,
-      "collisionHeight": 130,
+      "damage": 80,
       "spawnMode": "casterFront",
       "spawnOffsetX": 102,
       "spawnOffsetY": 0,
-      "blockEnemyAttack": false,
-      "blockEnemyProjectile": false,
-      "blockEnemySkill": false
+      "collisionWidth": 205,
+      "collisionHeight": 130
     }
   ],
   "skills": {
@@ -46,21 +37,17 @@
       "id": "zweilander_cleave",
       "animation": "Skill1",
       "manaCost": 0,
-      "cooldown": 3.0,
+      "cooldown": 6,
       "effects": [
         {
           "type": "melee",
           "trigger": "onMiddle",
-          "damage": 48,
-          "range": 230,
-          "collisionWidth": 230,
-          "collisionHeight": 150,
+          "damage": 100,
           "spawnMode": "casterFront",
           "spawnOffsetX": 115,
           "spawnOffsetY": 0,
-          "blockEnemyAttack": false,
-          "blockEnemyProjectile": false,
-          "blockEnemySkill": false
+          "collisionWidth": 230,
+          "collisionHeight": 150
         }
       ]
     },
@@ -68,22 +55,18 @@
       "id": "zweilander_stunning_breaker",
       "animation": "Skill2",
       "manaCost": 0,
-      "cooldown": 3.0,
+      "cooldown": 6,
       "effects": [
         {
           "type": "melee",
           "trigger": "onMiddle",
-          "damage": 36,
-          "stun": 1.0,
-          "range": 230,
-          "collisionWidth": 230,
-          "collisionHeight": 150,
+          "damage": 100,
+          "stun": 1,
           "spawnMode": "casterFront",
           "spawnOffsetX": 115,
           "spawnOffsetY": 0,
-          "blockEnemyAttack": false,
-          "blockEnemyProjectile": false,
-          "blockEnemySkill": false
+          "collisionWidth": 230,
+          "collisionHeight": 150
         }
       ]
     }

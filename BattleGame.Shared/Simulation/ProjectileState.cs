@@ -10,13 +10,15 @@ public class ProjectileState
     public float Y { get; set; }
     public float VelocityX { get; set; }
     public float VelocityY { get; set; }
-    public int Damage { get; set; }
+    public float Damage { get; set; }
+    public int ArmorPen { get; set; }
     public float Stun { get; set; }
     public float Range { get; set; } = 50f;
     public float Lifetime { get; set; } = 3f;
     public float Timer { get; set; }
     public string AnimationKey { get; set; } = string.Empty;
     public int CurrentFrame { get; set; }
+    public List<int> HitFrames { get; set; } = new();
     public bool FacingRight { get; set; }
     public float RenderOffsetX { get; set; }
     public float RenderOffsetY { get; set; }

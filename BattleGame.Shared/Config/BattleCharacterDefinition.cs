@@ -70,12 +70,13 @@ public static class BattleCharacterDefinitionLoader
         {
             Hp = stats.GetProperty("hp").GetInt32(),
             Def = stats.GetProperty("def").GetInt32(),
+            ArmorPen = stats.TryGetProperty("armorPen", out var armorPen) ? armorPen.GetInt32() : 0,
             Mana = stats.GetProperty("mana").GetInt32(),
             ManaRegen = stats.TryGetProperty("manaRegen", out var manaRegen) ? manaRegen.GetSingle() : 8f,
-            Atk = stats.GetProperty("atk").GetInt32(),
+            Atk = stats.GetProperty("atk").GetSingle(),
             Speed = stats.GetProperty("speed").GetSingle(),
             AtkSpeed = atkSpeed,
-            StunDuration = stats.GetProperty("stunDuration").GetSingle(),
+            StunDuration = stats.TryGetProperty("stunDuration", out var stunDuration) ? stunDuration.GetSingle() : 0f,
             AttackRange = stats.TryGetProperty("attackRange", out var ar) ? ar.GetSingle() : 150f,
             AttackDuration = atkSpeed > 0f ? 1f / atkSpeed : 1f,
             AttackProjectile = stats.TryGetProperty("attackProjectile", out var ap) ? ap.GetString() : null,
@@ -131,12 +132,17 @@ public static class BattleCharacterDefinitionLoader
             ManaCost = el.GetProperty("manaCost").GetInt32(),
             Cooldown = el.GetProperty("cooldown").GetSingle(),
             Animation = el.TryGetProperty("animation", out var anim) ? anim.GetString() ?? "" : "",
+            ArmorPen = el.TryGetProperty("armorPen", out var armorPen) ? armorPen.GetInt32() : null,
             InvulnerableWhileCasting = el.TryGetProperty("invulnerableWhileCasting", out var invulnerable)
                 && invulnerable.GetBoolean()
         };
 
         if (el.TryGetProperty("effects", out var effects))
+        {
             skill.Effects = ParseEffects(effects);
+            foreach (var effect in skill.Effects)
+                effect.ArmorPen ??= skill.ArmorPen;
+        }
 
         return skill;
     }
@@ -169,7 +175,8 @@ public static class BattleCharacterDefinitionLoader
                 Type = type,
                 Animation = ReadString(e, "animation") ?? "",
                 Trigger = ReadString(e, "trigger") ?? "",
-                Damage = e.TryGetProperty("damage", out var d) ? d.GetInt32() : 0,
+                Damage = e.TryGetProperty("damage", out var d) ? d.GetSingle() : 0,
+                ArmorPen = e.TryGetProperty("armorPen", out var armorPen) ? armorPen.GetInt32() : null,
                 Stun = e.TryGetProperty("stun", out var s) ? s.GetSingle() : 0f,
                 Speed = e.TryGetProperty("speed", out var sp) ? sp.GetSingle() : 0f,
                 ProjectileAnim = ReadString(e, "projectileAnim") ?? "",
@@ -189,8 +196,14 @@ public static class BattleCharacterDefinitionLoader
                 Render = ParseEffectRender(e)
             };
 
+            if (e.TryGetProperty("triggerFrames", out var triggerFrames) && triggerFrames.ValueKind == JsonValueKind.Array)
+                effect.TriggerFrames = triggerFrames.EnumerateArray().Select(frame => frame.GetInt32()).ToList();
+
             if (e.TryGetProperty("frames", out var frames) && frames.ValueKind == JsonValueKind.Array)
+            {
                 effect.Frames = frames.EnumerateArray().Select(frame => frame.GetInt32()).ToList();
+                effect.TriggerFrames ??= effect.Frames.ToList();
+            }
 
             if (e.TryGetProperty("hitFrames", out var hitFrames) && hitFrames.ValueKind == JsonValueKind.Array)
                 effect.HitFrames = hitFrames.EnumerateArray().Select(frame => frame.GetInt32()).ToList();

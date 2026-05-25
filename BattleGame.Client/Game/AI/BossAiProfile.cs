@@ -14,9 +14,7 @@ public sealed class BossAiProfile
     public float BasicAttackRange { get; set; } = 0f;
     public float EngageRangeBonus { get; set; } = 10f;
     public float Skill1Range { get; set; } = 210f;
-    public float Skill1Cooldown { get; set; } = 2.6f;
     public float Skill2Range { get; set; } = 0f;
-    public float Skill2Cooldown { get; set; } = 0f;
     public float BasicAttackCooldown { get; set; } = 0.85f;
     public float PostSkillActionCooldown { get; set; } = 0.45f;
     public float DashMinRange { get; set; } = 0f;

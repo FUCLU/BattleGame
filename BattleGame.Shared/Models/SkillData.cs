@@ -18,6 +18,7 @@ namespace BattleGame.Shared.Models
         public int ManaCost { get; set; }
         public float Cooldown { get; set; }
         public string Animation { get; set; } = "";
+        public int? ArmorPen { get; set; }
         public bool InvulnerableWhileCasting { get; set; } = false;
         public List<EffectData> Effects { get; set; } = new();
     }
@@ -27,14 +28,16 @@ namespace BattleGame.Shared.Models
         public string Type { get; set; } = ""; // melee / projectile / barrier
         public string Animation { get; set; } = ""; // optional: restrict effect to an action animation
         public string Trigger { get; set; } = ""; // onStart / onFrame / onFrames / onMiddle / onEnd
+        public List<int>? TriggerFrames { get; set; }
         public List<int>? Frames { get; set; }
         public List<int>? HitFrames { get; set; }
-        public int Damage { get; set; }
+        public int? ArmorPen { get; set; }
+        public float Damage { get; set; }
         public float Stun { get; set; }
         public float Speed { get; set; }
         public string ProjectileAnim { get; set; } = "";
         public string ObjectAnim { get; set; } = "";
-        public string SpawnMode { get; set; } = "between"; // between / targetFront / casterFront
+        public string SpawnMode { get; set; } = "between"; // between / targetFront / casterFront / casterBoth / casterSelf
         public float SpawnOffsetX { get; set; } = 10f;
         public float SpawnOffsetY { get; set; } = -30f;
         public int CollisionWidth { get; set; } = 80;

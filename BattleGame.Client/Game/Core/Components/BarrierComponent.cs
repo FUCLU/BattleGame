@@ -11,7 +11,8 @@ namespace BattleGame.Client.Game.Core.Components
         public float MaxDuration { get; set; } = 3.0f;
         public float X { get; set; }
         public float Y { get; set; }
-        public int Damage { get; set; } = 10;
+        public float Damage { get; set; } = 10;
+        public int ArmorPen { get; set; }
         public float Stun { get; set; } = 0f;
         public List<int> HitFrames { get; set; } = new();
         public int CollisionWidth { get; set; } = 80;

@@ -142,11 +142,11 @@ namespace BattleGame.Client.Forms
             bool localFirst = IsLocalPlayer1();
             string displayPlayer1 = localFirst ? _player1Name : _player2Name;
             string displayPlayer2 = localFirst ? _player2Name : _player1Name;
-            textBox1.Text = displayPlayer1;
-            textBox2.Text = displayPlayer2;
+            textBox1.Text = FormatPlayerSlotName(displayPlayer1);
+            textBox2.Text = FormatPlayerSlotName(displayPlayer2);
 
-            bool hasPlayer1 = _playerCount >= 1;
-            bool hasPlayer2 = _playerCount >= 2;
+            bool hasPlayer1 = HasPlayerName(_player1Name);
+            bool hasPlayer2 = HasPlayerName(_player2Name);
 
             bool topReady = localFirst ? _player1Ready : _player2Ready;
             bool bottomReady = localFirst ? _player2Ready : _player1Ready;
@@ -154,7 +154,7 @@ namespace BattleGame.Client.Forms
             UpdateReadyLabel(lblReady1, hasPlayer1, isReady: topReady);
             UpdateReadyLabel(lblReady2, hasPlayer2, isReady: bottomReady);
 
-            if (!hasPlayer1 || !hasPlayer2)
+            if (_playerCount < MaxPlayers)
             {
                 AddMessage("", "Đang chờ người chơi...");
             }
@@ -266,8 +266,8 @@ namespace BattleGame.Client.Forms
 
         private void UpdateReadyState()
         {
-            bool hasPlayer1 = _playerCount >= 1;
-            bool hasPlayer2 = _playerCount >= 2;
+            bool hasPlayer1 = HasPlayerName(_player1Name);
+            bool hasPlayer2 = HasPlayerName(_player2Name);
             bool canReady = _playerCount > 0;
 
             button3.Enabled = canReady;
@@ -437,9 +437,7 @@ namespace BattleGame.Client.Forms
                             label6.Text = FormatTimeLimit(_timeLimitMinutes);
                         }
 
-                        _player1Name = string.IsNullOrWhiteSpace(joinResult.Player1Name) ? _player1Name : joinResult.Player1Name;
-                        _player2Name = string.IsNullOrWhiteSpace(joinResult.Player2Name) ? _player2Name : joinResult.Player2Name;
-                        _playerCount = MaxPlayers;
+                        ApplyRoomPlayerSnapshot(joinResult.Player1Name, joinResult.Player2Name);
                         UpdateRoomStatus();
                         UpdateReadyState();
 
@@ -489,15 +487,12 @@ namespace BattleGame.Client.Forms
                 if (room == null)
                     return;
 
-                if (!string.IsNullOrWhiteSpace(room.Player1Name))
-                    _player1Name = room.Player1Name;
-
-                if (!string.IsNullOrWhiteSpace(room.Player2Name))
-                    _player2Name = room.Player2Name;
+                _player1Name = NormalizePlayerName(room.Player1Name);
+                _player2Name = NormalizePlayerName(room.Player2Name);
 
                 _player1Ready = room.Player1Ready;
                 _player2Ready = room.Player2Ready;
-                _playerCount = Math.Clamp(room.CurrentPlayers, 0, MaxPlayers);
+                _playerCount = CountPlayers(_player1Name, _player2Name);
 
                 if (room.MapId >= 0)
                 {
@@ -604,6 +599,40 @@ namespace BattleGame.Client.Forms
             }
 
             return _isHost;
+        }
+
+        private void ApplyRoomPlayerSnapshot(string? player1Name, string? player2Name)
+        {
+            if (player1Name != null)
+                _player1Name = NormalizePlayerName(player1Name);
+
+            if (player2Name != null)
+                _player2Name = NormalizePlayerName(player2Name);
+
+            _playerCount = CountPlayers(_player1Name, _player2Name);
+            if (!HasPlayerName(_player1Name))
+                _player1Ready = false;
+
+            if (!HasPlayerName(_player2Name))
+                _player2Ready = false;
+        }
+
+        private static string NormalizePlayerName(string? name)
+            => (name ?? string.Empty).Trim();
+
+        private static bool HasPlayerName(string? name)
+            => !string.IsNullOrWhiteSpace(name) &&
+               !string.Equals(name.Trim(), "Player...", StringComparison.OrdinalIgnoreCase);
+
+        private static string FormatPlayerSlotName(string? name)
+            => HasPlayerName(name) ? name!.Trim() : "Player...";
+
+        private static int CountPlayers(string? player1Name, string? player2Name)
+        {
+            int count = 0;
+            if (HasPlayerName(player1Name)) count++;
+            if (HasPlayerName(player2Name)) count++;
+            return count;
         }
 
         private bool TryParseRoomId(out int roomId)
