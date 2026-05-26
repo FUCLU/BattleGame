@@ -25,6 +25,7 @@ public sealed class DungeonMapDefinition
         string folderName,
         float worldWidth,
         string previewFileName,
+        string battleMusicFileName,
         IReadOnlyList<DungeonParallaxLayerDefinition> layers,
         string? foregroundFileName)
     {
@@ -34,6 +35,7 @@ public sealed class DungeonMapDefinition
         FolderName = folderName;
         WorldWidth = worldWidth;
         PreviewFileName = previewFileName;
+        BattleMusicFileName = battleMusicFileName;
         Layers = layers;
         ForegroundFileName = foregroundFileName;
     }
@@ -44,6 +46,7 @@ public sealed class DungeonMapDefinition
     public string FolderName { get; }
     public float WorldWidth { get; }
     public string PreviewFileName { get; }
+    public string BattleMusicFileName { get; }
     public IReadOnlyList<DungeonParallaxLayerDefinition> Layers { get; }
     public string? ForegroundFileName { get; }
 }
@@ -59,6 +62,7 @@ public static class DungeonMapRegistry
             folderName: "map1",
             worldWidth: 8000f,
             previewFileName: "background.png",
+            battleMusicFileName: "dungeon_map1_battle.mp3",
             layers: new[]
             {
                 new DungeonParallaxLayerDefinition("plan5.png", 0.10f),
@@ -74,6 +78,7 @@ public static class DungeonMapRegistry
             folderName: "map2",
             worldWidth: 12000f,
             previewFileName: "preview.png",
+            battleMusicFileName: "dungeon_map2_battle.mp3",
             layers: new[]
             {
                 new DungeonParallaxLayerDefinition("back.png", 0.00f),

@@ -14,6 +14,8 @@ public class ProjectileState
     public int ArmorPen { get; set; }
     public float Stun { get; set; }
     public float Range { get; set; } = 50f;
+    public int CollisionWidth { get; set; }
+    public int CollisionHeight { get; set; }
     public float Lifetime { get; set; } = 3f;
     public float Timer { get; set; }
     public string AnimationKey { get; set; } = string.Empty;

@@ -1,4 +1,4 @@
-﻿using BattleGame.Client.Managers;
+using BattleGame.Client.Managers;
 using BattleGame.Shared.Packets;
 using System;
 using System.Collections.Generic;
@@ -16,11 +16,11 @@ namespace BattleGame.Client.Forms
 {
     public partial class ForgotPasswordForm : Form
     {
-        private bool _isMuted = false;
 
         public ForgotPasswordForm()
         {
             InitializeComponent();
+            BorderlessFormHelper.Apply(this);
             this.StartPosition = FormStartPosition.CenterScreen;
         }
 
@@ -37,14 +37,14 @@ namespace BattleGame.Client.Forms
 
             if (string.IsNullOrEmpty(email))
             {
-                MessageBox.Show("Vui lòng nhập email!",
+                MessageBox.Show("Vui l�ng nh?p email!",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
             {
-                MessageBox.Show("Email không hợp lệ!",
+                MessageBox.Show("Email kh�ng h?p l?!",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
@@ -64,13 +64,13 @@ namespace BattleGame.Client.Forms
                 }
                 else
                 {
-                    MessageBox.Show(result.Message ?? "Gửi mã thất bại!",
+                    MessageBox.Show(result.Message ?? "G?i m� th?t b?i!",
                         "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Đã có lỗi xảy ra: " + ex.Message,
+                MessageBox.Show("�� c� l?i x?y ra: " + ex.Message,
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally
@@ -78,21 +78,6 @@ namespace BattleGame.Client.Forms
                 button1.Enabled = true;
             }
         }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            if (_isMuted)
-            {
-                SoundManager.SetVolume(1.0f);
-                _isMuted = false;
-            }
-            else
-            {
-                SoundManager.SetVolume(0.0f);
-                _isMuted = true;
-            }
-        }
-
         private void btnBackLogin_Click(object sender, EventArgs e)
         {
             LoginForm loginForm = new LoginForm();

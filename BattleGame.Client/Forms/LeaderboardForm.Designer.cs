@@ -35,13 +35,15 @@
             // 
             // listView1
             // 
-            listView1.BackColor = Color.Azure;
-            listView1.Font = new Font("Bookman Old Style", 16.2F, FontStyle.Regular, GraphicsUnit.Point, 0);
-            listView1.ForeColor = Color.Brown;
+            listView1.BackColor = Color.FromArgb(232, 248, 255);
+            listView1.BorderStyle = BorderStyle.FixedSingle;
+            listView1.Font = new Font("Courier New", 15F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            listView1.ForeColor = Color.FromArgb(12, 55, 116);
             listView1.FullRowSelect = true;
             listView1.GridLines = true;
             listView1.Location = new Point(109, 134);
             listView1.Name = "listView1";
+            listView1.OwnerDraw = false;
             listView1.Size = new Size(844, 368);
             listView1.TabIndex = 1;
             listView1.UseCompatibleStateImageBehavior = false;
@@ -52,6 +54,11 @@
             // button1
             // 
             button1.BackColor = Color.Brown;
+            button1.FlatStyle = FlatStyle.Flat;
+            button1.FlatAppearance.BorderColor = Color.White;
+            button1.FlatAppearance.BorderSize = 2;
+            button1.FlatAppearance.MouseDownBackColor = Color.FromArgb(120, 28, 28);
+            button1.FlatAppearance.MouseOverBackColor = Color.FromArgb(205, 65, 65);
             button1.Font = new Font("Book Antiqua", 16.2F, FontStyle.Bold, GraphicsUnit.Point, 0);
             button1.ForeColor = SystemColors.Control;
             button1.Location = new Point(1000, 5);

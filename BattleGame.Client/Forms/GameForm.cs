@@ -18,6 +18,8 @@ using BattleGame.Shared.Simulation;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
 using System.Drawing.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 
 namespace BattleGame.Client.Forms
@@ -35,6 +37,7 @@ namespace BattleGame.Client.Forms
         private GameEngine _engine;
         private readonly bool _isOnline;
         private readonly bool _isDungeonMap;
+        private readonly bool _dungeonStatMode;
         private readonly bool _localTwoPlayer;
         private readonly string _playerCharacterId;
         private readonly string _enemyCharacterId;
@@ -68,6 +71,14 @@ namespace BattleGame.Client.Forms
         private const float RoundIntroSeconds = 2.2f;
         private const float OfflineRoundResolveDelaySeconds = 1.2f;
         private const float DungeonResolveDelaySeconds = 1.2f;
+        private const float PostDeathRoundDelaySeconds = 0.35f;
+        private const float DungeonStatMessageSeconds = 2.2f;
+        private readonly Random _dungeonStatRandom = new();
+        private int _lastDungeonDefeatedCount;
+        private bool _dungeonFailureStatApplied;
+        private string _dungeonStatMessage = string.Empty;
+        private float _dungeonStatMessageTimer;
+        private readonly Dictionary<DungeonStat, int> _dungeonPendingStatDeltas = new();
 
         private static readonly string AssetsRoot = Path.Combine(
             AppDomain.CurrentDomain.BaseDirectory,
@@ -122,19 +133,19 @@ namespace BattleGame.Client.Forms
             string? enemyUsername = null,
             int? roomId = null,
             Form? returnFormOnExit = null,
-            bool localTwoPlayer = false)
+            bool localTwoPlayer = false,
+            bool dungeonStatMode = false)
         {
             try
             {
                 InitializeComponent();
+                BorderlessFormHelper.Apply(this);
 
                 this.AutoScaleMode = AutoScaleMode.None;
                 this.StartPosition = FormStartPosition.CenterScreen;
                 this.ClientSize = DefaultGameClientSize;
                 this.MinimumSize = SizeFromClientSize(DefaultGameClientSize);
                 this.MaximumSize = SizeFromClientSize(DefaultGameClientSize);
-                this.FormBorderStyle = FormBorderStyle.FixedSingle;
-                this.MaximizeBox = false;
                 this.DoubleBuffered = true;
                 this.KeyPreview = true;
                 LayoutHud();
@@ -148,6 +159,7 @@ namespace BattleGame.Client.Forms
                 InputManager.Clear();
                 _isOnline = isOnline;
                 _isDungeonMap = IsDungeonMap(mapId);
+                _dungeonStatMode = _isDungeonMap && dungeonStatMode;
                 _localTwoPlayer = localTwoPlayer;
                 _playerCharacterId = characterId;
                 _enemyCharacterId = string.IsNullOrWhiteSpace(enemyCharacterId) ? "samurai" : enemyCharacterId.Trim().ToLowerInvariant();
@@ -221,7 +233,7 @@ namespace BattleGame.Client.Forms
 
         private void GameForm_Load(object? sender, EventArgs e)
         {
-            SoundManager.PlayBGM("darren_hirst.mp3");
+            SoundManager.PlayBGM(ResolveBattleMusicFileName(), usePreferred: !_isDungeonMap);
             InputManager.Clear();
             LayoutHud();
             panelStatus.BackColor = Color.FromArgb(180, 0, 0, 0);
@@ -406,6 +418,14 @@ namespace BattleGame.Client.Forms
 
         private static bool IsDungeonMap(string mapId)
             => DungeonMapRegistry.IsDungeonMap(mapId);
+
+        private string ResolveBattleMusicFileName()
+        {
+            if (_isDungeonMap && DungeonMapRegistry.TryGet(_mapId, out var dungeonMap))
+                return dungeonMap.BattleMusicFileName;
+
+            return "darren_hirst.mp3";
+        }
 
         private void ApplyDungeonHudVisibility()
         {
@@ -632,7 +652,35 @@ namespace BattleGame.Client.Forms
             _engine.Draw(_backGraphics);
             if (!_isDungeonMap)
                 DrawRoundOverlay(_backGraphics);
+            DrawDungeonStatMessage(_backGraphics);
             DrawRoundIntroOverlay(_backGraphics);
+        }
+
+        private void DrawDungeonStatMessage(Graphics g)
+        {
+            if (!_isDungeonMap || string.IsNullOrWhiteSpace(_dungeonStatMessage) || _dungeonStatMessageTimer <= 0f)
+                return;
+
+            g.TextRenderingHint = TextRenderingHint.AntiAliasGridFit;
+            using var font = new Font("Book Antiqua", 18f, FontStyle.Bold, GraphicsUnit.Point);
+            using var sf = new StringFormat
+            {
+                Alignment = StringAlignment.Center,
+                LineAlignment = StringAlignment.Center
+            };
+
+            Rectangle rect = new(
+                Math.Max(0, (ClientSize.Width - 520) / 2),
+                28,
+                Math.Min(520, ClientSize.Width),
+                52);
+
+            using var bg = new SolidBrush(Color.FromArgb(180, 0, 0, 0));
+            using var border = new Pen(Color.FromArgb(220, 255, 230, 120), 2f);
+            using var text = new SolidBrush(Color.FromArgb(255, 255, 245, 175));
+            g.FillRectangle(bg, rect);
+            g.DrawRectangle(border, rect);
+            g.DrawString(_dungeonStatMessage, font, text, rect, sf);
         }
 
         private void DrawRoundOverlay(Graphics g)
@@ -720,13 +768,19 @@ namespace BattleGame.Client.Forms
                 {
                     bool roundPresentationActive = _roundIntroTimer > 0f || _offlineRoundResolving || _offlineMatchEnded || _dungeonRunEnded;
                     if (!_isOnline && !roundPresentationActive)
+                    {
                         _engine.Update(FixedTimestep);
+                    }
                     else
                     {
                         if (_isOnline)
                         {
                             LatchSampledInput(SampleBattleInput());
                             _engine.UpdateOnlineVisuals(FixedTimestep);
+                        }
+                        else if (_offlineRoundResolving || _dungeonRunEnded)
+                        {
+                            _engine.UpdatePresentation(FixedTimestep);
                         }
                     }
 
@@ -738,6 +792,7 @@ namespace BattleGame.Client.Forms
                 }
 
                 UpdateBattleActionSounds();
+                UpdateDungeonStatMessage(dt);
                 UpdateRoundTimer(dt);
                 UpdateOfflineRoundState();
                 UpdateDungeonRunState();
@@ -1246,11 +1301,14 @@ namespace BattleGame.Client.Forms
             if (!_isDungeonMap || _dungeonRunEnded)
                 return;
 
+            ApplyPendingDungeonVictoryStats();
+
             var player = _engine.Player.Get<CharacterComponent>();
             bool playerDead = player.IsDead || player.Hp <= 0;
             if (playerDead)
             {
                 _dungeonRunEnded = true;
+                ApplyDungeonFailureStatPenalty();
                 _ = ResolveDungeonRunAsync(victory: false);
                 return;
             }
@@ -1264,19 +1322,185 @@ namespace BattleGame.Client.Forms
 
         private async Task ResolveDungeonRunAsync(bool victory)
         {
-            await Task.Delay(TimeSpan.FromSeconds(DungeonResolveDelaySeconds));
+            await Task.Delay(ResolveRoundEndDelay(victory ? _engine.Enemy : _engine.Player));
             if (IsDisposed)
                 return;
 
+            ApplyPendingDungeonVictoryStats();
+            string savedStatsMessage = PersistDungeonStatChanges();
             string title = victory ? "Dungeon Clear" : "Dungeon Failed";
             string message = victory
                 ? "Bạn đã đánh bại toàn bộ boss trong stage này."
                 : "Bạn đã bị boss hạ gục. Hãy chọn lại stage hoặc đổi nhân vật để thử lại.";
             MessageBoxIcon icon = victory ? MessageBoxIcon.Information : MessageBoxIcon.Warning;
 
+            if (!string.IsNullOrWhiteSpace(savedStatsMessage))
+                message += Environment.NewLine + Environment.NewLine + savedStatsMessage;
+
             MessageBox.Show(this, message, title, MessageBoxButtons.OK, icon);
             ShowExitDestination();
             Close();
+        }
+
+        private void ApplyPendingDungeonVictoryStats()
+        {
+            if (!_dungeonStatMode)
+                return;
+
+            int defeatedCount = _engine.DungeonDefeatedCount;
+            while (_lastDungeonDefeatedCount < defeatedCount)
+            {
+                _lastDungeonDefeatedCount++;
+                ApplyRandomDungeonStatDelta(2);
+            }
+        }
+
+        private void ApplyDungeonFailureStatPenalty()
+        {
+            if (!_dungeonStatMode || _dungeonFailureStatApplied)
+                return;
+
+            _dungeonFailureStatApplied = true;
+            ApplyRandomDungeonStatDelta(-1);
+        }
+
+        private void ApplyRandomDungeonStatDelta(int amount)
+        {
+            var stat = (DungeonStat)_dungeonStatRandom.Next(0, 4);
+            var player = _engine.Player.Get<CharacterComponent>();
+            var movement = _engine.Player.Get<MovementComponent>();
+            string sign = amount > 0 ? "+" : string.Empty;
+            _dungeonPendingStatDeltas[stat] = _dungeonPendingStatDeltas.GetValueOrDefault(stat) + amount;
+
+            switch (stat)
+            {
+                case DungeonStat.Hp:
+                    player.BaseStats.Hp = Math.Max(1, player.BaseStats.Hp + amount);
+                    player.Hp = amount > 0
+                        ? Math.Min(player.BaseStats.Hp, player.Hp + amount)
+                        : Math.Clamp(player.Hp, 0, player.BaseStats.Hp);
+                    _dungeonStatMessage = $"HP {sign}{amount}";
+                    break;
+
+                case DungeonStat.Atk:
+                    player.BaseStats.Atk = Math.Max(1f, player.BaseStats.Atk + amount);
+                    _dungeonStatMessage = $"ATK {sign}{amount}";
+                    break;
+
+                case DungeonStat.Def:
+                    player.BaseStats.Def = Math.Max(0, player.BaseStats.Def + amount);
+                    _dungeonStatMessage = $"DEF {sign}{amount}";
+                    break;
+
+                case DungeonStat.Speed:
+                    player.BaseStats.Speed = Math.Max(50f, player.BaseStats.Speed + amount);
+                    movement.Speed = player.BaseStats.Speed;
+                    _dungeonStatMessage = $"SPD {sign}{amount}";
+                    break;
+            }
+
+            _dungeonStatMessageTimer = DungeonStatMessageSeconds;
+            UpdateUIBars();
+        }
+
+        private string PersistDungeonStatChanges()
+        {
+            if (!_dungeonStatMode || _dungeonPendingStatDeltas.Count == 0)
+                return string.Empty;
+
+            try
+            {
+                string contentRoot = ClientContentRoot.Resolve(AppDomain.CurrentDomain.BaseDirectory);
+                string configPath = CharacterDefinitionLoader.ResolveConfigPath(contentRoot, _playerCharacterId);
+                JsonNode? root = JsonNode.Parse(File.ReadAllText(configPath));
+                JsonObject? stats = root?["stats"] as JsonObject;
+                if (root == null || stats == null)
+                    return "Không thể lưu chỉ số nhân vật.";
+
+                List<string> changes = new();
+                foreach (var kv in _dungeonPendingStatDeltas)
+                {
+                    if (kv.Value == 0)
+                        continue;
+
+                    string propertyName = kv.Key switch
+                    {
+                        DungeonStat.Hp => "hp",
+                        DungeonStat.Atk => "atk",
+                        DungeonStat.Def => "def",
+                        DungeonStat.Speed => "speed",
+                        _ => string.Empty
+                    };
+
+                    if (string.IsNullOrWhiteSpace(propertyName))
+                        continue;
+
+                    double current = stats[propertyName]?.GetValue<double>() ?? 0d;
+                    double next = kv.Key switch
+                    {
+                        DungeonStat.Hp => Math.Max(1d, current + kv.Value),
+                        DungeonStat.Atk => Math.Max(1d, current + kv.Value),
+                        DungeonStat.Def => Math.Max(0d, current + kv.Value),
+                        DungeonStat.Speed => Math.Max(50d, current + kv.Value),
+                        _ => current
+                    };
+
+                    if (kv.Key is DungeonStat.Hp or DungeonStat.Def)
+                        stats[propertyName] = (int)Math.Round(next);
+                    else
+                        stats[propertyName] = Math.Round(next, 2);
+
+                    string label = kv.Key == DungeonStat.Speed ? "SPD" : kv.Key.ToString().ToUpperInvariant();
+                    string sign = kv.Value > 0 ? "+" : string.Empty;
+                    changes.Add($"{label} {sign}{kv.Value}");
+                }
+
+                File.WriteAllText(configPath, root.ToJsonString(new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                }));
+
+                _dungeonPendingStatDeltas.Clear();
+                return changes.Count == 0
+                    ? string.Empty
+                    : $"Chỉ số đã được lưu thật: {string.Join(", ", changes)}";
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[DungeonStatPersist] {ex}");
+                return "Không thể lưu chỉ số nhân vật.";
+            }
+        }
+
+        private void UpdateDungeonStatMessage(float dt)
+        {
+            if (_dungeonStatMessageTimer <= 0f)
+                return;
+
+            _dungeonStatMessageTimer = Math.Max(0f, _dungeonStatMessageTimer - dt);
+            if (_dungeonStatMessageTimer <= 0f)
+                _dungeonStatMessage = string.Empty;
+        }
+
+        private TimeSpan ResolveRoundEndDelay(BattleGame.Client.Game.Core.Entity? defeated)
+        {
+            if (defeated == null)
+                return TimeSpan.FromSeconds(PostDeathRoundDelaySeconds);
+
+            var ch = defeated.Get<CharacterComponent>();
+            if (!ch.IsDead)
+                return TimeSpan.FromSeconds(PostDeathRoundDelaySeconds);
+
+            float deadSeconds = ch.GetAnimationDuration("Dead", DungeonResolveDelaySeconds);
+            return TimeSpan.FromSeconds(deadSeconds + PostDeathRoundDelaySeconds);
+        }
+
+        private enum DungeonStat
+        {
+            Hp,
+            Atk,
+            Def,
+            Speed
         }
 
         private int ResolveOfflineRoundWinner(CharacterComponent player, CharacterComponent enemy, bool playerDead, bool enemyDead)
@@ -1294,7 +1518,7 @@ namespace BattleGame.Client.Forms
 
         private async Task ResolveOfflineRoundAsync(int winner)
         {
-            await Task.Delay(TimeSpan.FromSeconds(OfflineRoundResolveDelaySeconds));
+            await Task.Delay(ResolveOfflineRoundEndDelay(winner));
             if (IsDisposed)
                 return;
 
@@ -1333,6 +1557,21 @@ namespace BattleGame.Client.Forms
 
             ShowExitDestination();
             Close();
+        }
+
+        private TimeSpan ResolveOfflineRoundEndDelay(int winner)
+        {
+            BattleGame.Client.Game.Core.Entity? defeated = winner switch
+            {
+                1 => _engine.Enemy,
+                2 => _engine.Player,
+                _ => null
+            };
+
+            if (defeated == null)
+                return TimeSpan.FromSeconds(OfflineRoundResolveDelaySeconds);
+
+            return ResolveRoundEndDelay(defeated);
         }
 
         private static string FormatTime(int totalSeconds)

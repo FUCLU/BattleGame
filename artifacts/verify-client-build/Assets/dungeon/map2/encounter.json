@@ -1,0 +1,29 @@
+{
+  "mapId": "map2",
+  "portalX": 300,
+  "waves": [],
+  "bossWaves": [
+    {
+      "waveId": "wave_1",
+      "spawns": [
+        {
+          "prefabId": "boss_agis",
+          "count": 1,
+          "spawnXs": [ 900 ],
+          "spawnY": 640
+        }
+      ]
+    },
+    {
+      "waveId": "wave_2",
+      "spawns": [
+        {
+          "prefabId": "boss_zweilander",
+          "count": 1,
+          "spawnXs": [11850],
+          "spawnY": 640
+        }
+      ]
+    }
+  ]
+}

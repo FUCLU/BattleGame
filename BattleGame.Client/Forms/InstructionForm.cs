@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
@@ -27,6 +27,7 @@ namespace BattleGame.Client.Forms
         public InstructionForm()
         {
             InitializeComponent();
+            BorderlessFormHelper.Apply(this);
             StyleForm();
             LoadDefaultTexts();
         }
@@ -37,8 +38,6 @@ namespace BattleGame.Client.Forms
             this.ForeColor = TextColor;
             this.Font = FontBody;
             this.Text = "[ BATTLE GAME - INSTRUCTIONS ]";
-            this.FormBorderStyle = FormBorderStyle.FixedSingle;
-            this.MaximizeBox = false;
             this.StartPosition = FormStartPosition.CenterScreen;
             this.ClientSize = new Size(900, 600);
 
@@ -85,7 +84,7 @@ namespace BattleGame.Client.Forms
             if (selected)
                 e.Graphics.FillRectangle(new SolidBrush(AccentColor), rect.Left, rect.Bottom - 2, rect.Width, 2);
 
-            string text = (selected ? "▶ " : "  ") + tabControl.TabPages[e.Index].Text;
+            string text = (selected ? "? " : "  ") + tabControl.TabPages[e.Index].Text;
             using (var sf = new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center })
                 e.Graphics.DrawString(text, FontTab, new SolidBrush(selected ? AccentColor : HeaderColor), rect, sf);
         }
@@ -114,7 +113,7 @@ namespace BattleGame.Client.Forms
         {
             return new Label
             {
-                Text = "▸ " + text,
+                Text = "? " + text,
                 Font = FontSection,
                 ForeColor = color,
                 BackColor = Color.FromArgb(25, color.R, color.G, color.B),
@@ -126,7 +125,7 @@ namespace BattleGame.Client.Forms
             };
         }
 
-        // Mỗi hàng: tên action + ảnh phím (không có ô chữ key nữa)
+        // M?i h�ng: t�n action + ?nh ph�m (kh�ng c� � ch? key n?a)
         private FlowLayoutPanel MakeControlRow(string actionName, string imageFile)
         {
             var row = new FlowLayoutPanel

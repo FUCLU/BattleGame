@@ -42,6 +42,7 @@
             label3 = new Label();
             label2 = new Label();
             label1 = new Label();
+            btnSetting = new GearButton();
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             SuspendLayout();
@@ -195,6 +196,18 @@
             label1.TabIndex = 0;
             label1.Text = "Email";
             // 
+            // btnSetting
+            // 
+            btnSetting.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnSetting.BackColor = Color.Black;
+            btnSetting.FlatStyle = FlatStyle.Popup;
+            btnSetting.ForeColor = Color.FromArgb(255, 235, 156);
+            btnSetting.Location = new Point(997, 510);
+            btnSetting.Name = "btnSetting";
+            btnSetting.Size = new Size(48, 48);
+            btnSetting.TabIndex = 2;
+            btnSetting.UseVisualStyleBackColor = false;
+            // 
             // RegisterForm
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -202,6 +215,7 @@
             BackgroundImage = Properties.Resources.login;
             BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1057, 581);
+            Controls.Add(btnSetting);
             Controls.Add(panel1);
             DoubleBuffered = true;
             ForeColor = SystemColors.ControlText;
@@ -229,5 +243,6 @@
         private LinkLabel linkLabel1;
         private Label label5;
         private PictureBox pictureBox1;
+        private GearButton btnSetting;
     }
 }

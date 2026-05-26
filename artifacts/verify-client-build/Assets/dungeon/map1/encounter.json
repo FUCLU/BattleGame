@@ -1,0 +1,29 @@
+{
+  "mapId": "map1",
+  "portalX": 7700,
+  "waves": [],
+  "bossWaves": [
+    {
+      "waveId": "wave_1",
+      "spawns": [
+        {
+          "prefabId": "boss_slimdemon",
+          "count": 1,
+          "spawnXs": [8100],
+          "spawnY": 0
+        }
+      ]
+    },
+    {
+      "waveId": "wave_2",
+      "spawns": [
+        {
+          "prefabId": "boss_guardian",
+          "count": 1,
+          "spawnXs": [8250],
+          "spawnY": 640
+        }
+      ]
+    }
+  ]
+}

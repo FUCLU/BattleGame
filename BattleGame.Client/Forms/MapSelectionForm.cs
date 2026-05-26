@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -28,6 +28,7 @@ namespace BattleGame.Client.Forms
         public MapSelectionForm()
         {
             InitializeComponent();
+            BorderlessFormHelper.Apply(this);
             StartPosition = FormStartPosition.CenterParent;
             DoubleBuffered = true;
             ApplyUnifiedStyle();

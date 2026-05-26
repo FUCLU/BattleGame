@@ -54,7 +54,7 @@ namespace BattleGame.Client.Forms
         private void InitializeDialog(string message)
         {
             AutoScaleMode = AutoScaleMode.None;
-            StartPosition = FormStartPosition.CenterParent;
+            StartPosition = FormStartPosition.CenterScreen;
             FormBorderStyle = FormBorderStyle.None;
             ShowInTaskbar = false;
             MinimizeBox = false;

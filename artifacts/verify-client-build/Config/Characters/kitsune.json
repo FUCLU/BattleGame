@@ -1,0 +1,186 @@
+{
+  "id": "kitsune",
+  "selection": {
+    "displayName": "Kitsune",
+    "previewImage": "Idle.png",
+    "skillLabel": "Barrier / Fire Burst"
+  },
+  "stats": {
+    "hp": 325,
+    "def": 22,
+    "armorPen": 0,
+    "mana": 150,
+    "manaRegen": 9.0,
+    "atk": 35,
+    "speed": 220,
+    "atkSpeed": 1.2,
+    "stunDuration": 0.0,
+    "attackRange": 210,
+    "attackProjectile": "Fire",
+    "attackProjectileSpeed": 620.0
+  },
+
+  "attackEffects": [
+    {
+      "type": "projectile",
+      "trigger": "onMiddle",
+      "projectileAnim": "Fire",
+      "damage": 45,
+      "stun": 0.0,
+      "speed": 600,
+      "range": 40,
+      "render": {
+        "scale": 3,
+        "offsetX": -50,
+        "offsetY": 0,
+        "useSpriteSize": true,
+        "alignY": "center"
+      }
+    }
+  ],
+
+  "render": {
+    "scale": 1.5625,
+    "offsetY": 24,
+    "protectionOverlayOffsetY": 0.0,
+    "protectionUsesIdleBase": false,
+    "protectionBlocksAllDirections": false
+  },
+
+  "skills": {
+    "skill1": {
+      "id": "barrier",
+      "animation": "Skill1",
+      "manaCost": 30,
+      "armorPen": 15,
+      "cooldown": 5.0,
+
+      "effects": [
+        {
+          "type": "barrier",
+          "trigger": "onFrame",
+          "objectAnim": "Object",
+          "spawnMode": "targetFront",
+          "spawnOffsetX": 8,
+          "spawnOffsetY": -30,
+          "hitFrames": [ 1,2,3 ] ,
+          "collisionWidth": 80,
+          "collisionHeight": 80,
+          "damage": 20,
+          "stun": 1.5,
+          "triggerFrames": [ 2 ],
+          "duration": 2.5,
+          "blockEnemyAttack": true,
+          "blockEnemyProjectile": true,
+          "blockEnemySkill": true,
+          "render": {
+            "scale": 1.5625,
+            "offsetX": 0.0,
+            "offsetY": 0,
+            "useSpriteSize": true,
+            "alignY": "center"
+          }
+        }
+      ]
+    },
+
+    "skill2": {
+      "id": "fire_burst",
+      "animation": "Skill2",
+      "manaCost": 35,
+      "armorPen": 20,
+      "cooldown": 4.0,
+
+      "effects": [
+        {
+          "type": "projectile",
+          "trigger": "onFrame",
+          "triggerFrames": [ 4 ],
+          "projectileAnim": "Fire_2",
+          "damage": 55,
+          "stun": 0.5,
+          "speed": 540,
+          "range": 70,
+          "render": {
+            "scale": 2,
+            "offsetX": 0.0,
+            "offsetY": 0,
+            "useSpriteSize": true,
+            "alignY": "center"
+          }
+        }
+      ]
+    }
+  },
+
+  "animations": {
+    "Idle": {
+      "frameCount": 8,
+      "fps": 5,
+      "loop": true
+    },
+    "Walk": {
+      "frameCount": 8,
+      "fps": 10,
+      "loop": true
+    },
+    "Run": {
+      "frameCount": 8,
+      "fps": 12,
+      "loop": true
+    },
+
+    "Attack_1": {
+      "frameCount": 10,
+      "fps": 12,
+      "loop": false
+    },
+
+    "Protection": {
+      "frameCount": 5,
+      "fps": 9,
+      "loop": true
+    },
+    "Hurt": {
+      "frameCount": 2,
+      "fps": 10,
+      "loop": false
+    },
+    "Dead": {
+      "frameCount": 10,
+      "fps": 8,
+      "loop": false
+    },
+    "Jump": {
+      "frameCount": 10,
+      "fps": 10,
+      "loop": false
+    },
+
+    "Skill1": {
+      "frameCount": 10,
+      "fps": 10,
+      "loop": false
+    },
+    "Skill2": {
+      "frameCount": 7,
+      "fps": 10,
+      "loop": false
+    },
+    "Object": {
+      "frameCount": 7,
+      "fps": 8,
+      "loop": true
+    },
+    "Fire": {
+      "frameCount": 14,
+      "fps": 14,
+      "loop": true
+    },
+    "Fire_2": {
+      "frameCount": 11,
+      "fps": 9,
+      "loop": false
+    }
+  }
+}

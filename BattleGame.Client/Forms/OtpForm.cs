@@ -1,4 +1,4 @@
-﻿using BattleGame.Client.Managers;
+using BattleGame.Client.Managers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -14,7 +14,6 @@ namespace BattleGame.Client.Forms
 {
     public partial class OtpForm : Form
     {
-        private bool _isMuted = false;
 
         private readonly string _email;
         private readonly bool _isReset;
@@ -25,6 +24,7 @@ namespace BattleGame.Client.Forms
         public OtpForm(string email, bool isReset)
         {
             InitializeComponent();
+            BorderlessFormHelper.Apply(this);
             this.StartPosition = FormStartPosition.CenterScreen;
             _email = email;
             _isReset = isReset;
@@ -46,12 +46,11 @@ namespace BattleGame.Client.Forms
                 tb.MaxLength = 1;
                 tb.TextAlign = HorizontalAlignment.Center;
 
-                // Tự động nhảy sang ô kế tiếp khi nhập xong
                 tb.KeyPress += (s, ev) =>
                 {
                     if (!char.IsDigit(ev.KeyChar) && ev.KeyChar != (char)Keys.Back)
                     {
-                        ev.Handled = true; // Chặn ký tự không phải số
+                        ev.Handled = true;
                         return;
                     }
                 };
@@ -61,14 +60,12 @@ namespace BattleGame.Client.Forms
                     var current = (TextBox)s;
                     int index = Array.IndexOf(textBoxes, current);
 
-                    // Nhập xong → nhảy sang ô tiếp theo
                     if (current.Text.Length == 1 && index < textBoxes.Length - 1)
                     {
                         textBoxes[index + 1].Focus();
                     }
                 };
 
-                // Nhấn Backspace → quay lại ô trước
                 tb.KeyDown += (s, ev) =>
                 {
                     if (ev.KeyCode == Keys.Back)
@@ -195,20 +192,6 @@ namespace BattleGame.Client.Forms
             {
                 MessageBox.Show("Lỗi: " + ex.Message, "Error",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            if (_isMuted)
-            {
-                SoundManager.SetVolume(1.0f);
-                _isMuted = false;
-            }
-            else
-            {
-                SoundManager.SetVolume(0.0f);
-                _isMuted = true;
             }
         }
         protected override void OnFormClosed(FormClosedEventArgs e)

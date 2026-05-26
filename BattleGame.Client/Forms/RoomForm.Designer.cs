@@ -125,6 +125,7 @@
             richtxtBoxMessage.Size = new Size(488, 342);
             richtxtBoxMessage.TabIndex = 0;
             richtxtBoxMessage.Text = "";
+            richtxtBoxMessage.TextChanged += richtxtBoxMessage_TextChanged;
             // 
             // panel2
             // 

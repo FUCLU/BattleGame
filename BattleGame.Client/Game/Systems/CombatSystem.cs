@@ -449,7 +449,7 @@ namespace BattleGame.Client.Game.Systems
             else
                 ch.TriggeredEffects.Add(idx);
 
-            if (_target != null && ShouldBlockImmediateEffect(caster, _target, e.Type))
+            if (_target != null && !IsProjectileEffect(e) && ShouldBlockImmediateEffect(caster, _target, e.Type))
                 return;
 
             // Thực thi
@@ -464,7 +464,7 @@ namespace BattleGame.Client.Game.Systems
             else
                 ch.TriggeredAttackEffects.Add(idx);
 
-            if (_target != null && ShouldBlockImmediateEffect(caster, _target, e.Type))
+            if (_target != null && !IsProjectileEffect(e) && ShouldBlockImmediateEffect(caster, _target, e.Type))
                 return;
 
             ApplyEffect(caster, e);
@@ -480,6 +480,9 @@ namespace BattleGame.Client.Game.Systems
 
             return IsBlockedByProtection(caster, target);
         }
+
+        private static bool IsProjectileEffect(EffectData effect)
+            => string.Equals(effect.Type, "projectile", StringComparison.OrdinalIgnoreCase);
 
         private void ApplyEffect(Entity caster, EffectData e)
         {

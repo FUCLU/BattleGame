@@ -1,4 +1,4 @@
-﻿using BattleGame.Client.Managers;
+using BattleGame.Client.Managers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
@@ -15,6 +15,7 @@ namespace BattleGame.Client.Forms
         public RegisterForm()
         {
             InitializeComponent();
+            BorderlessFormHelper.Apply(this);
             this.StartPosition = FormStartPosition.CenterScreen;
         }
 
@@ -58,7 +59,7 @@ namespace BattleGame.Client.Forms
 
             if (password != confirm)
             {
-                MessageBox.Show("Mật khẩu xác nhận không khớp!",
+                MessageBox.Show("Mật khẩu xác nhậnn không khớp!",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 textBox4.Clear();
                 textBox4.Focus();
@@ -67,7 +68,7 @@ namespace BattleGame.Client.Forms
 
             if (password.Length < 6)
             {
-                MessageBox.Show("Mật khẩu phải có ít nhất 6 ký tự!",
+                MessageBox.Show("Mật khẩu phải có ít nhất 6 kí tự!",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 textBox3.Clear();
                 textBox4.Clear();

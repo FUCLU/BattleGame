@@ -63,15 +63,20 @@
           "trigger": "onFrame",
           "triggerFrames": [ 2 ],
           "projectileAnim": "Skill2_flash",
-          "hitFrames": [ 2, 3 ],
           "damage": 40,
           "stun": 1.0,
           "speed": 600,
           "range": 100,
+          "duration": 4.0,
+          "spawnMode": "casterFront",
+          "spawnOffsetX": 120,
+          "spawnOffsetY": -28,
+          "collisionWidth": 320,
+          "collisionHeight": 140,
           "render": {
             "scale": 1.5625,
             "offsetX": 0.0,
-            "offsetY": 0,
+            "offsetY": -28,
             "useSpriteSize": true,
             "alignY": "center"
           }

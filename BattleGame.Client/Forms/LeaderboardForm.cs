@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -14,20 +14,44 @@ namespace BattleGame.Client.Forms
 {
     public partial class LeaderboardForm : Form
     {
+        private static readonly Color HeaderBackColor = Color.FromArgb(225, 12, 55, 116);
+        private static readonly Color HeaderTextColor = Color.FromArgb(255, 232, 126);
+        private static readonly Color RowBackColor = Color.FromArgb(210, 8, 42, 92);
+        private static readonly Color AlternateRowBackColor = Color.FromArgb(220, 14, 56, 118);
+        private static readonly Color SelectedRowBackColor = Color.FromArgb(245, 224, 118, 34);
+        private static readonly Color RowTextColor = Color.FromArgb(232, 248, 255);
+        private static readonly Color GridColor = Color.FromArgb(125, 116, 197, 255);
+        private static readonly Color RankTextColor = Color.FromArgb(255, 232, 126);
+
         public LeaderboardForm()
         {
             InitializeComponent();
+            NormalizeCloseButton();
+            BorderlessFormHelper.Apply(this);
             this.StartPosition = FormStartPosition.CenterScreen;
+            StyleLeaderboardTable();
         }
+
+        private void NormalizeCloseButton()
+        {
+            button1.UseVisualStyleBackColor = false;
+            button1.FlatStyle = FlatStyle.Flat;
+            button1.BackColor = Color.FromArgb(168, 45, 45);
+            button1.FlatAppearance.BorderSize = 2;
+            button1.FlatAppearance.BorderColor = Color.White;
+            button1.FlatAppearance.MouseOverBackColor = Color.FromArgb(205, 65, 65);
+            button1.FlatAppearance.MouseDownBackColor = Color.FromArgb(120, 28, 28);
+        }
+
         private async void LeaderboardForm_Load(object sender, EventArgs e)
         {
             listView1.View = View.Details;
             listView1.Columns.Clear();
             listView1.Items.Clear();
-            listView1.Columns.Add("Rank", 50);
-            listView1.Columns.Add("Name", 200);
-            listView1.Columns.Add("Win", 100);
-            listView1.Columns.Add("Lost", 100);
+            listView1.Columns.Add("RANK", 50, HorizontalAlignment.Center);
+            listView1.Columns.Add("PLAYER", 200, HorizontalAlignment.Left);
+            listView1.Columns.Add("WINS", 100, HorizontalAlignment.Center);
+            listView1.Columns.Add("LOSSES", 100, HorizontalAlignment.Center);
             ResizeColumns();
 
             await LoadLeaderboardAsync();
@@ -58,6 +82,7 @@ namespace BattleGame.Client.Forms
                     item.SubItems.Add(entry.Username ?? string.Empty);
                     item.SubItems.Add(entry.Wins.ToString());
                     item.SubItems.Add(entry.Losses.ToString());
+                    item.UseItemStyleForSubItems = false;
                     listView1.Items.Add(item);
                 }
             }
@@ -77,6 +102,22 @@ namespace BattleGame.Client.Forms
             listView1.Items.Add(item);
         }
 
+        private void StyleLeaderboardTable()
+        {
+            listView1.BorderStyle = BorderStyle.FixedSingle;
+            listView1.OwnerDraw = false;
+            listView1.FullRowSelect = true;
+            listView1.HideSelection = false;
+            listView1.GridLines = true;
+            listView1.BackColor = Color.FromArgb(232, 248, 255);
+            listView1.ForeColor = RowTextColor;
+            listView1.Font = new Font("Courier New", 15F, FontStyle.Bold);
+            listView1.HeaderStyle = ColumnHeaderStyle.Nonclickable;
+            listView1.UseCompatibleStateImageBehavior = false;
+            listView1.View = View.Details;
+            listView1.ForeColor = Color.FromArgb(12, 55, 116);
+        }
+
 
 
         private void listView1_SelectedIndexChanged(object sender, EventArgs e)
@@ -88,10 +129,13 @@ namespace BattleGame.Client.Forms
         {
             int totalWidth = listView1.ClientSize.Width;
 
-            listView1.Columns[0].Width = (int)(totalWidth * 0.2); // LEVEL
-            listView1.Columns[1].Width = (int)(totalWidth * 0.4); // NAME
-            listView1.Columns[2].Width = (int)(totalWidth * 0.2); // XP
-            listView1.Columns[3].Width = (int)(totalWidth * 0.2);
+            if (listView1.Columns.Count < 4)
+                return;
+
+            listView1.Columns[0].Width = (int)(totalWidth * 0.16);
+            listView1.Columns[1].Width = (int)(totalWidth * 0.44);
+            listView1.Columns[2].Width = (int)(totalWidth * 0.2);
+            listView1.Columns[3].Width = Math.Max(1, totalWidth - listView1.Columns[0].Width - listView1.Columns[1].Width - listView1.Columns[2].Width - 2);
         }
 
         private void listView1_Resize(object sender, EventArgs e)
@@ -101,6 +145,8 @@ namespace BattleGame.Client.Forms
 
         private void button1_Click(object sender, EventArgs e)
         {
+            JoinRoom joinRoom = new JoinRoom();
+            joinRoom.Show();
             this.Close();
         }
     }

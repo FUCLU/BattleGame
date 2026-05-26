@@ -85,7 +85,7 @@ namespace BattleGame.Server.Services
             _config = config;
         }
 
-        public (int RoomId, bool Success) CreateRoom(string roomName, string password, int timeLimitMinutes, int ownerId, string ownerName, ClientHandler? handler, bool autoJoin = true)
+        public (int RoomId, bool Success) CreateRoom(string roomName, string password, int timeLimitMinutes, int ownerId, string ownerName, ClientHandler? handler, bool autoJoin = true, bool isAutoMatchRoom = false)
         {
             RemoveExistingRoomsForOwner(ownerId);
             int safeTimeLimitMinutes = NormalizeTimeLimitMinutes(timeLimitMinutes);
@@ -103,6 +103,7 @@ namespace BattleGame.Server.Services
                     OwnerId = ownerId,
                     OwnerName = ownerName,
                     OwnerWaitingToJoin = !joinOwnerNow,
+                    IsAutoMatchRoom = isAutoMatchRoom,
                     Player1Id = joinOwnerNow ? ownerId : -1,
                     Player1Name = joinOwnerNow ? ownerName : string.Empty,
                     Player1CharId = -1,
@@ -163,7 +164,7 @@ namespace BattleGame.Server.Services
             if (room == null)
                 return new List<RoomCloseNotification>();
 
-            if (room.OwnerId == userId)
+            if (room.OwnerId == userId && !room.IsAutoMatchRoom)
             {
                 ClientHandler? notifyHandler = null;
                 lock (_runtimeLock)
@@ -186,6 +187,15 @@ namespace BattleGame.Server.Services
                 };
             }
 
+            bool userWasInRoom = room.Player1Id == userId || room.Player2Id == userId;
+            if (room.IsAutoMatchRoom && room.OwnerId == userId && !userWasInRoom)
+            {
+                if (TransferAutoMatchOwnerOrRemove(room))
+                    _roomStore.SaveRoom(room);
+
+                return new List<RoomCloseNotification>();
+            }
+
             if (room.Player1Id == userId)
             {
                 room.Player1Id = -1;
@@ -197,6 +207,12 @@ namespace BattleGame.Server.Services
                 room.Player2Id = -1;
                 room.Player2Name = string.Empty;
                 room.Player2CharId = -1;
+            }
+
+            if (room.IsAutoMatchRoom && room.OwnerId == userId)
+            {
+                if (!TransferAutoMatchOwnerOrRemove(room))
+                    return new List<RoomCloseNotification>();
             }
 
             _roomStore.SaveRoom(room);
@@ -362,7 +378,7 @@ namespace BattleGame.Server.Services
 
             foreach (var room in _roomStore.GetAllRooms().Where(r => r.ServerId == _config.ServerId))
             {
-                if (room.OwnerId == userId)
+                if (room.OwnerId == userId && !room.IsAutoMatchRoom)
                 {
                     ClientHandler? notifyHandler = null;
                     lock (_runtimeLock)
@@ -387,6 +403,15 @@ namespace BattleGame.Server.Services
                     continue;
                 }
 
+                bool userWasInRoom = room.Player1Id == userId || room.Player2Id == userId;
+                if (room.IsAutoMatchRoom && room.OwnerId == userId && !userWasInRoom)
+                {
+                    if (TransferAutoMatchOwnerOrRemove(room))
+                        _roomStore.SaveRoom(room);
+
+                    continue;
+                }
+
                 bool changed = false;
                 if (room.Player1Id == userId)
                 {
@@ -405,7 +430,15 @@ namespace BattleGame.Server.Services
                 }
 
                 if (changed)
+                {
+                    if (room.IsAutoMatchRoom && room.OwnerId == userId)
+                    {
+                        if (!TransferAutoMatchOwnerOrRemove(room))
+                            continue;
+                    }
+
                     _roomStore.SaveRoom(room);
+                }
             }
 
             lock (_runtimeLock)
@@ -449,6 +482,28 @@ namespace BattleGame.Server.Services
                 }
                 _runtimeRooms.Remove(roomId);
             }
+        }
+
+        private bool TransferAutoMatchOwnerOrRemove(RoomMeta room)
+        {
+            if (room.Player1Id != -1)
+            {
+                room.OwnerId = room.Player1Id;
+                room.OwnerName = room.Player1Name;
+                room.OwnerWaitingToJoin = false;
+                return true;
+            }
+
+            if (room.Player2Id != -1)
+            {
+                room.OwnerId = room.Player2Id;
+                room.OwnerName = room.Player2Name;
+                room.OwnerWaitingToJoin = false;
+                return true;
+            }
+
+            RemoveRoomInternal(room.RoomId);
+            return false;
         }
 
         public void SetCharacter(int roomId, int playerId, int charId)
@@ -897,6 +952,8 @@ namespace BattleGame.Server.Services
                     ArmorPen = p.ArmorPen,
                     Stun = p.Stun,
                     Range = p.Range,
+                    CollisionWidth = p.CollisionWidth,
+                    CollisionHeight = p.CollisionHeight,
                     Lifetime = p.Lifetime,
                     Timer = p.Timer,
                     AnimationKey = p.AnimationKey,

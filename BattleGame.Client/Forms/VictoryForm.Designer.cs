@@ -37,24 +37,26 @@
             // 
             button1.BackgroundImage = (Image)resources.GetObject("button1.BackgroundImage");
             button1.BackgroundImageLayout = ImageLayout.Stretch;
+            button1.BackColor = Color.FromArgb(30, 88, 160);
             button1.FlatStyle = FlatStyle.Popup;
             button1.Location = new Point(224, 388);
             button1.Name = "button1";
             button1.Size = new Size(179, 69);
             button1.TabIndex = 0;
-            button1.UseVisualStyleBackColor = true;
+            button1.UseVisualStyleBackColor = false;
             button1.Click += button1_Click;
             // 
             // button2
             // 
             button2.BackgroundImage = (Image)resources.GetObject("button2.BackgroundImage");
             button2.BackgroundImageLayout = ImageLayout.Stretch;
+            button2.BackColor = Color.FromArgb(30, 88, 160);
             button2.FlatStyle = FlatStyle.Popup;
             button2.Location = new Point(519, 388);
             button2.Name = "button2";
             button2.Size = new Size(183, 69);
             button2.TabIndex = 1;
-            button2.UseVisualStyleBackColor = true;
+            button2.UseVisualStyleBackColor = false;
             button2.Click += button2_Click;
             // 
             // VictoryForm
