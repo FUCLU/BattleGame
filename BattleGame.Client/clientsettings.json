@@ -1,12 +1,12 @@
 {
-  "ActiveProfile": "Local",
+  "ActiveProfile": "Lan",
   "Profiles": {
     "Local": {
       "ServerHost": "127.0.0.1",
       "ServerPort": 9090
     },
     "Lan": {
-      "ServerHost": "192.168.1.10",
+      "ServerHost": "192.168.137.1",
       "ServerPort": 9090
     },
     "Internet": {

@@ -104,6 +104,7 @@
 		<None Remove="Assets\Characters\Dead.png" />
 		<None Remove="Assets\Characters\Explosion.png" />
 		<None Remove="Assets\Characters\Grenade.png" />
+		<None Remove="Assets\Characters\Haladin\Skill2.png" />
 		<None Remove="Assets\Characters\Hurt.png" />
 		<None Remove="Assets\Characters\Idle.png" />
 		<None Remove="Assets\Characters\Kitsune\Attack_1.png" />

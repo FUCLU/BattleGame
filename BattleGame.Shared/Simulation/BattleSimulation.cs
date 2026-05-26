@@ -880,7 +880,7 @@ public class BattleSimulation
         if (target.Stats.ProtectionBlocksAllDirections)
             return true;
 
-        return target.FacingRight ? attacker.X >= target.X : attacker.X <= target.X;
+        return target.FacingRight ? attacker.X > target.X : attacker.X < target.X;
     }
 
     private static bool IsProjectileBlockedByProtection(ProjectileState projectile, PlayerBattleState target)

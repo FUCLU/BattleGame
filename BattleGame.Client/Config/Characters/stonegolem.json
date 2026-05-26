@@ -9,10 +9,10 @@
   "stats": {
     "hp": 400,
     "def": 30,
-    "armorPen": 0,
+    "armorPen": 10,
     "mana": 150,
     "manaRegen": 7.5,
-    "atk": 45,
+    "atk": 30,
     "speed": 200,
     "atkSpeed": 1.2,
     "attackProjectile": "ArmProjectitle",

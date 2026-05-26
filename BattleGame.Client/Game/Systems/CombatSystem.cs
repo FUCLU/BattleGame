@@ -112,8 +112,8 @@ namespace BattleGame.Client.Game.Systems
             var targetMv = target.Get<MovementComponent>();
 
             return targetMv.FacingRight
-                ? attackerMv.X >= targetMv.X
-                : attackerMv.X <= targetMv.X;
+                ? attackerMv.X > targetMv.X
+                : attackerMv.X < targetMv.X;
         }
 
         public void Update(Entity entity, float deltaTime)

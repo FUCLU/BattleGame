@@ -101,7 +101,6 @@
           "damage": 60,
           "stun": 0.75,
           "triggerFrames": [ 1 ],
-          "hitFrames": [ 1 ],
           "duration": 0.72,
           "blockEnemyAttack": false,
           "blockEnemyProjectile": false,

@@ -48,8 +48,8 @@
           "spawnMode": "casterSelf",
           "spawnOffsetX": 0,
           "spawnOffsetY": 0,
-          "collisionWidth": 100,
-          "collisionHeight": 100
+          "collisionWidth": 560,
+          "collisionHeight": 270
         }
       ]
     },
