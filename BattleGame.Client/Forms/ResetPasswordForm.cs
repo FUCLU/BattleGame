@@ -1,4 +1,4 @@
-﻿using BattleGame.Client.Managers;
+using BattleGame.Client.Managers;
 using BattleGame.Shared.Packets;
 using System;
 using System.Collections.Generic;
@@ -20,6 +20,7 @@ namespace BattleGame.Client.Forms
         public ResetPasswordForm(string email)
         {
             InitializeComponent();
+            BorderlessFormHelper.Apply(this);
             this.StartPosition = FormStartPosition.CenterScreen;
             _email = email;
         }
@@ -39,21 +40,21 @@ namespace BattleGame.Client.Forms
 
             if (string.IsNullOrEmpty(newPassword) || string.IsNullOrEmpty(confirm))
             {
-                MessageBox.Show("Vui lòng nhập đầy đủ thông tin!",
+                MessageBox.Show("Vui l�ng nh?p d?y d? th�ng tin!",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (newPassword.Length < 6)
             {
-                MessageBox.Show("Mật khẩu phải có ít nhất 6 ký tự!",
+                MessageBox.Show("M?t kh?u ph?i c� �t nh?t 6 k� t?!",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
 
             if (newPassword != confirm)
             {
-                MessageBox.Show("Mật khẩu xác nhận không khớp!",
+                MessageBox.Show("M?t kh?u x�c nh?n kh�ng kh?p!",
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 textBox2.Clear();
                 textBox2.Focus();
@@ -74,20 +75,20 @@ namespace BattleGame.Client.Forms
 
                 if (result.Status == "success")
                 {
-                    MessageBox.Show("Đặt lại mật khẩu thành công! Vui lòng đăng nhập lại.",
+                    MessageBox.Show("�?t l?i m?t kh?u th�nh c�ng! Vui l�ng dang nh?p l?i.",
                         "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                     new LoginForm().Show();
                     this.Close();
                 }
                 else
                 {
-                    MessageBox.Show(result.Message ?? "Đặt lại mật khẩu thất bại!",
+                    MessageBox.Show(result.Message ?? "�?t l?i m?t kh?u th?t b?i!",
                         "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Đã có lỗi xảy ra: " + ex.Message,
+                MessageBox.Show("�� c� l?i x?y ra: " + ex.Message,
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             finally

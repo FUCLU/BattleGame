@@ -8,6 +8,7 @@ namespace BattleGame.Client.Forms
         public Stage2Form()
         {
             InitializeComponent();
+            BorderlessFormHelper.Apply(this);
             StartPosition = FormStartPosition.CenterScreen;
         }
     }

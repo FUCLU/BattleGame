@@ -65,6 +65,7 @@ namespace BattleGame.Client.Game
         private BossAiController? _bossAiController;
         private string? _activeDungeonSpawnToken;
         private bool _activeDungeonSpawnDefeated;
+        private int _dungeonDefeatedCount;
 
         private DateTime _lastTime;
         private float _groundY;
@@ -78,6 +79,7 @@ namespace BattleGame.Client.Game
         public Entity Player => _player;
         public Entity? Enemy => _enemy;
         public bool IsDungeonCompleted => _dungeonRun?.IsCompleted == true;
+        public int DungeonDefeatedCount => _dungeonDefeatedCount;
 
         public GameEngine(string characterId, string mapId, int formWidth, int formHeight, string? enemyCharacterId = null, bool localTwoPlayer = false)
         {
@@ -238,6 +240,8 @@ namespace BattleGame.Client.Game
                         ArmorPen = projectile.ArmorPen,
                         Stun = projectile.Stun,
                         Range = projectile.Range,
+                        CollisionWidth = projectile.CollisionWidth,
+                        CollisionHeight = projectile.CollisionHeight,
                         Lifetime = projectile.Lifetime,
                         Timer = projectile.Timer,
                         AnimationKey = projectile.AnimationKey,
@@ -800,6 +804,15 @@ namespace BattleGame.Client.Game
             UpdateCamera();
         }
 
+        public void UpdatePresentation(float dt)
+        {
+            dt = Math.Min(dt, 0.05f);
+
+            _renderer.Update(_player, dt);
+            if (_enemy != null)
+                _renderer.Update(_enemy, dt);
+        }
+
         public void Draw(Graphics g)
         {
             bool drawEnemyHealthOverForeground = false;
@@ -1080,6 +1093,8 @@ namespace BattleGame.Client.Game
                 ArmorPen = projectile.ArmorPen,
                 Stun = projectile.Stun,
                 Range = projectile.Range,
+                CollisionWidth = projectile.CollisionWidth,
+                CollisionHeight = projectile.CollisionHeight,
                 Lifetime = projectile.Lifetime,
                 Timer = projectile.Timer,
                 AnimationKey = projectile.AnimationKey,
@@ -1463,6 +1478,7 @@ namespace BattleGame.Client.Game
             _activeDungeonSpawnToken = null;
             _activeDungeonSpawnDefeated = false;
             _enemy = null;
+            _dungeonDefeatedCount++;
         }
 
         private void SpawnDungeonEnemy(DungeonSpawnRequest request)

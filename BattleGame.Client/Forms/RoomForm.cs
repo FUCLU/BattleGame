@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -39,6 +39,7 @@ namespace BattleGame.Client.Forms
         public RoomForm(string roomCode, bool isHost, int playerCount, string mapId, int timeLimitMinutes, string? player1Name = null, string? player2Name = null)
         {
             InitializeComponent();
+            BorderlessFormHelper.Apply(this);
             StartPosition = FormStartPosition.CenterScreen;
             _roomCode = roomCode;
             _isHost = isHost;
@@ -107,7 +108,7 @@ namespace BattleGame.Client.Forms
             ConfigureOnlineLayout();
             UpdateRoomStatus();
             UpdateReadyState();
-      
+
 
             if (NetworkManager.Instance.IsConnected)
             {
@@ -710,5 +711,9 @@ namespace BattleGame.Client.Forms
             });
         }
 
+        private void richtxtBoxMessage_TextChanged(object sender, EventArgs e)
+        {
+
+        }
     }
 }

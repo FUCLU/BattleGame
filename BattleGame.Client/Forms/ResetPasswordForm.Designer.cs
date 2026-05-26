@@ -37,7 +37,7 @@
             label4 = new Label();
             label3 = new Label();
             label1 = new Label();
-            button2 = new Button();
+            btnSetting = new GearButton();
             panel1.SuspendLayout();
             SuspendLayout();
             // 
@@ -139,16 +139,17 @@
             label1.Text = "RESET PASSWORD";
             label1.Click += label1_Click;
             // 
-            // button2
+            // btnSetting
             // 
-            button2.BackgroundImage = Properties.Resources.loa;
-            button2.BackgroundImageLayout = ImageLayout.Zoom;
-            button2.Location = new Point(998, 519);
-            button2.Name = "button2";
-            button2.Size = new Size(35, 33);
-            button2.TabIndex = 3;
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += button2_Click;
+            btnSetting.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnSetting.BackColor = Color.Black;
+            btnSetting.FlatStyle = FlatStyle.Popup;
+            btnSetting.ForeColor = Color.FromArgb(255, 235, 156);
+            btnSetting.Location = new Point(997, 512);
+            btnSetting.Name = "btnSetting";
+            btnSetting.Size = new Size(48, 48);
+            btnSetting.TabIndex = 8;
+            btnSetting.UseVisualStyleBackColor = false;
             // 
             // ResetPasswordForm
             // 
@@ -157,7 +158,7 @@
             BackgroundImage = Properties.Resources.login;
             BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1057, 581);
-            Controls.Add(button2);
+            Controls.Add(btnSetting);
             Controls.Add(panel1);
             DoubleBuffered = true;
             Name = "ResetPasswordForm";
@@ -177,6 +178,6 @@
         private Label label3;
         private TextBox textBox2;
         private LinkLabel linkLabel1;
-        private Button button2;
+        private GearButton btnSetting;
     }
 }

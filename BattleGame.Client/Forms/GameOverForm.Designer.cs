@@ -41,6 +41,9 @@
             btnBackLobby.BackgroundImage = (Image)resources.GetObject("btnBackLobby.BackgroundImage");
             btnBackLobby.BackgroundImageLayout = ImageLayout.Stretch;
             btnBackLobby.FlatStyle = FlatStyle.Popup;
+            btnBackLobby.FlatAppearance.BorderSize = 0;
+            btnBackLobby.FlatAppearance.MouseDownBackColor = Color.FromArgb(31, 97, 141);
+            btnBackLobby.FlatAppearance.MouseOverBackColor = Color.FromArgb(41, 128, 185);
             btnBackLobby.Font = new Font("Book Antiqua", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             btnBackLobby.ForeColor = Color.White;
             btnBackLobby.Location = new Point(145, 335);
@@ -70,6 +73,9 @@
             BtnLeaderBoard.BackgroundImage = (Image)resources.GetObject("BtnLeaderBoard.BackgroundImage");
             BtnLeaderBoard.BackgroundImageLayout = ImageLayout.Stretch;
             BtnLeaderBoard.FlatStyle = FlatStyle.Popup;
+            BtnLeaderBoard.FlatAppearance.BorderSize = 0;
+            BtnLeaderBoard.FlatAppearance.MouseDownBackColor = Color.FromArgb(31, 97, 141);
+            BtnLeaderBoard.FlatAppearance.MouseOverBackColor = Color.FromArgb(41, 128, 185);
             BtnLeaderBoard.Font = new Font("Book Antiqua", 12F, FontStyle.Bold, GraphicsUnit.Point, 0);
             BtnLeaderBoard.ForeColor = Color.White;
             BtnLeaderBoard.Location = new Point(528, 335);

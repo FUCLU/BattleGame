@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -33,6 +33,7 @@ namespace BattleGame.Client.Forms
         public JoinRoom()
         {
             InitializeComponent();
+            BorderlessFormHelper.Apply(this);
             this.StartPosition = FormStartPosition.CenterScreen;
             button2.Click += button2_Click;
             Shown += JoinRoom_Shown;
@@ -185,7 +186,6 @@ namespace BattleGame.Client.Forms
             {
                 Control newCtrl = (Control)Activator.CreateInstance(ctrl.GetType());
 
-
                 newCtrl.Name = ctrl.Name;
                 newCtrl.Size = ctrl.Size;
                 newCtrl.Location = ctrl.Location;
@@ -330,7 +330,8 @@ namespace BattleGame.Client.Forms
                     RoomName = roomName,
                     Password = password,
                     TimeLimitMinutes = timeLimitMinutes,
-                    AutoJoin = hasPassword
+                    AutoJoin = hasPassword,
+                    IsAutoMatchRoom = !hasPassword
                 }));
 
                 if (result.RoomId <= 0)
@@ -632,12 +633,14 @@ namespace BattleGame.Client.Forms
             {
                 Width = 440,
                 Height = 210,
-                FormBorderStyle = FormBorderStyle.FixedDialog,
+                FormBorderStyle = FormBorderStyle.None,
                 Text = $"Nhập mật khẩu ({roomName})",
                 StartPosition = FormStartPosition.CenterParent,
                 MinimizeBox = false,
                 MaximizeBox = false
             };
+
+            BorderlessFormHelper.Apply(prompt);
 
             Label textLabel = new Label
             {
@@ -699,7 +702,7 @@ namespace BattleGame.Client.Forms
 
         private async void btnRefresh_Click(object sender, EventArgs e)
         {
-            //server trả về danh sách phòng mới nhất
+            // server trả về danh sách phòng mới nhất
             if (NetworkManager.Instance.IsConnected)
             {
                 await RefreshRoomsWithRetryAsync();
@@ -840,12 +843,14 @@ namespace BattleGame.Client.Forms
             {
                 Width = 440,
                 Height = 210,
-                FormBorderStyle = FormBorderStyle.FixedDialog,
+                FormBorderStyle = FormBorderStyle.None,
                 Text = title,
                 StartPosition = FormStartPosition.CenterParent,
                 MinimizeBox = false,
                 MaximizeBox = false
             };
+
+            BorderlessFormHelper.Apply(prompt);
 
             Label textLabel = new Label
             {
@@ -910,7 +915,8 @@ namespace BattleGame.Client.Forms
                 RoomName = roomName,
                 Password = string.Empty,
                 TimeLimitMinutes = timeLimitMinutes,
-                AutoJoin = true
+                AutoJoin = true,
+                IsAutoMatchRoom = true
             }));
 
             if (result.RoomId <= 0)

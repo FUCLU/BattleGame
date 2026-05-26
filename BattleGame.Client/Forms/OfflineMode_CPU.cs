@@ -31,6 +31,7 @@ namespace BattleGame.Client.Forms
         public OfflineMode_CPU()
         {
             InitializeComponent();
+            BorderlessFormHelper.Apply(this);
             ApplyUnifiedStyle();
             StartPosition = FormStartPosition.CenterScreen;
         }

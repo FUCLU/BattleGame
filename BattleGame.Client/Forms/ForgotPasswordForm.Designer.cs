@@ -1,4 +1,4 @@
-﻿namespace BattleGame.Client.Forms
+namespace BattleGame.Client.Forms
 {
     partial class ForgotPasswordForm
     {
@@ -39,7 +39,7 @@
             button1 = new Button();
             label2 = new Label();
             pictureBox1 = new PictureBox();
-            button2 = new Button();
+            btnSetting = new GearButton();
             bindingSource1 = new BindingSource(components);
             panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox3).BeginInit();
@@ -158,17 +158,17 @@
             pictureBox1.SizeMode = PictureBoxSizeMode.StretchImage;
             pictureBox1.TabIndex = 7;
             pictureBox1.TabStop = false;
+            // btnSetting
             // 
-            // button2
-            // 
-            button2.BackgroundImage = Properties.Resources.loa;
-            button2.BackgroundImageLayout = ImageLayout.Zoom;
-            button2.Location = new Point(999, 521);
-            button2.Name = "button2";
-            button2.Size = new Size(35, 33);
-            button2.TabIndex = 2;
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += button2_Click;
+            btnSetting.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            btnSetting.BackColor = Color.Black;
+            btnSetting.FlatStyle = FlatStyle.Popup;
+            btnSetting.ForeColor = Color.FromArgb(255, 235, 156);
+            btnSetting.Location = new Point(997, 508);
+            btnSetting.Name = "btnSetting";
+            btnSetting.Size = new Size(48, 48);
+            btnSetting.TabIndex = 2;
+            btnSetting.UseVisualStyleBackColor = false;
             // 
             // ForgotPasswordForm
             // 
@@ -177,7 +177,7 @@
             BackgroundImage = Properties.Resources.login;
             BackgroundImageLayout = ImageLayout.Zoom;
             ClientSize = new Size(1057, 581);
-            Controls.Add(button2);
+            Controls.Add(btnSetting);
             Controls.Add(panel1);
             DoubleBuffered = true;
             Name = "ForgotPasswordForm";
@@ -199,7 +199,7 @@
         private Button button1;
         private TextBox textBox1;
         private Label label3;
-        private Button button2;
+        private GearButton btnSetting;
         private PictureBox pictureBox1;
         private PictureBox pictureBox3;
         private PictureBox pictureBox2;

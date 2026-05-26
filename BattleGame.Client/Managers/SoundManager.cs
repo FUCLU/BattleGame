@@ -24,11 +24,11 @@ namespace BattleGame.Client.Managers
         public static float SfxVolume => _settings.SfxVolume;
         public static string PreferredBgm => _settings.PreferredBgm;
 
-        public static void PlayBGM(string fileName)
+        public static void PlayBGM(string fileName, bool usePreferred = true)
         {
-            string requested = string.IsNullOrWhiteSpace(_settings.PreferredBgm)
-                ? fileName
-                : _settings.PreferredBgm;
+            string requested = usePreferred && !string.IsNullOrWhiteSpace(_settings.PreferredBgm)
+                ? _settings.PreferredBgm
+                : fileName;
 
             if (string.Equals(_currentBgm, requested, StringComparison.OrdinalIgnoreCase) &&
                 _waveOut != null &&
@@ -130,6 +130,7 @@ namespace BattleGame.Client.Managers
                 .Select(Path.GetFileName)
                 .Where(name => !string.IsNullOrWhiteSpace(name))
                 .Cast<string>()
+                .Where(name => !name.StartsWith("dungeon_", StringComparison.OrdinalIgnoreCase))
                 .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
         }
@@ -161,32 +162,32 @@ namespace BattleGame.Client.Managers
 
         public static void PlayBattleMove()
         {
-            PlaySfx("move_step.wav");
+            PlaySfx("move_step.wav", 1.15f);
         }
 
         public static void PlayBattleGuard()
         {
-            PlaySfx("guard.wav");
+            PlaySfx("guard.wav", 1.35f);
         }
 
         public static void PlayBattleAttack()
         {
-            PlaySfx("attack.wav");
+            PlaySfx("attack.wav", 1.35f);
         }
 
         public static void PlayBattleDash()
         {
-            PlaySfx("dash.wav");
+            PlaySfx("dash.wav", 1.3f);
         }
 
         public static void PlayBattleSkill()
         {
-            PlaySfx("skill.wav");
+            PlaySfx("skill.wav", 1.4f);
         }
 
         public static void PlayBattleHit()
         {
-            PlaySfx("hit.wav");
+            PlaySfx("hit.wav", 1.45f);
         }
 
         public static void PlayRoundAnnouncement(int roundNumber, bool suddenDeath)
@@ -202,9 +203,9 @@ namespace BattleGame.Client.Managers
                 PlaySfx("round_start.wav");
         }
 
-        public static bool PlaySfx(string fileName)
+        public static bool PlaySfx(string fileName, float gain = 1f)
         {
-            float volume = SfxVolume;
+            float volume = Math.Clamp(SfxVolume * Math.Max(0f, gain), 0f, 1f);
             if (volume <= 0.001f || string.IsNullOrWhiteSpace(fileName))
                 return false;
 
@@ -273,7 +274,7 @@ namespace BattleGame.Client.Managers
         private sealed class AudioSettingsState
         {
             public float MusicVolume { get; set; } = 1.0f;
-            public float SfxVolume { get; set; } = 0.75f;
+            public float SfxVolume { get; set; } = 1.0f;
             public string PreferredBgm { get; set; } = "xtremefreddy.mp3";
 
             public static AudioSettingsState Load()

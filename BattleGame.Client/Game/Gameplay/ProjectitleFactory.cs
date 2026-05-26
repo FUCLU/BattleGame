@@ -25,6 +25,8 @@ namespace BattleGame.Client.Game.Gameplay
                 ArmorPen = effect.ArmorPen ?? caster.Get<CharacterComponent>().BaseStats.ArmorPen,
                 StunDuration = effect.Stun,
                 Range = effect.Range,
+                CollisionWidth = Math.Max(effect.CollisionWidth, (int)MathF.Round(effect.Range * 2f)),
+                CollisionHeight = Math.Max(effect.CollisionHeight, (int)MathF.Round(effect.Range * 2f)),
                 Lifetime = effect.Duration > 0f ? effect.Duration : 3f,
                 Owner = caster,
                 AnimationKey = effect.ProjectileAnim,
@@ -44,6 +46,22 @@ namespace BattleGame.Client.Game.Gameplay
             {
                 var targetMv = target.Get<MovementComponent>();
                 return (targetMv.X + effect.SpawnOffsetX, targetMv.Y + effect.SpawnOffsetY);
+            }
+
+            if (mode == "casterfront" || mode == "ownerfront")
+                return (
+                    casterMv.X + (casterMv.FacingRight ? effect.SpawnOffsetX : -effect.SpawnOffsetX),
+                    casterMv.Y + effect.SpawnOffsetY);
+
+            if (mode == "casterself" || mode == "ownerself")
+                return (casterMv.X + effect.SpawnOffsetX, casterMv.Y + effect.SpawnOffsetY);
+
+            if (target != null && mode == "targetfront")
+            {
+                var targetMv = target.Get<MovementComponent>();
+                return (
+                    targetMv.X + (casterMv.X < targetMv.X ? effect.SpawnOffsetX : -effect.SpawnOffsetX),
+                    targetMv.Y + effect.SpawnOffsetY);
             }
 
             return (

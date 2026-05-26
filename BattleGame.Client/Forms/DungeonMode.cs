@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using BattleGame.Client.Config;
 using BattleGame.Client.Game.Dungeon;
+using BattleGame.Client.Managers;
 
 namespace BattleGame.Client.Forms
 {
@@ -20,9 +21,20 @@ namespace BattleGame.Client.Forms
         public DungeonMode(Form? returnFormOnBack = null)
         {
             InitializeComponent();
+            BorderlessFormHelper.Apply(this);
             this.StartPosition = FormStartPosition.CenterScreen;
             _returnFormOnBack = returnFormOnBack;
             UpdateSelectedCharacterLabel();
+            UpdateStatModeText();
+            StopDungeonMenuMusic();
+        }
+
+        protected override void OnVisibleChanged(EventArgs e)
+        {
+            base.OnVisibleChanged(e);
+
+            if (Visible)
+                StopDungeonMenuMusic();
         }
 
         private void btnStage1_Click(object sender, EventArgs e)
@@ -43,7 +55,11 @@ namespace BattleGame.Client.Forms
                 return;
             }
 
-            GameForm gameForm = new GameForm(_selectedCharacterId, dungeonMap.MapId, returnFormOnExit: this);
+            GameForm gameForm = new GameForm(
+                _selectedCharacterId,
+                dungeonMap.MapId,
+                returnFormOnExit: this,
+                dungeonStatMode: chkStatMode.Checked);
             Hide();
             gameForm.Show();
         }
@@ -108,6 +124,21 @@ namespace BattleGame.Client.Forms
         private void label2_Click_1(object sender, EventArgs e)
         {
 
+        }
+
+        private static void StopDungeonMenuMusic()
+        {
+            SoundManager.StopBGM();
+        }
+
+        private void chkStatMode_CheckedChanged(object sender, EventArgs e)
+        {
+            UpdateStatModeText();
+        }
+
+        private void UpdateStatModeText()
+        {
+            chkStatMode.Text = chkStatMode.Checked ? "MODE: ON" : "MODE: OFF";
         }
     }
 }

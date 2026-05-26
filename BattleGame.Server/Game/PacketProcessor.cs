@@ -126,7 +126,7 @@ namespace BattleGame.Server.Game
                 ("name", leaveName));
 
             var roomAfterLeave = _matchmaking.GetRoom(p.RoomId);
-            if (roomAfterLeave != null && roomAfterLeave.OwnerId != _client.UserId)
+            if (roomAfterLeave != null)
             {
                 await BroadcastRoomSnapshotAsync(roomAfterLeave, p.RoomId, $"{leaveName} đã rời phòng.");
                 await BroadcastSystemRoomMessageAsync(roomAfterLeave, p.RoomId, $"{leaveName} đã rời phòng.");
@@ -321,7 +321,8 @@ namespace BattleGame.Server.Game
                 _client.UserId,
                 _client.Username,
                 _client,
-                p.AutoJoin);
+                p.AutoJoin,
+                p.IsAutoMatchRoom);
             if (success && roomId > 0 && p.AutoJoin)
                 _client.CurrentRoomId = roomId.ToString();
             var room = roomId > 0 ? _matchmaking.GetRoom(roomId) : null;
@@ -389,22 +390,6 @@ namespace BattleGame.Server.Game
 
                 await _client.SendAsync(resultPacket);
 
-                if (room?.Player1Handler != null && room.Player1Handler != _client)
-                {
-                    await room.Player1Handler.SendAsync(new JoinRoomResultPacket
-                    {
-                        Success = true,
-                        RoomId = p.RoomId,
-                        MapId = room.MapId,
-                        TimeLimitMinutes = room.TimeLimitMinutes,
-                        ServerId = roomServerId ?? string.Empty,
-                        Player1Name = room.Player1Name,
-                        Player2Name = room.Player2Name,
-                        IsOwner = true,
-                        Message = "Người chơi đã vào phòng."
-                    });
-                }
-
                 if (room != null)
                 {
                     ServerLogger.Event("room", "join",
@@ -424,6 +409,7 @@ namespace BattleGame.Server.Game
                     if (room.Player2Handler != null)
                         await room.Player2Handler.SendAsync(readySnapshot);
 
+                    await BroadcastRoomSnapshotAsync(room, p.RoomId, "Người chơi đã vào phòng.");
                     await BroadcastSystemRoomMessageAsync(room, p.RoomId, $"{joinName} đã vào phòng.");
                 }
             }
@@ -443,8 +429,6 @@ namespace BattleGame.Server.Game
         {
             int roomId = -1;
             int.TryParse(_client.CurrentRoomId, out roomId);
-            var roomBeforeDisconnect = roomId > 0 ? _matchmaking.GetRoom(roomId) : null;
-            bool wasOwner = roomBeforeDisconnect != null && roomBeforeDisconnect.OwnerId == _client.UserId;
             string leaveName = string.IsNullOrWhiteSpace(_client.Username) ? $"User{_client.UserId}" : _client.Username;
 
             var notifications = _matchmaking.HandleDisconnect(_client.UserId, _client);
@@ -466,7 +450,7 @@ namespace BattleGame.Server.Game
                 });
             }
 
-            if (roomId > 0 && !wasOwner)
+            if (roomId > 0)
             {
                 var roomAfterDisconnect = _matchmaking.GetRoom(roomId);
                 if (roomAfterDisconnect != null)
@@ -642,6 +626,7 @@ namespace BattleGame.Server.Game
                 TimeLimitMinutes = room.TimeLimitMinutes,
                 Player1Name = room.Player1Name,
                 Player2Name = room.Player2Name,
+                IsSnapshot = true,
                 Message = message
             };
 

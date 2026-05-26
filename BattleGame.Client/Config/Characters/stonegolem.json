@@ -43,20 +43,25 @@
       "effects": [
         {
           "type": "projectile",
-          "trigger": "onFrame",
-          "triggerFrames": [ 5 ],
+          "trigger": "onStart",
+          "triggerFrames": [ 0 ],
           "projectileAnim": "FlyingObelisk",
-          "hitFrames": [ 5, 6, 7, 8 ],
           "damage": 40,
           "stun": 0.5,
           "speed": 430,
           "range": 55,
+          "duration": 4.0,
+          "spawnMode": "casterFront",
+          "spawnOffsetX": 45,
+          "spawnOffsetY": 24,
+          "collisionWidth": 280,
+          "collisionHeight": 210,
           "render": {
             "scale": 0.8,
             "offsetX": 0,
-            "offsetY": -40,
+            "offsetY": 0,
             "useSpriteSize": true,
-            "alignY": "center"
+            "alignY": "bottom"
           }
         }
       ]
@@ -80,17 +85,17 @@
           "stun": 0.0,
           "duration": 1.75,
           "spawnMode": "casterFront",
-          "spawnOffsetX": 10,
-          "spawnOffsetY": 10,
-          "collisionWidth": 840,
-          "collisionHeight": 240,
+          "spawnOffsetX": 670,
+          "spawnOffsetY": 18,
+          "collisionWidth": 560,
+          "collisionHeight": 95,
           "blockEnemyAttack": false,
           "blockEnemyProjectile": false,
           "blockEnemySkill": false,
           "render": {
             "scale": 2.0,
-            "offsetX": 200,
-            "offsetY": -80,
+            "offsetX": 0,
+            "offsetY": -62,
             "useSpriteSize": true,
             "alignY": "center",
             "facingSource": "owner"

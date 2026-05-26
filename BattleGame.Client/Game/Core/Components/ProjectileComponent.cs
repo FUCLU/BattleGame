@@ -15,6 +15,8 @@ namespace BattleGame.Client.Game.Core.Components
         public int ArmorPen;
         public float StunDuration;
         public float Range = 50f;
+        public int CollisionWidth;
+        public int CollisionHeight;
 
         public float Lifetime = 3f;
         public float Timer = 0f;

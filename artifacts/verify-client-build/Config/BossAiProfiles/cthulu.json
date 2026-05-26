@@ -1,0 +1,11 @@
+{
+  "id": "cthulu_hunter",
+  "characterId": "cthulu",
+  "chaseSpeedMultiplier": 0.65,
+  "engageRangeBonus": 10,
+  "skill1Range": 210,
+  "basicAttackCooldown": 0.85,
+  "postSkillActionCooldown": 0.45,
+  "dashMinRange": 520,
+  "dashCooldown": 4
+}

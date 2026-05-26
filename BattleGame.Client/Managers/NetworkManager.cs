@@ -212,7 +212,12 @@ namespace BattleGame.Client.Managers
         public async Task<JoinRoomResultPacket> JoinRoomAsync(JoinRoomPacket packet)
         {
             await SendAsync(packet);
-            var result = await ReceiveExpectedAsync<JoinRoomResultPacket>(PacketType.JoinRoomResult, 8000);
+            var result = await ReceiveExpectedAsync<JoinRoomResultPacket>(
+                PacketType.JoinRoomResult,
+                8000,
+                p => p is JoinRoomResultPacket joinResult
+                    && !joinResult.IsSnapshot
+                    && joinResult.RoomId == packet.RoomId);
             if (result.Success)
                 PreferredRoomId = result.RoomId;
             return result;
@@ -331,19 +336,28 @@ namespace BattleGame.Client.Managers
         }
 
         private async Task<TPacket> ReceiveExpectedAsync<TPacket>(PacketType expectedType, int timeoutMs) where TPacket : Packet
+            => await ReceiveExpectedAsync<TPacket>(expectedType, timeoutMs, null);
+
+        private async Task<TPacket> ReceiveExpectedAsync<TPacket>(
+            PacketType expectedType,
+            int timeoutMs,
+            Func<Packet, bool>? acceptPacket) where TPacket : Packet
         {
             using var cts = new CancellationTokenSource(timeoutMs);
 
             await _receiveGate.WaitAsync(cts.Token);
             try
             {
-                if (TryTakePendingByType(expectedType, out Packet? pendingMatch))
+                bool Accept(Packet packet)
+                    => packet.Type == expectedType && (acceptPacket == null || acceptPacket(packet));
+
+                if (TryTakePendingByPredicate(Accept, out Packet? pendingMatch))
                     return (TPacket)pendingMatch;
 
                 while (true)
                 {
                     Packet packet = await _socket.ReceivePacketAsync(cts.Token);
-                    if (packet.Type == expectedType)
+                    if (Accept(packet))
                         return (TPacket)packet;
 
                     _pendingPackets.Add(packet);

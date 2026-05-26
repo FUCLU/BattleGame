@@ -35,6 +35,7 @@ namespace BattleGame.Client.Forms
             btnSelectCharacter = new Button();
             lblSelectedCharacter = new Label();
             label2 = new Label();
+            chkStatMode = new BattleGame.Client.Controls.ToggleSwitch();
             SuspendLayout();
             // 
             // btnBack
@@ -45,7 +46,7 @@ namespace BattleGame.Client.Forms
             btnBack.FlatAppearance.BorderSize = 0;
             btnBack.FlatStyle = FlatStyle.Flat;
             btnBack.ForeColor = Color.RosyBrown;
-            btnBack.Location = new Point(729, 457);
+            btnBack.Location = new Point(53, 456);
             btnBack.Margin = new Padding(3, 4, 3, 4);
             btnBack.Name = "btnBack";
             btnBack.Size = new Size(109, 47);
@@ -62,7 +63,7 @@ namespace BattleGame.Client.Forms
             btnStage1.FlatAppearance.MouseDownBackColor = Color.Transparent;
             btnStage1.FlatAppearance.MouseOverBackColor = Color.Transparent;
             btnStage1.FlatStyle = FlatStyle.Flat;
-            btnStage1.Location = new Point(653, 49);
+            btnStage1.Location = new Point(653, 13);
             btnStage1.Margin = new Padding(3, 4, 3, 4);
             btnStage1.Name = "btnStage1";
             btnStage1.Size = new Size(250, 144);
@@ -79,7 +80,7 @@ namespace BattleGame.Client.Forms
             btnStage2.FlatAppearance.MouseDownBackColor = Color.Transparent;
             btnStage2.FlatAppearance.MouseOverBackColor = Color.Transparent;
             btnStage2.FlatStyle = FlatStyle.Flat;
-            btnStage2.Location = new Point(658, 231);
+            btnStage2.Location = new Point(653, 198);
             btnStage2.Margin = new Padding(3, 4, 3, 4);
             btnStage2.Name = "btnStage2";
             btnStage2.Size = new Size(250, 139);
@@ -98,7 +99,7 @@ namespace BattleGame.Client.Forms
             btnSelectCharacter.FlatStyle = FlatStyle.Flat;
             btnSelectCharacter.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
             btnSelectCharacter.ForeColor = Color.Transparent;
-            btnSelectCharacter.Location = new Point(84, 430);
+            btnSelectCharacter.Location = new Point(719, 425);
             btnSelectCharacter.Margin = new Padding(3, 4, 3, 4);
             btnSelectCharacter.Name = "btnSelectCharacter";
             btnSelectCharacter.Size = new Size(112, 104);
@@ -133,6 +134,27 @@ namespace BattleGame.Client.Forms
             label2.Text = resources.GetString("label2.Text");
             label2.Click += label2_Click_1;
             // 
+            // chkStatMode
+            // 
+            chkStatMode.BackColor = Color.Transparent;
+            chkStatMode.BorderColor = Color.FromArgb(230, 244, 194, 91);
+            chkStatMode.Font = new Font("Segoe UI", 10.5F, FontStyle.Bold);
+            chkStatMode.ForeColor = Color.LightSteelBlue;
+            chkStatMode.Location = new Point(694, 376);
+            chkStatMode.MinimumSize = new Size(90, 28);
+            chkStatMode.Name = "chkStatMode";
+            chkStatMode.OffBackColor = Color.FromArgb(205, 18, 22, 44);
+            chkStatMode.OffTextColor = Color.LightSteelBlue;
+            chkStatMode.OnBackColor = Color.FromArgb(220, 34, 84, 132);
+            chkStatMode.OnTextColor = Color.White;
+            chkStatMode.Size = new Size(163, 34);
+            chkStatMode.TabIndex = 7;
+            chkStatMode.Text = "MODE: OFF";
+            chkStatMode.TextAlign = ContentAlignment.MiddleCenter;
+            chkStatMode.ThumbColor = Color.FromArgb(255, 218, 95);
+            chkStatMode.UseVisualStyleBackColor = false;
+            chkStatMode.CheckedChanged += chkStatMode_CheckedChanged;
+            // 
             // DungeonMode
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
@@ -140,6 +162,7 @@ namespace BattleGame.Client.Forms
             BackgroundImage = (Image)resources.GetObject("$this.BackgroundImage");
             BackgroundImageLayout = ImageLayout.Stretch;
             ClientSize = new Size(945, 560);
+            Controls.Add(chkStatMode);
             Controls.Add(label2);
             Controls.Add(lblSelectedCharacter);
             Controls.Add(btnSelectCharacter);
@@ -159,5 +182,6 @@ namespace BattleGame.Client.Forms
         private Button btnSelectCharacter;
         private Label lblSelectedCharacter;
         private Label label2;
+        private BattleGame.Client.Controls.ToggleSwitch chkStatMode;
     }
 }

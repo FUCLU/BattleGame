@@ -53,8 +53,6 @@ namespace BattleGame.Shared.Network
                 await ReadExactAsync(lenBuf, 4, token);
                 int size = BitConverter.ToInt32(lenBuf, 0);
 
-                Console.WriteLine($"[DEBUG] Receiving packet size: {size}");
-
                 byte[] dataBuf = new byte[size];
                 await ReadExactAsync(dataBuf, size, token);
 

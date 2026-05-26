@@ -614,6 +614,12 @@ public class BattleSimulation
     private void ApplyEffect(PlayerBattleState attacker, PlayerBattleState target, EffectData effect)
     {
         string effectType = (effect.Type ?? "").Trim().ToLowerInvariant();
+        if (effectType == "projectile")
+        {
+            SpawnProjectile(attacker, target, effect);
+            return;
+        }
+
         if (IsBlockedByBarrier(attacker, target, effectType))
             return;
 
@@ -625,9 +631,6 @@ public class BattleSimulation
             case "melee":
                 if (IsMeleeEffectHit(attacker, target, effect))
                     ApplyDamage(target, effect.Damage, effect.Stun, effect.ArmorPen ?? attacker.Stats.ArmorPen);
-                break;
-            case "projectile":
-                SpawnProjectile(attacker, target, effect);
                 break;
             case "barrier":
                 SpawnBarrier(attacker, target, effect);
@@ -651,6 +654,8 @@ public class BattleSimulation
             ArmorPen = effect.ArmorPen ?? owner.Stats.ArmorPen,
             Stun = effect.Stun,
             Range = effect.Range,
+            CollisionWidth = Math.Max(effect.CollisionWidth, (int)MathF.Round(effect.Range * 2f)),
+            CollisionHeight = Math.Max(effect.CollisionHeight, (int)MathF.Round(effect.Range * 2f)),
             Lifetime = effect.Duration > 0f ? effect.Duration : ProjectileLifetime,
             AnimationKey = effect.ProjectileAnim,
             FacingRight = owner.FacingRight,
@@ -666,6 +671,15 @@ public class BattleSimulation
         string mode = (effect.SpawnMode ?? string.Empty).Trim().ToLowerInvariant();
         if (mode is "targettop" or "targetabove" or "targettopdown")
             return (target.X + effect.SpawnOffsetX, target.Y + effect.SpawnOffsetY);
+
+        if (mode is "casterfront" or "ownerfront")
+            return (owner.X + (owner.FacingRight ? effect.SpawnOffsetX : -effect.SpawnOffsetX), owner.Y + effect.SpawnOffsetY);
+
+        if (mode is "casterself" or "ownerself")
+            return (owner.X + effect.SpawnOffsetX, owner.Y + effect.SpawnOffsetY);
+
+        if (mode is "targetfront")
+            return (target.X + (owner.X < target.X ? effect.SpawnOffsetX : -effect.SpawnOffsetX), target.Y + effect.SpawnOffsetY);
 
         return (owner.X + (owner.FacingRight ? 80f : -80f), owner.Y - 50f);
     }
@@ -711,6 +725,8 @@ public class BattleSimulation
         for (int i = State.Projectiles.Count - 1; i >= 0; i--)
         {
             var projectile = State.Projectiles[i];
+            float previousX = projectile.X;
+            float previousY = projectile.Y;
             projectile.X += projectile.VelocityX * dt;
             projectile.Y += projectile.VelocityY * dt;
             projectile.Timer += dt;
@@ -727,7 +743,7 @@ public class BattleSimulation
             if (projectile.Timer >= ProjectileCollisionDelay
                 && !target.IsDead
                 && CanProjectileDamageOnCurrentFrame(projectile)
-                && ProjectileIntersectsTarget(projectile, target))
+                && ProjectileIntersectsTarget(projectile, target, previousX, previousY))
             {
                 if (!IsProjectileBlockedByProtection(projectile, target))
                     ApplyDamage(target, projectile.Damage, projectile.Stun, projectile.ArmorPen);
@@ -753,7 +769,10 @@ public class BattleSimulation
 
     private static bool CanProjectileDamageOnCurrentFrame(ProjectileState projectile)
     {
-        return projectile.HitFrames.Count == 0 || projectile.HitFrames.Contains(projectile.CurrentFrame + 1);
+        // Moving projectiles must damage on contact. Gating them by animation
+        // hit frames makes long-range shots pass through when they reach the
+        // target on a non-hit visual frame.
+        return true;
     }
 
     private void UpdateEffects(float dt)
@@ -908,16 +927,29 @@ public class BattleSimulation
         return mode is "casterboth" or "casteraround";
     }
 
-    private static bool ProjectileIntersectsTarget(ProjectileState projectile, PlayerBattleState target)
+    private static bool ProjectileIntersectsTarget(ProjectileState projectile, PlayerBattleState target, float previousX, float previousY)
     {
-        float collisionSize = Math.Max(1f, projectile.Range * 2f);
+        float fallbackSize = Math.Max(1f, projectile.Range * 2f);
+        float collisionWidth = projectile.CollisionWidth > 0 ? projectile.CollisionWidth : fallbackSize;
+        float collisionHeight = projectile.CollisionHeight > 0 ? projectile.CollisionHeight : fallbackSize;
+
+        float currentCenterX = projectile.X + projectile.RenderOffsetX;
+        float currentCenterY = projectile.Y + projectile.RenderOffsetY;
+        float previousCenterX = previousX + projectile.RenderOffsetX;
+        float previousCenterY = previousY + projectile.RenderOffsetY;
+
+        float sweptCenterX = (currentCenterX + previousCenterX) * 0.5f;
+        float sweptCenterY = (currentCenterY + previousCenterY) * 0.5f;
+        float sweptWidth = collisionWidth + MathF.Abs(currentCenterX - previousCenterX);
+        float sweptHeight = collisionHeight + MathF.Abs(currentCenterY - previousCenterY);
+
         return BattleHitbox.IntersectsRectangle(
             target.X,
             target.Y,
-            projectile.X + projectile.RenderOffsetX,
-            projectile.Y + projectile.RenderOffsetY,
-            collisionSize,
-            collisionSize);
+            sweptCenterX,
+            sweptCenterY,
+            sweptWidth,
+            sweptHeight);
     }
 
     private static bool IntersectsRectangle(PlayerBattleState target, float centerX, float centerY, float width, float height)

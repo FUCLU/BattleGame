@@ -44,6 +44,8 @@ namespace BattleGame.Client.Game.Systems
             {
                 var e = _projectiles[i];
                 var p = e.Get<ProjectileComponent>();
+                float previousX = p.X;
+                float previousY = p.Y;
 
                 // Di chuyển
                 p.X += p.VelocityX * dt;
@@ -88,7 +90,7 @@ namespace BattleGame.Client.Game.Systems
                         if (ch.IsDead) continue;
                         if (ch.IsInvulnerable) continue;
 
-                        if (p.Timer >= ProjectileCollisionDelay && CanApplyDamageOnCurrentFrame(p) && CheckHit(p, mv))
+                        if (p.Timer >= ProjectileCollisionDelay && CanApplyDamageOnCurrentFrame(p) && CheckHit(p, mv, previousX, previousY))
                         {
                             if (IsBlockedByProtection(p, target))
                             {
@@ -204,11 +206,20 @@ namespace BattleGame.Client.Game.Systems
         }
 
         // ===== HITBOX =====
-        private bool CheckHit(ProjectileComponent p, MovementComponent mv)
+        private bool CheckHit(ProjectileComponent p, MovementComponent mv, float previousX, float previousY)
         {
             var collisionPoint = GetCollisionPoint(p);
-            float collisionSize = Math.Max(1f, p.Range * 2f);
-            return CharacterHitbox.IntersectsRectangle(mv, collisionPoint.X, collisionPoint.Y, collisionSize, collisionSize);
+            var previousCollisionPoint = (X: previousX + p.Render.OffsetX, Y: previousY + p.Render.OffsetY);
+            float fallbackSize = Math.Max(1f, p.Range * 2f);
+            float collisionWidth = p.CollisionWidth > 0 ? p.CollisionWidth : fallbackSize;
+            float collisionHeight = p.CollisionHeight > 0 ? p.CollisionHeight : fallbackSize;
+
+            float sweptCenterX = (collisionPoint.X + previousCollisionPoint.X) * 0.5f;
+            float sweptCenterY = (collisionPoint.Y + previousCollisionPoint.Y) * 0.5f;
+            float sweptWidth = collisionWidth + MathF.Abs(collisionPoint.X - previousCollisionPoint.X);
+            float sweptHeight = collisionHeight + MathF.Abs(collisionPoint.Y - previousCollisionPoint.Y);
+
+            return CharacterHitbox.IntersectsRectangle(mv, sweptCenterX, sweptCenterY, sweptWidth, sweptHeight);
         }
 
         private static (float X, float Y) GetCollisionPoint(ProjectileComponent p)
@@ -218,7 +229,10 @@ namespace BattleGame.Client.Game.Systems
 
         private static bool CanApplyDamageOnCurrentFrame(ProjectileComponent p)
         {
-            return p.HitFrames.Count == 0 || p.HitFrames.Contains(p.CurrentFrame + 1);
+            // Moving projectiles should use their swept collision path, not
+            // animation hit-frame gates. Otherwise long-range shots can cross
+            // the target during a non-hit frame and look like they bypass.
+            return true;
         }
 
         private void ApplyDamage(Entity target, ProjectileComponent p)

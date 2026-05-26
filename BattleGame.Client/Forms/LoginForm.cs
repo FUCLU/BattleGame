@@ -1,4 +1,4 @@
-﻿using BattleGame.Client.Forms;
+using BattleGame.Client.Forms;
 using BattleGame.Client.Managers;
 using BattleGame.Shared.Packets;
 using System.Windows.Forms;
@@ -10,6 +10,7 @@ namespace BattleGame.Client.Forms
         public LoginForm()
         {
             InitializeComponent();
+            BorderlessFormHelper.Apply(this);
             this.StartPosition = FormStartPosition.CenterScreen;
             this.AcceptButton = button1;
             this.ActiveControl = textBox1;
@@ -111,8 +112,6 @@ namespace BattleGame.Client.Forms
         }
 
 
-
-        //đổi thành btn sign up
         private void button3_Click(object sender, EventArgs e)
         {
             RegisterForm registerForm = new RegisterForm();

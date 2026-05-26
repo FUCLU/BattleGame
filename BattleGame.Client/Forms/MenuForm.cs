@@ -1,4 +1,4 @@
-﻿using BattleGame.Client.Managers;
+using BattleGame.Client.Managers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -16,6 +16,7 @@ namespace BattleGame.Client.Forms
         public MenuForm()
         {
             InitializeComponent();
+            BorderlessFormHelper.Apply(this);
             this.StartPosition = FormStartPosition.CenterScreen;
         }
 

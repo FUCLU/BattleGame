@@ -229,6 +229,7 @@ namespace BattleGame.Client.Forms
         public CharacterSelection()
         {
             InitializeComponent();
+            BorderlessFormHelper.Apply(this);
             StartPosition = FormStartPosition.CenterScreen;
 
             ApplyFlatStatBarStyle();

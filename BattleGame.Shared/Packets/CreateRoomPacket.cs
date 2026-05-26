@@ -10,6 +10,7 @@ namespace BattleGame.Shared.Packets
         public string? Password { get; set; }
         public int TimeLimitMinutes { get; set; } = 3;
         public bool AutoJoin { get; set; } = true;
+        public bool IsAutoMatchRoom { get; set; }
         
         public CreateRoomPacket() : base(PacketType.CreateRoom) { }
     }
