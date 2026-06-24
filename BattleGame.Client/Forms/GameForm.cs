@@ -80,9 +80,8 @@ namespace BattleGame.Client.Forms
         private float _dungeonStatMessageTimer;
         private readonly Dictionary<DungeonStat, int> _dungeonPendingStatDeltas = new();
 
-        private static readonly string AssetsRoot = Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory,
-            "..", "..", "..", "Assets");
+        private static readonly string ContentRoot = ClientContentRoot.Resolve(AppDomain.CurrentDomain.BaseDirectory);
+        private static readonly string AssetsRoot = Path.Combine(ContentRoot, "Assets");
 
         private static readonly string PortraitRoot = Path.Combine(AssetsRoot, "PotraitPic");
 
@@ -392,8 +391,7 @@ namespace BattleGame.Client.Forms
 
         private void UpdateCharacterHeaders()
         {
-            var selectionItems = CharacterCatalog.LoadSelectionItems(
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", ".."));
+            var selectionItems = CharacterCatalog.LoadSelectionItems(ContentRoot);
             var lookup = selectionItems
                 .GroupBy(item => item.Id, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
