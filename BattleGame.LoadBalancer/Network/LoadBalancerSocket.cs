@@ -69,7 +69,7 @@ namespace BattleGame.LoadBalancer.Network
                 var stream = client.GetStream();
 
                 byte[] lenBuf = new byte[4];
-                if (!await TryReadExactWithTimeoutAsync(stream, lenBuf, 4, TimeSpan.FromMilliseconds(150)))
+                if (!await TryReadExactWithTimeoutAsync(stream, lenBuf, 4, TimeSpan.FromMilliseconds(1000)))
                     return (null, null);
 
                 int size = BitConverter.ToInt32(lenBuf, 0);
@@ -77,7 +77,7 @@ namespace BattleGame.LoadBalancer.Network
                     return (null, null);
 
                 byte[] data = new byte[size];
-                if (!await TryReadExactWithTimeoutAsync(stream, data, size, TimeSpan.FromMilliseconds(150)))
+                if (!await TryReadExactWithTimeoutAsync(stream, data, size, TimeSpan.FromMilliseconds(1000)))
                     return (null, null);
 
                 string text = Encoding.UTF8.GetString(data);

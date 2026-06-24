@@ -69,9 +69,8 @@ namespace BattleGame.Client.Forms
         private const float OfflineRoundResolveDelaySeconds = 1.2f;
         private const float DungeonResolveDelaySeconds = 1.2f;
 
-        private static readonly string AssetsRoot = Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory,
-            "..", "..", "..", "Assets");
+        private static readonly string ContentRoot = ClientContentRoot.Resolve(AppDomain.CurrentDomain.BaseDirectory);
+        private static readonly string AssetsRoot = Path.Combine(ContentRoot, "Assets");
 
         private static readonly string PortraitRoot = Path.Combine(AssetsRoot, "PotraitPic");
 
@@ -380,8 +379,7 @@ namespace BattleGame.Client.Forms
 
         private void UpdateCharacterHeaders()
         {
-            var selectionItems = CharacterCatalog.LoadSelectionItems(
-                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "..", "..", ".."));
+            var selectionItems = CharacterCatalog.LoadSelectionItems(ContentRoot);
             var lookup = selectionItems
                 .GroupBy(item => item.Id, StringComparer.OrdinalIgnoreCase)
                 .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
