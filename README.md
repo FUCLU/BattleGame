@@ -398,8 +398,25 @@ BattleGame/
 ├── .env                                # Biến môi trường (KHÔNG commit lên Git)
 ├── BattleGameSolution.slnx             # Solution file (4 projects)
 ├── image.png                           # Sơ đồ kiến trúc hệ thống
+├── ERD.png                             # Sơ đồ ERD cơ sở dữ liệu
 └── README.md
 ```
+
+---
+
+## Cơ Sở Dữ Liệu
+
+### Sơ đồ ERD
+
+[![ERD](ERD.png)](ERD.png)
+
+DB gồm 3 bảng, được khởi tạo tự động qua `scripts/init.sql` khi Docker boot:
+
+| Bảng | Mô tả |
+|---|---|
+| `users` | Thông tin tài khoản người chơi, mật khẩu lưu dạng BCrypt hash |
+| `otp_tokens` | Mã OTP tạm thời dùng cho xác thực email (đăng ký / quên mật khẩu) |
+| `matches` | Lịch sử trận đấu: người thắng, người thua, thời lượng trận |
 
 ---
 
@@ -493,21 +510,21 @@ Client                        Server
 
 ```
 Client A                    Server                          Client B
-   │──── LoginPacket ───────►│◄──── LoginPacket ──────────────│
+   │──── LoginPacket ───────►│◄──── LoginPacket ────────────── │
    │◄─── LoginResultPacket ──│───── LoginResultPacket ────────►│
    │                         │                                 │
-   │   [Tạo/tham gia phòng, chọn nhân vật, chọn map]         │
+   │   [Tạo/tham gia phòng, chọn nhân vật, chọn map]           │
    │──── SelectMapPacket ───►│                                 │
    │──── SelectCharPacket ──►│◄─── SelectCharPacket ───────────│
    │                         │                                 │
-   │         [Đủ điều kiện → đếm ngược 3s → StartMatch]       │
+   │         [Đủ điều kiện → đếm ngược 3s → StartMatch]        │
    │◄─── MatchFoundPacket ───│──────────────────────────────►  │
    │                         │                                 │
-   │══════ Simulation loop 60 tick/s (BattleSimulation) ═════ │
+   │══════ Simulation loop 60 tick/s (BattleSimulation) ═════  │
    │──── InputPacket ───────►│                                 │
    │                         │──── WorldStatePacket ──────────►│
    │◄─── WorldStatePacket ───│                                 │
-   │                         │  (broadcast mỗi 2 tick ≈ 33ms) │
+   │                         │  (broadcast mỗi 2 tick ≈ 33ms)  │
    │                         │                                 │
    │◄─── VictoryPacket ──────│──── GameOverPacket ────────────►│
    │═══════════════════════════════════════════════════════════│
